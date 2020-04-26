@@ -1,0 +1,7 @@
+---
+project_name: label-checker
+build:
+  skip: true
+release:
+  github:
+  prerelease: auto
