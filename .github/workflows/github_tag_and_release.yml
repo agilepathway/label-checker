@@ -1,8 +1,9 @@
+---
 name: Tag
 
-on:
+on:  # yamllint disable-line rule:truthy
   pull_request:
-    types: 
+    types:
       - closed
 
 jobs:
@@ -11,7 +12,7 @@ jobs:
     name: Tag semantic version
     runs-on: ubuntu-latest
     steps:
-      - name: Tag 
+      - name: Tag
         uses: K-Phoen/semver-release-action@v1.3.1
         with:
           release_branch: master
