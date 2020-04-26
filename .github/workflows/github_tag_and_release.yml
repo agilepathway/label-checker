@@ -1,12 +1,27 @@
-name: goreleaser
+name: Tag
 
 on:
-  push:
-    tags:
-      - '*'
+  pull_request:
+    types: 
+      - closed
 
 jobs:
-  goreleaser:
+
+  tag:
+    name: Tag semantic version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag 
+        uses: K-Phoen/semver-release-action@v1.3.1
+        with:
+          release_branch: master
+          release_strategy: tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: tag
+    name: Create GitHub Release
     runs-on: ubuntu-latest
     steps:
       -
@@ -29,4 +44,3 @@ jobs:
           key: ${{ secrets.YOUR_PRIVATE_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
