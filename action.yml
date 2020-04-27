@@ -3,11 +3,12 @@ name: 'Container Action Template'
 description: 'Get started with Container actions'
 author: 'GitHub'
 inputs:
-  myInput:
-    description: 'Input to use'
-    default: 'world'
+  labels:
+    description: 'A JSON array of labels, exactly one of which must be present'
+    default: '[]'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.myInput }}
+    - ${{ inputs.labels }}
