@@ -1,7 +1,7 @@
 ---
-name: 'Container Action Template'
-description: 'Get started with Container actions'
-author: 'GitHub'
+name: 'Label checker for pull requests'
+description: 'Checks pull requests for given labels'
+author: 'John Boyes'
 inputs:
   labels:
     description: 'A JSON array of labels, exactly one of which must be present'
