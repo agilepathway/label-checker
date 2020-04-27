@@ -1,7 +1,11 @@
-FROM alpine:3.10
+FROM golang:1.14
 
-COPY LICENSE README.md /
+# Copy all the files from the host into the container
+WORKDIR /src
+COPY . .
 
-COPY entrypoint.sh /entrypoint.sh
+RUN scripts/install-mage.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN mage -compile /bin/check-labels -goos linux -goarch amd64
+
+ENTRYPOINT ["/bin/check-labels"]

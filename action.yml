@@ -5,10 +5,9 @@ author: 'John Boyes'
 inputs:
   labels:
     description: 'A JSON array of labels, exactly one of which must be present'
-    default: '[]'
     required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  args:
-    - ${{ inputs.labels }}
+  env:
+    GITHUB_ACTION_INPUT_LABELS: ${{ inputs.labels }}
