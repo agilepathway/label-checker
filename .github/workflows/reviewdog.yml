@@ -5,6 +5,18 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
+  golangci-lint:
+    name: runner / golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          golangci_lint_flags: "-c .golangci.yml"
+          level: "error"
+          reporter: github-check
+
   hadolint:
     name: runner / hadolint
     runs-on: ubuntu-latest
