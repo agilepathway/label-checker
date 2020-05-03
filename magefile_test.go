@@ -10,12 +10,17 @@ import (
 )
 
 const (
-	EnvGitHubEventPath         = "GITHUB_EVENT_PATH"
+	EnvGitHubRepository        = "GITHUB_REPOSITORY"
+	EnvGitHubRef               = "GITHUB_REF"
 	EnvGitHubActionInputLabels = "GITHUB_ACTION_INPUT_LABELS"
+	GitHubTestRepo             = "agilepathway/test-label-checker-consumer"
+	PRWithNoLabels             = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
+	PRWithOneSpecifiedLabel    = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
+	PRWithTwoSpecifiedLabels   = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
 )
 
 func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
-	setGithubEventPath("one_label")
+	setPullRequestNumber(PRWithOneSpecifiedLabel)
 	specifySemVerLabels()
 
 	exitCode, stderr, stdout := checkLabels()
@@ -25,7 +30,7 @@ func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
 }
 
 func TestPullRequestWithNoSpecifiedLabelsShouldFail(t *testing.T) {
-	setGithubEventPath("no_labels")
+	setPullRequestNumber(PRWithNoLabels)
 	specifySemVerLabels()
 
 	exitCode, stderr, _ := checkLabels()
@@ -34,7 +39,7 @@ func TestPullRequestWithNoSpecifiedLabelsShouldFail(t *testing.T) {
 }
 
 func TestPullRequestWithTwoSpecifiedLabelsShouldFail(t *testing.T) {
-	setGithubEventPath("two_labels")
+	setPullRequestNumber(PRWithTwoSpecifiedLabels)
 	specifySemVerLabels()
 
 	exitCode, stderr, _ := checkLabels()
@@ -43,13 +48,15 @@ func TestPullRequestWithTwoSpecifiedLabelsShouldFail(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
+	os.Setenv(EnvGitHubRepository, GitHubTestRepo) //nolint
 	os.Exit(testMainWrapper(m))
 }
 
 func testMainWrapper(m *testing.M) int {
 	//nolint
 	defer func() {
-		os.Unsetenv(EnvGitHubEventPath)
+		os.Unsetenv(EnvGitHubRepository)
+		os.Unsetenv(EnvGitHubRef)
 		os.Unsetenv(EnvGitHubActionInputLabels)
 	}()
 
@@ -64,8 +71,8 @@ func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
 	return mage.Invoke(invocation), stderr, stdout
 }
 
-func setGithubEventPath(filename string) {
-	os.Setenv(EnvGitHubEventPath, fmt.Sprintf("testdata/%s.json", filename)) //nolint
+func setPullRequestNumber(prNumber int) {
+	os.Setenv(EnvGitHubRef, fmt.Sprintf("refs/pull/%d/merge", prNumber)) //nolint
 }
 
 func specifySemVerLabels() {
