@@ -11,3 +11,4 @@ runs:
   image: 'Dockerfile'
   env:
     GITHUB_ACTION_INPUT_LABELS: ${{ inputs.labels }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}

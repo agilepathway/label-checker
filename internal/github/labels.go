@@ -4,26 +4,17 @@ Package github checks for the presence of GitHub labels
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
+	"strconv"
 	"strings"
+
+	"github.com/shurcooL/githubv4"
+	"golang.org/x/oauth2"
 )
-
-type event struct {
-	PullRequest pullRequest `json:"pull_request"`
-}
-
-type pullRequest struct {
-	Labels []label `json:"labels"`
-}
-
-type label struct {
-	Name string `json:"name"`
-}
 
 // CheckLabels checks for the presence of the given GitHub labels
 func CheckLabels() {
@@ -56,22 +47,59 @@ func specifiedLabels() []string {
 	return specifiedLabels
 }
 
+func repositoryOwner() string {
+	return strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[0]
+}
+
+func repositoryName() string {
+	return strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1]
+}
+
+func pullRequestNumber() int {
+	s := strings.Split(os.Getenv("GITHUB_REF"), "/")[2]
+	pullRequestNumber, err := strconv.Atoi(s)
+	panicIfError((err))
+
+	return pullRequestNumber
+}
+
 func pullRequestLabels() []string {
-	gitHubEventJSONFile, err := os.Open(filepath.Clean(os.Getenv("GITHUB_EVENT_PATH")))
-	panicIfError(err)
+	tokenSource := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+	)
+	httpClient := oauth2.NewClient(context.Background(), tokenSource)
 
-	defer gitHubEventJSONFile.Close() //nolint
+	client := githubv4.NewClient(httpClient)
 
-	byteValue, _ := ioutil.ReadAll(gitHubEventJSONFile)
+	variables := map[string]interface{}{
+		"owner":             githubv4.String(repositoryOwner()),
+		"name":              githubv4.String(repositoryName()),
+		"pullRequestNumber": githubv4.Int(pullRequestNumber()),
+	}
 
-	var event event
+	var query struct {
+		Repository struct {
+			PullRequest struct {
+				Labels struct {
+					Nodes []struct {
+						Name string
+					}
+				} `graphql:"labels(first: 100)"`
+			} `graphql:"pullRequest(number: $pullRequestNumber)"`
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
 
-	panicIfError(json.Unmarshal(byteValue, &event))
+	err := client.Query(context.Background(), &query, variables)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+
+	labelNodes := query.Repository.PullRequest.Labels.Nodes
 
 	var labels []string
 
-	for i := 0; i < len(event.PullRequest.Labels); i++ {
-		labels = append(labels, event.PullRequest.Labels[i].Name)
+	for i := 0; i < len(labelNodes); i++ {
+		labels = append(labels, labelNodes[i].Name)
 	}
 
 	return labels
