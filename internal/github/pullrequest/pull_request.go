@@ -1,4 +1,4 @@
-package github
+package pullrequest
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type pullRequest struct {
 	apiClient       *githubv4.Client
 }
 
-func newPullRequest(action action) *pullRequest {
+func new(action action) *pullRequest {
 	return &pullRequest{action.repositoryOwner(),
 		action.repositoryName(),
 		action.pullRequestNumber(),

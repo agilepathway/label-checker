@@ -1,4 +1,4 @@
-package github
+package pullrequest
 
 import (
 	"encoding/json"
