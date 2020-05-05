@@ -4,15 +4,22 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
 
-	"github.com/agilepathway/label-checker/internal/github"
+	"github.com/agilepathway/label-checker/internal/github/pullrequest"
 )
 
 var Default = GitHubLabelChecker
 
 // GitHubLabelChecker checks for the presence of GitHub labels
-func GitHubLabelChecker() {
+func GitHubLabelChecker() error {
 	log.Println("Checking GitHub labels ...")
-	github.CheckLabels()
+	valid, message := pullrequest.ValidLabels()
+	if !valid {
+		return errors.New(message)
+	}
+	fmt.Println(message)
+	return nil
 }

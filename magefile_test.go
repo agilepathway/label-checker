@@ -25,7 +25,7 @@ func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
 
 	exitCode, stderr, stdout := checkLabels()
 
-	expectedSuccessMessage := "Label check successful: required one of major, minor, patch, and found: minor\n"
+	expectedSuccessMessage := "Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
 	expectSuccess(exitCode, t, stderr, stdout, expectedSuccessMessage)
 }
 
@@ -35,7 +35,7 @@ func TestPullRequestWithNoSpecifiedLabelsShouldFail(t *testing.T) {
 
 	exitCode, stderr, _ := checkLabels()
 
-	expectError(exitCode, t, stderr, "Error: Label check failed: required one of major, minor, patch\n")
+	expectError(exitCode, t, stderr, "Error: Label check failed: required 1 of major, minor, patch, but found 0.\n")
 }
 
 func TestPullRequestWithTwoSpecifiedLabelsShouldFail(t *testing.T) {
@@ -44,7 +44,8 @@ func TestPullRequestWithTwoSpecifiedLabelsShouldFail(t *testing.T) {
 
 	exitCode, stderr, _ := checkLabels()
 
-	expectError(exitCode, t, stderr, "Error: Label check failed: required one of major, minor, patch\n")
+	expectError(exitCode, t, stderr,
+		"Error: Label check failed: required 1 of major, minor, patch, but found 2: minor, patch\n")
 }
 
 func TestMain(m *testing.M) {
