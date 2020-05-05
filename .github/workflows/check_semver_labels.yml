@@ -1,0 +1,26 @@
+---
+name: Label Checker
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+jobs:
+
+  check_semver_label:
+    name: Check semantic version label
+    runs-on: ubuntu-latest
+    steps:
+      - uses: agilepathway/label-checker@master
+        with:
+          labels: >
+            [
+              "major",
+              "minor",
+              "patch"
+            ]
+          github-token: ${{ secrets.GITHUB_TOKEN }}
