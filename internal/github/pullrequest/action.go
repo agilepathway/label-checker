@@ -2,8 +2,9 @@ package pullrequest
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
-	"strconv"
+	"path/filepath"
 	"strings"
 )
 
@@ -19,11 +20,16 @@ func (action action) repositoryName() string {
 }
 
 func (action action) pullRequestNumber() int {
-	s := strings.Split(os.Getenv("GITHUB_REF"), "/")[2]
-	pullRequestNumber, err := strconv.Atoi(s)
-	panicIfError((err))
+	event := struct {
+		PullRequestNumber int `json:"number"`
+	}{}
+	githubEventJSONFile, err := os.Open(filepath.Clean(os.Getenv("GITHUB_EVENT_PATH")))
+	panicIfError(err)
+	defer githubEventJSONFile.Close() //nolint
+	byteValue, _ := ioutil.ReadAll(githubEventJSONFile)
+	panicIfError(json.Unmarshal(byteValue, &event))
 
-	return pullRequestNumber
+	return event.PullRequestNumber
 }
 
 func (action action) token() string {

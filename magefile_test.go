@@ -3,7 +3,9 @@ package test
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/magefile/mage/mage"
@@ -11,12 +13,14 @@ import (
 
 const (
 	EnvGitHubRepository        = "GITHUB_REPOSITORY"
-	EnvGitHubRef               = "GITHUB_REF"
+	EnvGitHubEventPath         = "GITHUB_EVENT_PATH"
 	EnvGitHubActionInputLabels = "GITHUB_ACTION_INPUT_LABELS"
 	GitHubTestRepo             = "agilepathway/test-label-checker-consumer"
 	PRWithNoLabels             = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
 	PRWithOneSpecifiedLabel    = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
 	PRWithTwoSpecifiedLabels   = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
+	GitHubEventJSONDir         = "testdata"
+	GitHubEventJSONFilename    = "github_event.json"
 )
 
 func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
@@ -49,15 +53,18 @@ func TestPullRequestWithTwoSpecifiedLabelsShouldFail(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	os.Setenv(EnvGitHubRepository, GitHubTestRepo) //nolint
+	os.Mkdir(GitHubEventJSONDir, os.ModePerm)            //nolint
+	os.Setenv(EnvGitHubRepository, GitHubTestRepo)       //nolint
+	os.Setenv(EnvGitHubEventPath, gitHubEventFullPath()) //nolint
 	os.Exit(testMainWrapper(m))
 }
 
 func testMainWrapper(m *testing.M) int {
 	//nolint
 	defer func() {
+		os.RemoveAll(GitHubEventJSONDir)
 		os.Unsetenv(EnvGitHubRepository)
-		os.Unsetenv(EnvGitHubRef)
+		os.Unsetenv(EnvGitHubEventPath)
 		os.Unsetenv(EnvGitHubActionInputLabels)
 	}()
 
@@ -73,7 +80,8 @@ func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
 }
 
 func setPullRequestNumber(prNumber int) {
-	os.Setenv(EnvGitHubRef, fmt.Sprintf("refs/pull/%d/merge", prNumber)) //nolint
+	githubEventJSON := []byte(fmt.Sprintf(`{ "number": %d }`, prNumber))
+	ioutil.WriteFile(gitHubEventFullPath(), githubEventJSON, os.ModePerm) //nolint
 }
 
 func specifySemVerLabels() {
@@ -98,4 +106,8 @@ func expectError(exitCode int, t *testing.T, stderr fmt.Stringer, expectedStdErr
 	if actual := stderr.String(); actual != expectedStdErr {
 		t.Fatalf("expected %q but got %q", expectedStdErr, actual)
 	}
+}
+
+func gitHubEventFullPath() string {
+	return filepath.Join(GitHubEventJSONDir, GitHubEventJSONFilename)
 }
