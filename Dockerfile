@@ -8,4 +8,4 @@ RUN scripts/install-mage.sh
 
 RUN mage -compile /bin/check-labels -goos linux -goarch amd64
 
-ENTRYPOINT ["/bin/check-labels"]
+ENTRYPOINT ["/bin/check-labels", "-v"]
