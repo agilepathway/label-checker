@@ -21,6 +21,7 @@ const (
 	PRWithTwoSpecifiedLabels   = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
 	GitHubEventJSONDir         = "testdata"
 	GitHubEventJSONFilename    = "github_event.json"
+	MagefileVerbose            = "MAGEFILE_VERBOSE"
 )
 
 func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
@@ -29,7 +30,8 @@ func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
 
 	exitCode, stderr, stdout := checkLabels()
 
-	expectedSuccessMessage := "Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
+	expectedSuccessMessage := "Checking GitHub labels ...\n" +
+		"Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
 	expectSuccess(exitCode, t, stderr, stdout, expectedSuccessMessage)
 }
 
@@ -56,6 +58,7 @@ func TestMain(m *testing.M) {
 	os.Mkdir(GitHubEventJSONDir, os.ModePerm)            //nolint
 	os.Setenv(EnvGitHubRepository, GitHubTestRepo)       //nolint
 	os.Setenv(EnvGitHubEventPath, gitHubEventFullPath()) //nolint
+	os.Setenv(MagefileVerbose, "1")                      //nolint
 	os.Exit(testMainWrapper(m))
 }
 
@@ -66,6 +69,7 @@ func testMainWrapper(m *testing.M) int {
 		os.Unsetenv(EnvGitHubRepository)
 		os.Unsetenv(EnvGitHubEventPath)
 		os.Unsetenv(EnvGitHubActionInputLabels)
+		os.Unsetenv(MagefileVerbose)
 	}()
 
 	return m.Run()
