@@ -6,6 +6,11 @@ inputs:
   labels:
     description: 'A JSON array of labels, exactly one of which must be present'
     required: true
+  github-token:
+    description: >
+      See this link for an example of how to pass in the GitHub token:
+      https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#example-passing-github_token-as-an-input
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
