@@ -12,16 +12,16 @@ import (
 )
 
 const (
-	EnvGitHubRepository        = "GITHUB_REPOSITORY"
-	EnvGitHubEventPath         = "GITHUB_EVENT_PATH"
-	EnvGitHubActionInputLabels = "GITHUB_ACTION_INPUT_LABELS"
-	GitHubTestRepo             = "agilepathway/test-label-checker-consumer"
-	PRWithNoLabels             = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
-	PRWithOneSpecifiedLabel    = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
-	PRWithTwoSpecifiedLabels   = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
-	GitHubEventJSONDir         = "testdata"
-	GitHubEventJSONFilename    = "github_event.json"
-	MagefileVerbose            = "MAGEFILE_VERBOSE"
+	EnvGitHubRepository      = "GITHUB_REPOSITORY"
+	EnvGitHubEventPath       = "GITHUB_EVENT_PATH"
+	EnvRequireExactlyOneOf   = "REQUIRE_EXACTLY_ONE_OF"
+	GitHubTestRepo           = "agilepathway/test-label-checker-consumer"
+	PRWithNoLabels           = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
+	PRWithOneSpecifiedLabel  = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
+	PRWithTwoSpecifiedLabels = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
+	GitHubEventJSONDir       = "testdata"
+	GitHubEventJSONFilename  = "github_event.json"
+	MagefileVerbose          = "MAGEFILE_VERBOSE"
 )
 
 func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
@@ -68,7 +68,7 @@ func testMainWrapper(m *testing.M) int {
 		os.RemoveAll(GitHubEventJSONDir)
 		os.Unsetenv(EnvGitHubRepository)
 		os.Unsetenv(EnvGitHubEventPath)
-		os.Unsetenv(EnvGitHubActionInputLabels)
+		os.Unsetenv(EnvRequireExactlyOneOf)
 		os.Unsetenv(MagefileVerbose)
 	}()
 
@@ -89,7 +89,7 @@ func setPullRequestNumber(prNumber int) {
 }
 
 func specifySemVerLabels() {
-	os.Setenv(EnvGitHubActionInputLabels, `["major","minor","patch"]`) //nolint
+	os.Setenv(EnvRequireExactlyOneOf, `["major","minor","patch"]`) //nolint
 }
 
 func expectSuccess(exitCode int, t *testing.T, stderr fmt.Stringer, stdout fmt.Stringer, expectedStdOut string) {
