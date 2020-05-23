@@ -5,6 +5,8 @@ import (
 
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
+
+	"github.com/agilepathway/label-checker/internal/error"
 )
 
 type pullRequest struct {
@@ -41,7 +43,7 @@ func (pr pullRequest) labels() []string {
 	}
 
 	err := pr.apiClient.Query(context.Background(), &query, variables)
-	panicIfError(err)
+	error.PanicIfError(err)
 
 	labelNodes := query.Repository.PullRequest.Labels.Nodes
 
