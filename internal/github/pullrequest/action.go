@@ -39,7 +39,7 @@ func (action action) token() string {
 func (action action) specifiedLabels() []string {
 	var specifiedLabels []string
 
-	specifiedJSONLabels := os.Getenv("GITHUB_ACTION_INPUT_LABELS")
+	specifiedJSONLabels := os.Getenv("REQUIRE_EXACTLY_ONE_OF")
 	panicIfError(json.Unmarshal([]byte(specifiedJSONLabels), &specifiedLabels))
 
 	return specifiedLabels
