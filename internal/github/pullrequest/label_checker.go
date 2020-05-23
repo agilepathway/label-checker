@@ -6,6 +6,8 @@ package pullrequest
 import (
 	"strings"
 	"text/template"
+
+	"github.com/agilepathway/label-checker/internal/error"
 )
 
 // ValidLabels checks for the presence of the given GitHub labels
@@ -40,7 +42,7 @@ func validLabels(specifiedLabels []string, pullRequestLabels []string, allowedNu
 		}
 	}
 
-	panicIfError(t.Execute(&validationMessageBuilder, struct {
+	error.PanicIfError(t.Execute(&validationMessageBuilder, struct {
 		Specified []string
 		Pr        []string
 		Found     []string
