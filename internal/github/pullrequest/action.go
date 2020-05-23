@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/agilepathway/label-checker/internal/error"
+	"github.com/agilepathway/label-checker/internal/util"
 )
 
 type action struct {
@@ -26,10 +26,10 @@ func (action action) pullRequestNumber() int {
 		PullRequestNumber int `json:"number"`
 	}{}
 	githubEventJSONFile, err := os.Open(filepath.Clean(os.Getenv("GITHUB_EVENT_PATH")))
-	error.PanicIfError(err)
+	util.PanicIfError(err)
 	defer githubEventJSONFile.Close() //nolint
 	byteValue, _ := ioutil.ReadAll(githubEventJSONFile)
-	error.PanicIfError(json.Unmarshal(byteValue, &event))
+	util.PanicIfError(json.Unmarshal(byteValue, &event))
 
 	return event.PullRequestNumber
 }
@@ -42,7 +42,7 @@ func (action action) specifiedLabels() []string {
 	var specifiedLabels []string
 
 	specifiedJSONLabels := os.Getenv("REQUIRE_EXACTLY_ONE_OF")
-	error.PanicIfError(json.Unmarshal([]byte(specifiedJSONLabels), &specifiedLabels))
+	util.PanicIfError(json.Unmarshal([]byte(specifiedJSONLabels), &specifiedLabels))
 
 	return specifiedLabels
 }

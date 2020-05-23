@@ -1,7 +1,4 @@
-/*
-Package error provides error utility methods
-*/
-package error
+package util
 
 import "log"
 

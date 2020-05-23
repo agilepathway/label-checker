@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/agilepathway/label-checker/internal/error"
+	"github.com/agilepathway/label-checker/internal/util"
 )
 
 // ValidLabels checks for the presence of the given GitHub labels
@@ -37,12 +37,12 @@ func validLabels(specifiedLabels []string, pullRequestLabels []string, allowedNu
 		"{{range $i, $f := .Found}}{{if $i}}, {{end}}{{$f}}{{end}}"))
 
 	for i := 0; i < len(pullRequestLabels); i++ {
-		if contains(specifiedLabels, pullRequestLabels[i]) {
+		if util.Contains(specifiedLabels, pullRequestLabels[i]) {
 			foundLabels = append(foundLabels, pullRequestLabels[i])
 		}
 	}
 
-	error.PanicIfError(t.Execute(&validationMessageBuilder, struct {
+	util.PanicIfError(t.Execute(&validationMessageBuilder, struct {
 		Specified []string
 		Pr        []string
 		Found     []string
@@ -55,14 +55,4 @@ func validLabels(specifiedLabels []string, pullRequestLabels []string, allowedNu
 	}
 
 	return false, validationMessage
-}
-
-func contains(slice []string, val string) bool {
-	for _, item := range slice {
-		if item == val {
-			return true
-		}
-	}
-
-	return false
 }
