@@ -64,7 +64,7 @@ func (a Action) token() string {
 func (a Action) exactlyOneRequired() []string {
 	var specified []string
 
-	specifiedJSONLabels := os.Getenv("REQUIRE_EXACTLY_ONE_OF")
+	specifiedJSONLabels := os.Getenv("LABELS_ONE_REQUIRED")
 	panic.IfError(json.Unmarshal([]byte(specifiedJSONLabels), &specified))
 
 	return specified
