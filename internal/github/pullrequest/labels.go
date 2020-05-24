@@ -1,6 +1,3 @@
-/*
-Package pullrequest checks pull requests for specified labels
-*/
 package pullrequest
 
 import (
@@ -10,19 +7,18 @@ import (
 	"github.com/agilepathway/label-checker/internal/util"
 )
 
-// ValidLabels checks for the presence of the given GitHub labels
-func ValidLabels() (bool, string) {
-	var githubAction action
-	pullRequest := new(githubAction)
+// Labels represents a collection of GitHub labels, e.g. all the labels in a pull request
+type Labels []string
 
-	return validLabels(githubAction.specifiedLabels(), pullRequest.labels(), 1)
-}
-
-func validLabels(specifiedLabels []string, pullRequestLabels []string, allowedNumberOfLabels int) (bool, string) {
+// HasExactlyOneOf indicates whether the labels contain exactly
+// one of the specified labels, along with a report describing the result.
+func (l Labels) HasExactlyOneOf(specified []string) (bool, string) {
 	var (
 		validationMessageBuilder strings.Builder
 		foundLabels              []string
 	)
+
+	allowedNumberOfLabels := 1
 
 	t := template.Must(template.New("validationMessage").Parse("" +
 		"{{ $numberFound := len .Found }}" +
@@ -36,9 +32,9 @@ func validLabels(specifiedLabels []string, pullRequestLabels []string, allowedNu
 		"{{if $numberFound}}: {{else }}.{{end}}" +
 		"{{range $i, $f := .Found}}{{if $i}}, {{end}}{{$f}}{{end}}"))
 
-	for i := 0; i < len(pullRequestLabels); i++ {
-		if util.Contains(specifiedLabels, pullRequestLabels[i]) {
-			foundLabels = append(foundLabels, pullRequestLabels[i])
+	for i := 0; i < len(l); i++ {
+		if util.Contains(specified, l[i]) {
+			foundLabels = append(foundLabels, l[i])
 		}
 	}
 
@@ -46,7 +42,7 @@ func validLabels(specifiedLabels []string, pullRequestLabels []string, allowedNu
 		Specified []string
 		Pr        []string
 		Found     []string
-	}{specifiedLabels, pullRequestLabels, foundLabels}))
+	}{specified, l, foundLabels}))
 
 	validationMessage := validationMessageBuilder.String()
 

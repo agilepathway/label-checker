@@ -1,3 +1,6 @@
+/*
+Package pullrequest checks pull requests for specified labels
+*/
 package pullrequest
 
 import (
@@ -8,21 +11,26 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type pullRequest struct {
+// PullRequest encapsulates a GitHub Pull Request
+type PullRequest struct {
 	repositoryOwner string
 	repository      string
 	number          int
-	apiClient       *githubv4.Client
+	Labels          Labels
 }
 
-func new(action action) *pullRequest {
-	return &pullRequest{action.repositoryOwner(),
-		action.repositoryName(),
-		action.pullRequestNumber(),
-		apiClient(action.token())}
+// New creates a new PullRequest
+func New(repoOwner string, repo string, prNumber int, ghToken string) *PullRequest {
+	pr := new(PullRequest)
+	pr.repositoryOwner = repoOwner
+	pr.repository = repo
+	pr.number = prNumber
+	pr.Labels = pr.initLabels(apiClient(ghToken))
+
+	return pr
 }
 
-func (pr pullRequest) labels() []string {
+func (pr PullRequest) initLabels(apiClient *githubv4.Client) Labels {
 	variables := map[string]interface{}{
 		"owner":             githubv4.String(pr.repositoryOwner),
 		"name":              githubv4.String(pr.repository),
@@ -41,12 +49,12 @@ func (pr pullRequest) labels() []string {
 		} `graphql:"repository(owner: $owner, name: $name)"`
 	}
 
-	err := pr.apiClient.Query(context.Background(), &query, variables)
+	err := apiClient.Query(context.Background(), &query, variables)
 	util.PanicIfError(err)
 
 	labelNodes := query.Repository.PullRequest.Labels.Nodes
 
-	var labels []string
+	var labels Labels
 
 	for i := 0; i < len(labelNodes); i++ {
 		labels = append(labels, labelNodes[i].Name)
