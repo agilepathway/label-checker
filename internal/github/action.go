@@ -20,8 +20,8 @@ import (
 type Action struct {
 }
 
-// ValidateLabels checks for the presence of the given GitHub labels
-func (a Action) ValidateLabels() error {
+// CheckLabels checks for the presence of the given GitHub labels
+func (a Action) CheckLabels() error {
 	fmt.Println("Checking GitHub labels ...")
 
 	pr := pullrequest.New(a.repositoryOwner(), a.repositoryName(), a.pullRequestNumber(), a.token())
