@@ -12,46 +12,90 @@ import (
 )
 
 const (
-	EnvGitHubRepository      = "GITHUB_REPOSITORY"
-	EnvGitHubEventPath       = "GITHUB_EVENT_PATH"
-	EnvRequireExactlyOneOf   = "LABELS_ONE_REQUIRED"
-	GitHubTestRepo           = "agilepathway/test-label-checker-consumer"
-	PRWithNoLabels           = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
-	PRWithOneSpecifiedLabel  = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
-	PRWithTwoSpecifiedLabels = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
-	GitHubEventJSONDir       = "testdata"
-	GitHubEventJSONFilename  = "github_event.json"
-	MagefileVerbose          = "MAGEFILE_VERBOSE"
+	EnvGitHubRepository     = "GITHUB_REPOSITORY"
+	EnvGitHubEventPath      = "GITHUB_EVENT_PATH"
+	EnvRequireOneOf         = "LABELS_ONE_REQUIRED"
+	EnvRequireNoneOf        = "LABELS_NONE_REQUIRED"
+	GitHubTestRepo          = "agilepathway/test-label-checker-consumer"
+	PRWithNoLabels          = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
+	PRWithOneLabel          = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
+	PRWithTwoLabels         = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
+	GitHubEventJSONDir      = "testdata"
+	GitHubEventJSONFilename = "github_event.json"
+	MagefileVerbose         = "MAGEFILE_VERBOSE"
 )
 
-func TestPullRequestWithOneSpecifiedLabelShouldSucceed(t *testing.T) {
-	setPullRequestNumber(PRWithOneSpecifiedLabel)
-	specifySemVerLabels()
+func TestOneOfOneLabelShouldSucceed(t *testing.T) {
+	setPullRequestNumber(PRWithOneLabel)
+	specifyOneOfLabels()
 
 	exitCode, stderr, stdout := checkLabels()
 
 	expectedSuccessMessage := "Checking GitHub labels ...\n" +
 		"Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
 	expectSuccess(exitCode, t, stderr, stdout, expectedSuccessMessage)
+
+	os.Unsetenv(EnvRequireOneOf) //nolint
 }
 
-func TestPullRequestWithNoSpecifiedLabelsShouldFail(t *testing.T) {
+func TestNoneOfOneShouldFail(t *testing.T) {
 	setPullRequestNumber(PRWithNoLabels)
-	specifySemVerLabels()
+	specifyOneOfLabels()
 
 	exitCode, stderr, _ := checkLabels()
 
 	expectError(exitCode, t, stderr, "Error: Label check failed: required 1 of major, minor, patch, but found 0.\n")
+
+	os.Unsetenv(EnvRequireOneOf) //nolint
 }
 
-func TestPullRequestWithTwoSpecifiedLabelsShouldFail(t *testing.T) {
-	setPullRequestNumber(PRWithTwoSpecifiedLabels)
-	specifySemVerLabels()
+func TestTwoOfOneShouldFail(t *testing.T) {
+	setPullRequestNumber(PRWithTwoLabels)
+	specifyOneOfLabels()
 
 	exitCode, stderr, _ := checkLabels()
 
 	expectError(exitCode, t, stderr,
 		"Error: Label check failed: required 1 of major, minor, patch, but found 2: minor, patch\n")
+
+	os.Unsetenv(EnvRequireOneOf) //nolint
+}
+
+func TestNoneOfNoneShouldSucceed(t *testing.T) {
+	setPullRequestNumber(PRWithNoLabels)
+	specifyNoneOfLabels()
+
+	exitCode, stderr, stdout := checkLabels()
+
+	expectedSuccessMessage := "Checking GitHub labels ...\n" +
+		"Label check successful: required 0 of major, minor, patch, and found 0.\n"
+	expectSuccess(exitCode, t, stderr, stdout, expectedSuccessMessage)
+
+	os.Unsetenv(EnvRequireNoneOf) //nolint
+}
+
+func TestOneOfNoneShouldFail(t *testing.T) {
+	setPullRequestNumber(PRWithOneLabel)
+	specifyNoneOfLabels()
+
+	exitCode, stderr, _ := checkLabels()
+
+	expectError(exitCode, t, stderr,
+		"Error: Label check failed: required 0 of major, minor, patch, but found 1: minor\n")
+
+	os.Unsetenv(EnvRequireNoneOf) //nolint
+}
+
+func TestTwoOfNoneShouldFail(t *testing.T) {
+	setPullRequestNumber(PRWithTwoLabels)
+	specifyNoneOfLabels()
+
+	exitCode, stderr, _ := checkLabels()
+
+	expectError(exitCode, t, stderr,
+		"Error: Label check failed: required 0 of major, minor, patch, but found 2: minor, patch\n")
+
+	os.Unsetenv(EnvRequireNoneOf) //nolint
 }
 
 func TestMain(m *testing.M) {
@@ -68,7 +112,6 @@ func testMainWrapper(m *testing.M) int {
 		os.RemoveAll(GitHubEventJSONDir)
 		os.Unsetenv(EnvGitHubRepository)
 		os.Unsetenv(EnvGitHubEventPath)
-		os.Unsetenv(EnvRequireExactlyOneOf)
 		os.Unsetenv(MagefileVerbose)
 	}()
 
@@ -88,8 +131,12 @@ func setPullRequestNumber(prNumber int) {
 	ioutil.WriteFile(gitHubEventFullPath(), githubEventJSON, os.ModePerm) //nolint
 }
 
-func specifySemVerLabels() {
-	os.Setenv(EnvRequireExactlyOneOf, `["major","minor","patch"]`) //nolint
+func specifyOneOfLabels() {
+	os.Setenv(EnvRequireOneOf, `["major","minor","patch"]`) //nolint
+}
+
+func specifyNoneOfLabels() {
+	os.Setenv(EnvRequireNoneOf, `["major","minor","patch"]`) //nolint
 }
 
 func expectSuccess(exitCode int, t *testing.T, stderr fmt.Stringer, stdout fmt.Stringer, expectedStdOut string) {

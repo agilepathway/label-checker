@@ -26,12 +26,23 @@ func (a Action) CheckLabels() error {
 
 	pr := pullrequest.New(a.repositoryOwner(), a.repositoryName(), a.pullRequestNumber(), a.token())
 
-	valid, message := pr.Labels.HasExactlyOneOf(a.exactlyOneRequired())
-	if !valid {
-		return errors.New(message)
+	if len(a.exactlyOneRequired()) > 0 {
+		valid, message := pr.Labels.HasExactlyOneOf(a.exactlyOneRequired())
+		if !valid {
+			return errors.New(message)
+		}
+
+		fmt.Println(message)
 	}
 
-	fmt.Println(message)
+	if len(a.noneRequired()) > 0 {
+		valid, message := pr.Labels.HasNoneOf(a.noneRequired())
+		if !valid {
+			return errors.New(message)
+		}
+
+		fmt.Println(message)
+	}
 
 	return nil
 }
@@ -62,10 +73,20 @@ func (a Action) token() string {
 }
 
 func (a Action) exactlyOneRequired() []string {
-	var specified []string
+	return a.getLabelsFromEnvVar("LABELS_ONE_REQUIRED")
+}
 
-	specifiedJSONLabels := os.Getenv("LABELS_ONE_REQUIRED")
-	panic.IfError(json.Unmarshal([]byte(specifiedJSONLabels), &specified))
+func (a Action) noneRequired() []string {
+	return a.getLabelsFromEnvVar("LABELS_NONE_REQUIRED")
+}
+
+func (a Action) getLabelsFromEnvVar(envVar string) []string {
+	specified := []string{}
+
+	specifiedJSONLabels, present := os.LookupEnv(envVar)
+	if present {
+		panic.IfError(json.Unmarshal([]byte(specifiedJSONLabels), &specified))
+	}
 
 	return specified
 }
