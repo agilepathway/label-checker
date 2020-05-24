@@ -12,12 +12,12 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   check_semver_label:
-    name: Check semantic version label
+    name: Check for semantic version label
     runs-on: ubuntu-latest
     steps:
       - uses: agilepathway/label-checker@master
         with:
-          require-exactly-one-of: >
+          one-of: >
             [
               "major",
               "minor",

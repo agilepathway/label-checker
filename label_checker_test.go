@@ -14,7 +14,7 @@ import (
 const (
 	EnvGitHubRepository      = "GITHUB_REPOSITORY"
 	EnvGitHubEventPath       = "GITHUB_EVENT_PATH"
-	EnvRequireExactlyOneOf   = "REQUIRE_EXACTLY_ONE_OF"
+	EnvRequireExactlyOneOf   = "LABELS_ONE_REQUIRED"
 	GitHubTestRepo           = "agilepathway/test-label-checker-consumer"
 	PRWithNoLabels           = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
 	PRWithOneSpecifiedLabel  = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2

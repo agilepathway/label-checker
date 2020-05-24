@@ -3,10 +3,10 @@ name: 'Label checker for pull requests'
 description: 'Checks pull requests for given labels'
 author: 'John Boyes'
 inputs:
-  require-exactly-one-of:
+  one-of:
     description: >
-      A JSON array of labels,
-      of which each pull request must be labeled with exactly one
+      A JSON array of labels.
+      Each pull request must be labeled with exactly one of these labels.
     required: true
   github-token:
     description: >
@@ -17,5 +17,5 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
-    REQUIRE_EXACTLY_ONE_OF: ${{ inputs.require-exactly-one-of }}
+    LABELS_ONE_REQUIRED: ${{ inputs.one-of }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
