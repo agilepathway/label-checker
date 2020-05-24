@@ -10,5 +10,5 @@ var Default = GitHubLabelChecker
 // GitHubLabelChecker checks for the presence of GitHub labels
 func GitHubLabelChecker() error {
 	a := github.Action{}
-	return a.ValidateLabels()
+	return a.CheckLabels()
 }
