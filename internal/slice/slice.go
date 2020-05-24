@@ -1,7 +1,7 @@
 /*
-Package util provides common utility methods
+Package slice provides utility functions for slices
 */
-package util
+package slice
 
 // Contains returns true if the given slice contains the given string
 func Contains(slice []string, val string) bool {

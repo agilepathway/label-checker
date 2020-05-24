@@ -6,7 +6,7 @@ package pullrequest
 import (
 	"context"
 
-	"github.com/agilepathway/label-checker/internal/util"
+	"github.com/agilepathway/label-checker/internal/error/panic"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -50,7 +50,7 @@ func (pr PullRequest) initLabels(apiClient *githubv4.Client) Labels {
 	}
 
 	err := apiClient.Query(context.Background(), &query, variables)
-	util.PanicIfError(err)
+	panic.IfError(err)
 
 	labelNodes := query.Repository.PullRequest.Labels.Nodes
 

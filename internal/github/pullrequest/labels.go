@@ -4,7 +4,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/agilepathway/label-checker/internal/util"
+	"github.com/agilepathway/label-checker/internal/error/panic"
+	"github.com/agilepathway/label-checker/internal/slice"
 )
 
 // Labels represents a collection of GitHub labels, e.g. all the labels in a pull request
@@ -33,12 +34,12 @@ func (l Labels) HasExactlyOneOf(specified []string) (bool, string) {
 		"{{range $i, $f := .Found}}{{if $i}}, {{end}}{{$f}}{{end}}"))
 
 	for i := 0; i < len(l); i++ {
-		if util.Contains(specified, l[i]) {
+		if slice.Contains(specified, l[i]) {
 			foundLabels = append(foundLabels, l[i])
 		}
 	}
 
-	util.PanicIfError(t.Execute(&validationMessageBuilder, struct {
+	panic.IfError(t.Execute(&validationMessageBuilder, struct {
 		Specified []string
 		Pr        []string
 		Found     []string
