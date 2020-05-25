@@ -17,85 +17,72 @@ const (
 	EnvRequireOneOf         = "LABELS_ONE_REQUIRED"
 	EnvRequireNoneOf        = "LABELS_NONE_REQUIRED"
 	GitHubTestRepo          = "agilepathway/test-label-checker-consumer"
-	PRWithNoLabels          = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
-	PRWithOneLabel          = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
-	PRWithTwoLabels         = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
+	NoLabelsPR              = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
+	OneLabelPR              = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
+	TwoLabelsPR             = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
 	GitHubEventJSONDir      = "testdata"
 	GitHubEventJSONFilename = "github_event.json"
 	MagefileVerbose         = "MAGEFILE_VERBOSE"
+	NeedNoneGotNone         = "Label check successful: required 0 of major, minor, patch, and found 0.\n"
+	NeedNoneGotOne          = "Label check failed: required 0 of major, minor, patch, but found 1: minor\n"
+	NeedNoneGotTwo          = "Label check failed: required 0 of major, minor, patch, but found 2: minor, patch\n"
+	NeedOneGotOne           = "Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
+	NeedOneGotNone          = "Label check failed: required 1 of major, minor, patch, but found 0.\n"
+	NeedOneGotTwo           = "Label check failed: required 1 of major, minor, patch, but found 2: minor, patch\n"
 )
 
-func TestOneOfOneLabelShouldSucceed(t *testing.T) {
-	setPullRequestNumber(PRWithOneLabel)
-	specifyOneOfLabels()
+type specifyChecks func()
 
-	exitCode, stderr, stdout := checkLabels()
+func TestSplit(t *testing.T) {
+	tests := map[string]struct {
+		prNumber       int
+		specifyChecks  specifyChecks
+		expectedStdout string
+		expectedStderr string
+	}{
+		"Need none, got none":                     {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
+		"Need none, got one":                      {OneLabelPR, checkNone, "", NeedNoneGotOne},
+		"Need none, got two":                      {TwoLabelsPR, checkNone, "", NeedNoneGotTwo},
+		"Need one, got none":                      {NoLabelsPR, checkOne, "", NeedOneGotNone},
+		"Need one, got one":                       {OneLabelPR, checkOne, NeedOneGotOne, ""},
+		"Need one, got two":                       {TwoLabelsPR, checkOne, "", NeedOneGotTwo},
+		"Need none, got none; need one, got none": {NoLabelsPR, checkNoneAndOne, NeedNoneGotNone, NeedOneGotNone},
+		"Need none, got one; need one, got one":   {OneLabelPR, checkNoneAndOne, NeedOneGotOne, NeedNoneGotOne},
+		"Need none, got two; need one, got two":   {TwoLabelsPR, checkNoneAndOne, "", NeedOneGotTwo + NeedNoneGotTwo},
+	}
+	for name, tc := range tests {
+		tc := tc
 
-	expectedSuccessMessage := "Checking GitHub labels ...\n" +
-		"Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
-	expectSuccess(exitCode, t, stderr, stdout, expectedSuccessMessage)
+		t.Run(name, func(t *testing.T) {
+			tc.expectedStdout = "Checking GitHub labels ...\n" + tc.expectedStdout
+			if len(tc.expectedStderr) > 0 {
+				tc.expectedStderr = "Error: " + tc.expectedStderr
+			}
+			setPullRequestNumber(tc.prNumber)
+			tc.specifyChecks()
 
-	os.Unsetenv(EnvRequireOneOf) //nolint
-}
+			exitCode, stderr, stdout := checkLabels()
 
-func TestNoneOfOneShouldFail(t *testing.T) {
-	setPullRequestNumber(PRWithNoLabels)
-	specifyOneOfLabels()
+			if (len(tc.expectedStderr) > 0) && (exitCode == 0) {
+				t.Fatalf("got exit code %v, err: %s", exitCode, stderr)
+			}
 
-	exitCode, stderr, _ := checkLabels()
+			if (len(tc.expectedStderr) == 0) && (exitCode != 0) {
+				t.Fatalf("got exit code %v, err: %s", exitCode, stderr)
+			}
 
-	expectError(exitCode, t, stderr, "Error: Label check failed: required 1 of major, minor, patch, but found 0.\n")
+			if actual := stdout.String(); actual != tc.expectedStdout {
+				t.Fatalf("expected %q but got %q", tc.expectedStdout, actual)
+			}
 
-	os.Unsetenv(EnvRequireOneOf) //nolint
-}
+			if actual := stderr.String(); actual != tc.expectedStderr {
+				t.Fatalf("expected %q but got %q", tc.expectedStderr, actual)
+			}
 
-func TestTwoOfOneShouldFail(t *testing.T) {
-	setPullRequestNumber(PRWithTwoLabels)
-	specifyOneOfLabels()
-
-	exitCode, stderr, _ := checkLabels()
-
-	expectError(exitCode, t, stderr,
-		"Error: Label check failed: required 1 of major, minor, patch, but found 2: minor, patch\n")
-
-	os.Unsetenv(EnvRequireOneOf) //nolint
-}
-
-func TestNoneOfNoneShouldSucceed(t *testing.T) {
-	setPullRequestNumber(PRWithNoLabels)
-	specifyNoneOfLabels()
-
-	exitCode, stderr, stdout := checkLabels()
-
-	expectedSuccessMessage := "Checking GitHub labels ...\n" +
-		"Label check successful: required 0 of major, minor, patch, and found 0.\n"
-	expectSuccess(exitCode, t, stderr, stdout, expectedSuccessMessage)
-
-	os.Unsetenv(EnvRequireNoneOf) //nolint
-}
-
-func TestOneOfNoneShouldFail(t *testing.T) {
-	setPullRequestNumber(PRWithOneLabel)
-	specifyNoneOfLabels()
-
-	exitCode, stderr, _ := checkLabels()
-
-	expectError(exitCode, t, stderr,
-		"Error: Label check failed: required 0 of major, minor, patch, but found 1: minor\n")
-
-	os.Unsetenv(EnvRequireNoneOf) //nolint
-}
-
-func TestTwoOfNoneShouldFail(t *testing.T) {
-	setPullRequestNumber(PRWithTwoLabels)
-	specifyNoneOfLabels()
-
-	exitCode, stderr, _ := checkLabels()
-
-	expectError(exitCode, t, stderr,
-		"Error: Label check failed: required 0 of major, minor, patch, but found 2: minor, patch\n")
-
-	os.Unsetenv(EnvRequireNoneOf) //nolint
+			os.Unsetenv(EnvRequireNoneOf) //nolint
+			os.Unsetenv(EnvRequireOneOf)  //nolint
+		})
+	}
 }
 
 func TestMain(m *testing.M) {
@@ -131,32 +118,17 @@ func setPullRequestNumber(prNumber int) {
 	ioutil.WriteFile(gitHubEventFullPath(), githubEventJSON, os.ModePerm) //nolint
 }
 
-func specifyOneOfLabels() {
+func checkOne() {
 	os.Setenv(EnvRequireOneOf, `["major","minor","patch"]`) //nolint
 }
 
-func specifyNoneOfLabels() {
+func checkNone() {
 	os.Setenv(EnvRequireNoneOf, `["major","minor","patch"]`) //nolint
 }
 
-func expectSuccess(exitCode int, t *testing.T, stderr fmt.Stringer, stdout fmt.Stringer, expectedStdOut string) {
-	if exitCode != 0 {
-		t.Fatalf("got exit code %v, err: %s", exitCode, stderr)
-	}
-
-	if actual := stdout.String(); actual != expectedStdOut {
-		t.Fatalf("expected %q but got %q", expectedStdOut, actual)
-	}
-}
-
-func expectError(exitCode int, t *testing.T, stderr fmt.Stringer, expectedStdErr string) {
-	if exitCode == 0 {
-		t.Fatalf("got exit code %v, err: %s", exitCode, stderr)
-	}
-
-	if actual := stderr.String(); actual != expectedStdErr {
-		t.Fatalf("expected %q but got %q", expectedStdErr, actual)
-	}
+func checkNoneAndOne() {
+	checkNone()
+	checkOne()
 }
 
 func gitHubEventFullPath() string {
