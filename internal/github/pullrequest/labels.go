@@ -23,6 +23,12 @@ func (l Labels) HasNoneOf(specified []string) (bool, string) {
 	return l.hasXof(specified, 0)
 }
 
+// HasAllOf indicates whether the labels contain
+// all of the specified labels, along with a report describing the result.
+func (l Labels) HasAllOf(specified []string) (bool, string) {
+	return l.hasXof(specified, len(specified))
+}
+
 func (l Labels) hasXof(specified []string, x int) (bool, string) {
 	var (
 		validationMessageBuilder strings.Builder
