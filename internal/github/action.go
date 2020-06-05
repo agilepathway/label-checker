@@ -18,33 +18,54 @@ import (
 
 // Action encapsulates the Label Checker GitHub Action
 type Action struct {
+	successMsg string
+	failMsg    string
 }
 
 // CheckLabels checks for the presence of the given GitHub labels
-func (a Action) CheckLabels() error {
+func (a *Action) CheckLabels() error {
 	fmt.Println("Checking GitHub labels ...")
 
 	pr := pullrequest.New(a.repositoryOwner(), a.repositoryName(), a.pullRequestNumber(), a.token())
 
-	valid, message := pr.Labels.HasExactlyOneOf(a.exactlyOneRequired())
-	if !valid {
-		return errors.New(message)
+	a.runCheck(pr.Labels.HasExactlyOneOf, a.exactlyOneRequired)
+	a.runCheck(pr.Labels.HasNoneOf, a.noneRequired)
+
+	if len(a.successMsg) > 0 {
+		fmt.Println(a.successMsg)
 	}
 
-	fmt.Println(message)
+	if len(a.failMsg) > 0 {
+		return errors.New(strings.TrimSuffix(a.failMsg, "\n"))
+	}
 
 	return nil
 }
 
-func (a Action) repositoryOwner() string {
+type check func([]string) (bool, string)
+
+type specified func() []string
+
+func (a *Action) runCheck(chk check, specified specified) {
+	if len(specified()) > 0 {
+		valid, message := chk(specified())
+		if valid {
+			a.successMsg += message
+		} else {
+			a.failMsg += message + "\n"
+		}
+	}
+}
+
+func (a *Action) repositoryOwner() string {
 	return strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[0]
 }
 
-func (a Action) repositoryName() string {
+func (a *Action) repositoryName() string {
 	return strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1]
 }
 
-func (a Action) pullRequestNumber() int {
+func (a *Action) pullRequestNumber() int {
 	event := struct {
 		PullRequestNumber int `json:"number"`
 	}{}
@@ -57,15 +78,25 @@ func (a Action) pullRequestNumber() int {
 	return event.PullRequestNumber
 }
 
-func (a Action) token() string {
+func (a *Action) token() string {
 	return os.Getenv("GITHUB_TOKEN")
 }
 
-func (a Action) exactlyOneRequired() []string {
-	var specified []string
+func (a *Action) exactlyOneRequired() []string {
+	return a.getLabelsFromEnvVar("LABELS_ONE_REQUIRED")
+}
 
-	specifiedJSONLabels := os.Getenv("LABELS_ONE_REQUIRED")
-	panic.IfError(json.Unmarshal([]byte(specifiedJSONLabels), &specified))
+func (a *Action) noneRequired() []string {
+	return a.getLabelsFromEnvVar("LABELS_NONE_REQUIRED")
+}
+
+func (a *Action) getLabelsFromEnvVar(envVar string) []string {
+	specified := []string{}
+
+	specifiedJSONLabels, present := os.LookupEnv(envVar)
+	if present {
+		panic.IfError(json.Unmarshal([]byte(specifiedJSONLabels), &specified))
+	}
 
 	return specified
 }

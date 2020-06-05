@@ -14,20 +14,28 @@ type Labels []string
 // HasExactlyOneOf indicates whether the labels contain exactly
 // one of the specified labels, along with a report describing the result.
 func (l Labels) HasExactlyOneOf(specified []string) (bool, string) {
+	return l.hasXof(specified, 1)
+}
+
+// HasNoneOf indicates whether the labels contain
+// none of the specified labels, along with a report describing the result.
+func (l Labels) HasNoneOf(specified []string) (bool, string) {
+	return l.hasXof(specified, 0)
+}
+
+func (l Labels) hasXof(specified []string, x int) (bool, string) {
 	var (
 		validationMessageBuilder strings.Builder
 		foundLabels              []string
 	)
 
-	allowedNumberOfLabels := 1
-
 	t := template.Must(template.New("validationMessage").Parse("" +
 		"{{ $numberFound := len .Found }}" +
-		"{{ $valid := eq $numberFound 1 }}" +
+		"{{ $valid := eq $numberFound .X }}" +
 
 		"Label check " +
 		"{{if $valid}}successful{{else }}failed{{end}}: " +
-		"required 1 of {{range $s := .Specified}}{{$s}}, {{end}}" +
+		"required {{.X}} of {{range $s := .Specified}}{{$s}}, {{end}}" +
 		"{{if $valid}}and{{else }}but{{end}} " +
 		"found {{$numberFound}}" +
 		"{{if $numberFound}}: {{else }}.{{end}}" +
@@ -43,11 +51,12 @@ func (l Labels) HasExactlyOneOf(specified []string) (bool, string) {
 		Specified []string
 		Pr        []string
 		Found     []string
-	}{specified, l, foundLabels}))
+		X         int
+	}{specified, l, foundLabels, x}))
 
 	validationMessage := validationMessageBuilder.String()
 
-	if len(foundLabels) == allowedNumberOfLabels {
+	if len(foundLabels) == x {
 		return true, validationMessage
 	}
 
