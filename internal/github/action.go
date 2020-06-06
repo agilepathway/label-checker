@@ -30,6 +30,7 @@ func (a *Action) CheckLabels() error {
 
 	a.runCheck(pr.Labels.HasExactlyOneOf, a.exactlyOneRequired)
 	a.runCheck(pr.Labels.HasNoneOf, a.noneRequired)
+	a.runCheck(pr.Labels.HasAllOf, a.allRequired)
 
 	if len(a.successMsg) > 0 {
 		fmt.Println(a.successMsg)
@@ -88,6 +89,10 @@ func (a *Action) exactlyOneRequired() []string {
 
 func (a *Action) noneRequired() []string {
 	return a.getLabelsFromEnvVar("LABELS_NONE_REQUIRED")
+}
+
+func (a *Action) allRequired() []string {
+	return a.getLabelsFromEnvVar("LABELS_ALL_REQUIRED")
 }
 
 func (a *Action) getLabelsFromEnvVar(envVar string) []string {

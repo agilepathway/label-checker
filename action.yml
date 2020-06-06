@@ -15,6 +15,12 @@ inputs:
       Each pull request must not be labeled with any of these labels.
     required: false
     default: '[]'
+  all-of:
+    description: >
+      A JSON array of labels.
+      Each pull request must be labeled with all of these labels.
+    required: false
+    default: '[]'
   github-token:
     description: >
       See this link for an example of how to pass in the GitHub token:
@@ -26,4 +32,5 @@ runs:
   env:
     LABELS_ONE_REQUIRED: ${{ inputs.one-of }}
     LABELS_NONE_REQUIRED: ${{ inputs.none-of }}
+    LABELS_ALL_REQUIRED: ${{ inputs.all-of }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
