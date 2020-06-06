@@ -8,11 +8,13 @@ inputs:
       A JSON array of labels.
       Each pull request must be labeled with exactly one of these labels.
     required: false
+    default: '[]'
   none-of:
     description: >
       A JSON array of labels.
       Each pull request must not be labeled with any of these labels.
     required: false
+    default: '[]'
   github-token:
     description: >
       See this link for an example of how to pass in the GitHub token:
