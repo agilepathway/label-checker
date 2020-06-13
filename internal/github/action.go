@@ -34,14 +34,18 @@ func (a *Action) CheckLabels() error {
 	a.runCheck(pr.Labels.HasAnyOf, a.anyRequired)
 
 	if len(a.successMsg) > 0 {
-		fmt.Println(strings.TrimSuffix(a.successMsg, "\n"))
+		fmt.Println(a.trimTrailingNewLine(a.successMsg))
 	}
 
 	if len(a.failMsg) > 0 {
-		return errors.New(strings.TrimSuffix(a.failMsg, "\n"))
+		return errors.New(a.trimTrailingNewLine(a.failMsg))
 	}
 
 	return nil
+}
+
+func (a *Action) trimTrailingNewLine(input string) string {
+	return strings.TrimSuffix(input, "\n")
 }
 
 type check func([]string) (bool, string)
