@@ -22,7 +22,7 @@ type Action struct {
 	failMsg    string
 }
 
-// CheckLabels checks for the presence of the given GitHub labels
+// CheckLabels checks pull requests for the presence or absence of specified GitHub labels
 func (a *Action) CheckLabels() error {
 	fmt.Println("Checking GitHub labels ...")
 

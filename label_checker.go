@@ -5,10 +5,10 @@ package main
 
 import "github.com/agilepathway/label-checker/internal/github"
 
-var Default = GitHubLabelChecker
+var Default = PullRequestLabelChecker
 
-// GitHubLabelChecker checks for the presence of GitHub labels
-func GitHubLabelChecker() error {
+// PullRequestLabelChecker checks pull requests for the presence or absence of specified GitHub labels
+func PullRequestLabelChecker() error {
 	a := github.Action{}
 	return a.CheckLabels()
 }
