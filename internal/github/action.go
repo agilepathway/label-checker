@@ -31,9 +31,10 @@ func (a *Action) CheckLabels() error {
 	a.runCheck(pr.Labels.HasExactlyOneOf, a.exactlyOneRequired)
 	a.runCheck(pr.Labels.HasNoneOf, a.noneRequired)
 	a.runCheck(pr.Labels.HasAllOf, a.allRequired)
+	a.runCheck(pr.Labels.HasAnyOf, a.anyRequired)
 
 	if len(a.successMsg) > 0 {
-		fmt.Println(a.successMsg)
+		fmt.Println(strings.TrimSuffix(a.successMsg, "\n"))
 	}
 
 	if len(a.failMsg) > 0 {
@@ -51,7 +52,7 @@ func (a *Action) runCheck(chk check, specified specified) {
 	if len(specified()) > 0 {
 		valid, message := chk(specified())
 		if valid {
-			a.successMsg += message
+			a.successMsg += message + "\n"
 		} else {
 			a.failMsg += message + "\n"
 		}
@@ -93,6 +94,10 @@ func (a *Action) noneRequired() []string {
 
 func (a *Action) allRequired() []string {
 	return a.getLabelsFromEnvVar("LABELS_ALL_REQUIRED")
+}
+
+func (a *Action) anyRequired() []string {
+	return a.getLabelsFromEnvVar("LABELS_ANY_REQUIRED")
 }
 
 func (a *Action) getLabelsFromEnvVar(envVar string) []string {

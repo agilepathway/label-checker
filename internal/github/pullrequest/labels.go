@@ -14,37 +14,68 @@ type Labels []string
 // HasExactlyOneOf indicates whether the labels contain exactly
 // one of the specified labels, along with a report describing the result.
 func (l Labels) HasExactlyOneOf(specified []string) (bool, string) {
-	return l.hasXof(specified, 1)
+	return l.hasXof(specified, "1")
 }
 
 // HasNoneOf indicates whether the labels contain
 // none of the specified labels, along with a report describing the result.
 func (l Labels) HasNoneOf(specified []string) (bool, string) {
-	return l.hasXof(specified, 0)
+	return l.hasXof(specified, "none")
 }
 
 // HasAllOf indicates whether the labels contain
 // all of the specified labels, along with a report describing the result.
 func (l Labels) HasAllOf(specified []string) (bool, string) {
-	return l.hasXof(specified, len(specified))
+	return l.hasXof(specified, "all")
 }
 
-func (l Labels) hasXof(specified []string, x int) (bool, string) {
+// HasAnyOf indicates whether the labels contain
+// any of the specified labels, along with a report describing the result.
+func (l Labels) HasAnyOf(specified []string) (bool, string) {
+	return l.hasXof(specified, "any")
+}
+
+type labelCheck struct {
+	Specified []string
+	Found     []string
+	CheckFor  string
+}
+
+func (v labelCheck) IsValid() bool {
+	var isValid bool
+
+	switch v.CheckFor {
+	case "any":
+		isValid = len(v.Found) > 0
+	case "none":
+		isValid = len(v.Found) == 0
+	case "1":
+		isValid = len(v.Found) == 1
+	case "all":
+		isValid = len(v.Found) == len(v.Specified)
+	}
+
+	return isValid
+}
+
+func (v labelCheck) NumberFound() int {
+	return len(v.Found)
+}
+
+func (l Labels) hasXof(specified []string, checkFor string) (bool, string) {
 	var (
-		validationMessageBuilder strings.Builder
-		foundLabels              []string
+		labelCheckMsgBuilder strings.Builder
+		foundLabels          []string
 	)
 
-	t := template.Must(template.New("validationMessage").Parse("" +
-		"{{ $numberFound := len .Found }}" +
-		"{{ $valid := eq $numberFound .X }}" +
-
+	t := template.Must(template.New("labelCheckMessage").Parse("" +
 		"Label check " +
-		"{{if $valid}}successful{{else }}failed{{end}}: " +
-		"required {{.X}} of {{range $s := .Specified}}{{$s}}, {{end}}" +
-		"{{if $valid}}and{{else }}but{{end}} " +
-		"found {{$numberFound}}" +
-		"{{if $numberFound}}: {{else }}.{{end}}" +
+		"{{if .IsValid}}successful{{else }}failed{{end}}: " +
+		"required {{.CheckFor}} " +
+		"of {{range $s := .Specified}}{{$s}}, {{end}}" +
+		"{{if .IsValid}}and{{else }}but{{end}} " +
+		"found {{.NumberFound}}" +
+		"{{if .NumberFound}}: {{else }}.{{end}}" +
 		"{{range $i, $f := .Found}}{{if $i}}, {{end}}{{$f}}{{end}}"))
 
 	for i := 0; i < len(l); i++ {
@@ -53,18 +84,11 @@ func (l Labels) hasXof(specified []string, x int) (bool, string) {
 		}
 	}
 
-	panic.IfError(t.Execute(&validationMessageBuilder, struct {
-		Specified []string
-		Pr        []string
-		Found     []string
-		X         int
-	}{specified, l, foundLabels, x}))
+	check := labelCheck{specified, foundLabels, checkFor}
 
-	validationMessage := validationMessageBuilder.String()
+	panic.IfError(t.Execute(&labelCheckMsgBuilder, check))
 
-	if len(foundLabels) == x {
-		return true, validationMessage
-	}
+	labelCheckMessage := labelCheckMsgBuilder.String()
 
-	return false, validationMessage
+	return check.IsValid(), labelCheckMessage
 }

@@ -18,6 +18,7 @@ const (
 	EnvRequireOneOf         = "LABELS_ONE_REQUIRED"
 	EnvRequireNoneOf        = "LABELS_NONE_REQUIRED"
 	EnvRequireAllOf         = "LABELS_ALL_REQUIRED"
+	EnvRequireAnyOf         = "LABELS_ANY_REQUIRED"
 	GitHubTestRepo          = "agilepathway/test-label-checker-consumer"
 	NoLabelsPR              = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
 	OneLabelPR              = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
@@ -26,23 +27,27 @@ const (
 	GitHubEventJSONDir      = "testdata"
 	GitHubEventJSONFilename = "github_event.json"
 	MagefileVerbose         = "MAGEFILE_VERBOSE"
-	NeedNoneGotNone         = "Label check successful: required 0 of major, minor, patch, and found 0.\n"
-	NeedNoneGotOne          = "Label check failed: required 0 of major, minor, patch, but found 1: minor\n"
-	NeedNoneGotTwo          = "Label check failed: required 0 of major, minor, patch, but found 2: minor, patch\n"
-	NeedNoneGotThree        = "Label check failed: required 0 of major, minor, patch, but found 3: major, minor, patch\n"
+	NeedNoneGotNone         = "Label check successful: required none of major, minor, patch, and found 0.\n"
+	NeedNoneGotOne          = "Label check failed: required none of major, minor, patch, but found 1: minor\n"
+	NeedNoneGotTwo          = "Label check failed: required none of major, minor, patch, but found 2: minor, patch\n"
+	NeedNoneGotThree        = "Label check failed: required none of major, minor, patch, but found 3: major, minor, patch\n"
 	NeedOneGotOne           = "Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
 	NeedOneGotNone          = "Label check failed: required 1 of major, minor, patch, but found 0.\n"
 	NeedOneGotTwo           = "Label check failed: required 1 of major, minor, patch, but found 2: minor, patch\n"
 	NeedOneGotThree         = "Label check failed: required 1 of major, minor, patch, but found 3: major, minor, patch\n"
-	NeedAllGotNone          = "Label check failed: required 3 of major, minor, patch, but found 0.\n"
-	NeedAllGotOne           = "Label check failed: required 3 of major, minor, patch, but found 1: minor\n"
-	NeedAllGotTwo           = "Label check failed: required 3 of major, minor, patch, but found 2: minor, patch\n"
-	NeedAllGotAll           = "Label check successful: required 3 of major, minor, patch, and found 3: major, minor, patch\n"
+	NeedAllGotNone          = "Label check failed: required all of major, minor, patch, but found 0.\n"
+	NeedAllGotOne           = "Label check failed: required all of major, minor, patch, but found 1: minor\n"
+	NeedAllGotTwo           = "Label check failed: required all of major, minor, patch, but found 2: minor, patch\n"
+	NeedAllGotAll           = "Label check successful: required all of major, minor, patch, and found 3: major, minor, patch\n"
+	NeedAnyGotNone          = "Label check failed: required any of major, minor, patch, but found 0.\n"
+	NeedAnyGotOne           = "Label check successful: required any of major, minor, patch, and found 1: minor\n"
+	NeedAnyGotTwo           = "Label check successful: required any of major, minor, patch, and found 2: minor, patch\n"
+	NeedAnyGotThree         = "Label check successful: required any of major, minor, patch, and found 3: major, minor, patch\n"
 )
 
 type specifyChecks func()
 
-// nolint: lll
+// nolint: lll, funlen
 func TestSplit(t *testing.T) {
 	tests := map[string]struct {
 		prNumber       int
@@ -60,13 +65,21 @@ func TestSplit(t *testing.T) {
 		"Need all, got one":                       {OneLabelPR, checkAll, "", NeedAllGotOne},
 		"Need all, got two":                       {TwoLabelsPR, checkAll, "", NeedAllGotTwo},
 		"Need all, got all":                       {ThreeLabelsPR, checkAll, NeedAllGotAll, ""},
+		"Need any, got none":                      {NoLabelsPR, checkAny, "", NeedAnyGotNone},
+		"Need any, got one":                       {OneLabelPR, checkAny, NeedAnyGotOne, ""},
+		"Need any, got two":                       {TwoLabelsPR, checkAny, NeedAnyGotTwo, ""},
+		"Need any, got three":                     {ThreeLabelsPR, checkAny, NeedAnyGotThree, ""},
 		"Need none, got none; need one, got none": {NoLabelsPR, checkNoneAndOne, NeedNoneGotNone, NeedOneGotNone},
 		"Need none, got one; need one, got one":   {OneLabelPR, checkNoneAndOne, NeedOneGotOne, NeedNoneGotOne},
 		"Need none, got two; need one, got two":   {TwoLabelsPR, checkNoneAndOne, "", NeedOneGotTwo + NeedNoneGotTwo},
-		"Need none, got none; need one, got none; need all, got none":  {NoLabelsPR, checkNoneAndOneAndAll, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone},
-		"Need none, got one; need one, got one; need all, got one":     {OneLabelPR, checkNoneAndOneAndAll, NeedOneGotOne, NeedNoneGotOne + NeedAllGotOne},
-		"Need none, got two; need one, got two; need all, got two":     {TwoLabelsPR, checkNoneAndOneAndAll, "", NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
-		"Need none, got three; need one, got three; need all, got all": {ThreeLabelsPR, checkNoneAndOneAndAll, NeedAllGotAll, NeedOneGotThree + NeedNoneGotThree},
+		"Need none, got none; need one, got none; need all, got none":                         {NoLabelsPR, checkNoneAndOneAndAll, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone},
+		"Need none, got one; need one, got one; need all, got one":                            {OneLabelPR, checkNoneAndOneAndAll, NeedOneGotOne, NeedNoneGotOne + NeedAllGotOne},
+		"Need none, got two; need one, got two; need all, got two":                            {TwoLabelsPR, checkNoneAndOneAndAll, "", NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
+		"Need none, got three; need one, got three; need all, got all":                        {ThreeLabelsPR, checkNoneAndOneAndAll, NeedAllGotAll, NeedOneGotThree + NeedNoneGotThree},
+		"Need none, got none; need one, got none; need all, got none; need any, got none":     {NoLabelsPR, checkNoneAndOneAndAllAndAny, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone + NeedAnyGotNone},
+		"Need none, got one; need one, got one; need all, got one; need any, got one":         {OneLabelPR, checkNoneAndOneAndAllAndAny, NeedOneGotOne + NeedAnyGotOne, NeedNoneGotOne + NeedAllGotOne},
+		"Need none, got two; need one, got two; need all, got two; need any, got two":         {TwoLabelsPR, checkNoneAndOneAndAllAndAny, NeedAnyGotTwo, NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
+		"Need none, got three; need one, got three; need all, got three; need any, got three": {ThreeLabelsPR, checkNoneAndOneAndAllAndAny, NeedAllGotAll + NeedAnyGotThree, NeedOneGotThree + NeedNoneGotThree},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -100,6 +113,7 @@ func TestSplit(t *testing.T) {
 			os.Unsetenv(EnvRequireNoneOf) //nolint
 			os.Unsetenv(EnvRequireOneOf)  //nolint
 			os.Unsetenv(EnvRequireAllOf)  //nolint
+			os.Unsetenv(EnvRequireAnyOf)  //nolint
 		})
 	}
 }
@@ -149,15 +163,23 @@ func checkAll() {
 	os.Setenv(EnvRequireAllOf, `["major","minor","patch"]`) //nolint
 }
 
+func checkAny() {
+	os.Setenv(EnvRequireAnyOf, `["major","minor","patch"]`) //nolint
+}
+
 func checkNoneAndOne() {
 	checkNone()
 	checkOne()
 }
 
 func checkNoneAndOneAndAll() {
-	checkNone()
-	checkOne()
+	checkNoneAndOne()
 	checkAll()
+}
+
+func checkNoneAndOneAndAllAndAny() {
+	checkNoneAndOneAndAll()
+	checkAny()
 }
 
 func gitHubEventFullPath() string {
