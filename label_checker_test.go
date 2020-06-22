@@ -15,10 +15,10 @@ import (
 const (
 	EnvGitHubRepository     = "GITHUB_REPOSITORY"
 	EnvGitHubEventPath      = "GITHUB_EVENT_PATH"
-	EnvRequireOneOf         = "LABELS_ONE_REQUIRED"
-	EnvRequireNoneOf        = "LABELS_NONE_REQUIRED"
-	EnvRequireAllOf         = "LABELS_ALL_REQUIRED"
-	EnvRequireAnyOf         = "LABELS_ANY_REQUIRED"
+	EnvRequireOneOf         = "INPUT_ONE_OF"
+	EnvRequireNoneOf        = "INPUT_NONE_OF"
+	EnvRequireAllOf         = "INPUT_ALL_OF"
+	EnvRequireAnyOf         = "INPUT_ANY_OF"
 	GitHubTestRepo          = "agilepathway/test-label-checker-consumer"
 	NoLabelsPR              = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
 	OneLabelPR              = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2

@@ -85,23 +85,23 @@ func (a *Action) pullRequestNumber() int {
 }
 
 func (a *Action) token() string {
-	return os.Getenv("GITHUB_TOKEN")
+	return os.Getenv("INPUT_REPO_TOKEN")
 }
 
 func (a *Action) exactlyOneRequired() []string {
-	return a.getLabelsFromEnvVar("LABELS_ONE_REQUIRED")
+	return a.getLabelsFromEnvVar("INPUT_ONE_OF")
 }
 
 func (a *Action) noneRequired() []string {
-	return a.getLabelsFromEnvVar("LABELS_NONE_REQUIRED")
+	return a.getLabelsFromEnvVar("INPUT_NONE_OF")
 }
 
 func (a *Action) allRequired() []string {
-	return a.getLabelsFromEnvVar("LABELS_ALL_REQUIRED")
+	return a.getLabelsFromEnvVar("INPUT_ALL_OF")
 }
 
 func (a *Action) anyRequired() []string {
-	return a.getLabelsFromEnvVar("LABELS_ANY_REQUIRED")
+	return a.getLabelsFromEnvVar("INPUT_ANY_OF")
 }
 
 func (a *Action) getLabelsFromEnvVar(envVar string) []string {

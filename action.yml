@@ -3,31 +3,31 @@ name: 'Label checker for pull requests'
 description: 'Checks pull requests for given labels'
 author: 'John Boyes'
 inputs:
-  one-of:
+  one_of:
     description: >
       A JSON array of labels.
       Each pull request must be labeled with exactly one of these labels.
     required: false
     default: '[]'
-  none-of:
+  none_of:
     description: >
       A JSON array of labels.
       Each pull request must not be labeled with any of these labels.
     required: false
     default: '[]'
-  all-of:
+  all_of:
     description: >
       A JSON array of labels.
       Each pull request must be labeled with all of these labels.
     required: false
     default: '[]'
-  any-of:
+  any_of:
     description: >
       A JSON array of labels.
       Each pull request must be labeled with one or more of these labels.
     required: false
     default: '[]'
-  github-token:
+  repo_token:
     description: >
       See this link for an example of how to pass in the GitHub token:
       https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#example-passing-github_token-as-an-input
@@ -35,9 +35,3 @@ inputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  env:
-    LABELS_ONE_REQUIRED: ${{ inputs.one-of }}
-    LABELS_NONE_REQUIRED: ${{ inputs.none-of }}
-    LABELS_ALL_REQUIRED: ${{ inputs.all-of }}
-    LABELS_ANY_REQUIRED: ${{ inputs.any-of }}
-    GITHUB_TOKEN: ${{ inputs.github-token }}
