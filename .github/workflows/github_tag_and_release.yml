@@ -11,9 +11,12 @@ jobs:
   tag:
     name: Tag semantic version
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Tag
         uses: K-Phoen/semver-release-action@v1.3.1
+        id: tag
         with:
           release_branch: master
           release_strategy: tag
@@ -45,3 +48,16 @@ jobs:
           key: ${{ secrets.YOUR_PRIVATE_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_and_push_docker_image:
+    needs: tag
+    name: Build and push image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: agilepathway/pull-request-label-checker
+          tags: ${{ needs.tag.outputs.tag }}
