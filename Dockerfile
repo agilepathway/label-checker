@@ -5,7 +5,7 @@ COPY . .
 
 RUN scripts/install-mage.sh
 
-RUN CGO_ENABLED=0 mage -compile /bin/check-labels -goos linux -goarch amd64
+RUN CGO_ENABLED=0 GOFLAGS=-ldflags="-w" mage -compile /bin/check-labels -goos linux -goarch amd64
 
 
 # Use the most basic and empty container - this container has no
