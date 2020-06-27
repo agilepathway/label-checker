@@ -7,6 +7,9 @@ RUN scripts/install-mage.sh
 
 RUN CGO_ENABLED=0 GOFLAGS=-ldflags="-w" mage -compile /bin/check-labels -goos linux -goarch amd64
 
+# Strip any symbols - this is not a library
+RUN strip /bin/check-labels
+
 # Compress the compiled action using UPX (https://upx.github.io/) 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get -y install --no-install-recommends upx
