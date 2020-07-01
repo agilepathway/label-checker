@@ -152,19 +152,19 @@ func setPullRequestNumber(prNumber int) {
 }
 
 func checkOne() {
-	os.Setenv(EnvRequireOneOf, `["major","minor","patch"]`) //nolint
+	os.Setenv(EnvRequireOneOf, "major,minor,patch") //nolint
 }
 
 func checkNone() {
-	os.Setenv(EnvRequireNoneOf, `["major","minor","patch"]`) //nolint
+	os.Setenv(EnvRequireNoneOf, `major,minor,patch`) //nolint
 }
 
 func checkAll() {
-	os.Setenv(EnvRequireAllOf, `["major","minor","patch"]`) //nolint
+	os.Setenv(EnvRequireAllOf, `major,minor,patch`) //nolint
 }
 
 func checkAny() {
-	os.Setenv(EnvRequireAnyOf, `["major","minor","patch"]`) //nolint
+	os.Setenv(EnvRequireAnyOf, `major,minor,patch`) //nolint
 }
 
 func checkNoneAndOne() {

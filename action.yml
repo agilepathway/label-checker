@@ -5,31 +5,31 @@ author: 'John Boyes'
 inputs:
   one_of:
     description: >
-      A JSON array of labels.
+      Comma-separated list of labels.
       Each pull request must be labeled with exactly one of these labels.
     required: false
-    default: '[]'
+    default: ''
   none_of:
     description: >
-      A JSON array of labels.
+      Comma-separated list of labels.
       Each pull request must not be labeled with any of these labels.
     required: false
-    default: '[]'
+    default: ''
   all_of:
     description: >
-      A JSON array of labels.
+      Comma-separated list of labels.
       Each pull request must be labeled with all of these labels.
     required: false
-    default: '[]'
+    default: ''
   any_of:
     description: >
-      A JSON array of labels.
+      Comma-separated list of labels.
       Each pull request must be labeled with one or more of these labels.
     required: false
-    default: '[]'
+    default: ''
   repo_token:
     description: >
-      See this link for an example of how to pass in the GitHub token:
+      See this link for an example of how to set this token:
       https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#example-passing-github_token-as-an-input
     required: true
 runs:

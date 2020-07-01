@@ -105,12 +105,10 @@ func (a *Action) anyRequired() []string {
 }
 
 func (a *Action) getLabelsFromEnvVar(envVar string) []string {
-	specified := []string{}
-
-	specifiedJSONLabels, present := os.LookupEnv(envVar)
+	specifiedLabels, present := os.LookupEnv(envVar)
 	if present {
-		panic.IfError(json.Unmarshal([]byte(specifiedJSONLabels), &specified))
+		return strings.Split(specifiedLabels, ",")
 	}
 
-	return specified
+	return []string{}
 }
