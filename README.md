@@ -1,5 +1,7 @@
 # Label Checker
 
+[![reviewdog](https://github.com/agilepathway/label-checker/workflows/reviewdog/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions?query=workflow%3Areviewdog+event%3Apush+branch%3Amaster)
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?maxAge=43200)](LICENSE)
 [![Built with Mage](https://magefile.org/badge.svg)](https://magefile.org)
 [![Go Report Card](https://goreportcard.com/badge/github.com/agilepathway/label-checker)](https://goreportcard.com/report/github.com/agilepathway/label-checker)
