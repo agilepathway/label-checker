@@ -2,6 +2,8 @@
 
 [![tests](https://github.com/agilepathway/label-checker/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions?query=workflow%3ATests+event%3Apush+branch%3Amaster)
 [![reviewdog](https://github.com/agilepathway/label-checker/workflows/reviewdog/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions?query=workflow%3Areviewdog+event%3Apush+branch%3Amaster)
+[![docker](https://github.com/agilepathway/label-checker/workflows/Docker/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions?query=workflow%3ADocker+event%3Apush+branch%3Amaster)
+[![Docker image size](https://img.shields.io/docker/image-size/agilepathway/pull-request-label-checker?sort=date)](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
 [![Releases](https://img.shields.io/github/release/agilepathway/label-checker/all.svg?logo=github
 )](https://github.com/agilepathway/label-checker/releases)
 
