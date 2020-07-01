@@ -1,8 +1,8 @@
 ---
 on: [push]  # yamllint disable-line rule:truthy
-name: Test
+name: Tests
 jobs:
-  test:
+  tests:
     strategy:
       matrix:
         go-version: [1.14.x]
@@ -15,7 +15,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Test
+      - name: Tests
         env:
           INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: go test ./...
