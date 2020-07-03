@@ -12,4 +12,118 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/agilepathway/label-checker)](https://goreportcard.com/report/github.com/agilepathway/label-checker)
 [![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/agilepathway/label-checker)](https://golang.org/)
 
-[GitHub Action](https://github.com/features/actions) to check pull requests for the presence or absence of specified labels
+ **[GitHub Action](https://github.com/features/actions) to check pull requests (PRs) for the presence or absence of specified labels**
+
+## Using the Label Checker action
+
+Using this action is as simple as:
+
+1. **create a `.github\workflows` directory** in your repository
+2. **create a 
+   [YAML](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#about-yaml-syntax-for-workflows) 
+   file** in the `.github\workflows` directory (file name can be anything you like, 
+   with either a `.yml` or `.yaml` file extension), with this example content:
+ 
+   ```
+   ---
+   name: Label Checker
+   on:
+     pull_request:
+       types:
+         - opened
+         - synchronize
+         - reopened
+         - labeled
+         - unlabeled
+   
+   jobs:
+   
+     check_labels:
+       name: Check labels
+       runs-on: ubuntu-latest
+       steps:
+         - uses: docker://agilepathway/pull-request-label-checker:latest
+           with:
+             one_of: major,minor,patch
+             repo_token: ${{ secrets.GITHUB_TOKEN }}
+   ```
+
+4. **customise the label checks** in the `with` section of the YAML file to fit your needs 
+
+   (see the [checks](#checks) section below for the different checks you can configure)
+
+
+## Checks
+
+There are 4 types of label checks available:
+
+- `one_of`  (PRs must have **exactly one** of these labels)
+
+- `none_of` (PRs must have **none** of these labels)
+
+- `all_of`  (PRs must have **all** of these labels)
+
+- `any_of`  (PRs must have **one or more** of these labels)
+
+You can have as many of the checks configured in the same YAML file as you like.
+
+### Examples
+
+- [Semantic versioning](https://semver.org/): `one_of: major,minor,patch`
+
+- Each PR must be a bug or an enhancement: `one_of: bug,enhancement`
+
+- Prohibit certain labels: `none_of: invalid,wontfix,duplicate,question`
+
+- Require each PR to have a certain label: `all_of: enhancement`
+
+  or labels: `all_of: enhancement,reviewed`
+
+- Require each PR to have one or more of these labels: `any_of: documentation,enhancement,bug`
+
+- Combine multiple checks:
+
+  ```
+  with:
+    one_of: major,minor,patch
+    none_of: invalid,wontfix,duplicate,question
+    any_of: documentation,enhancement,bug
+    repo_token: ${{ secrets.GITHUB_TOKEN }}
+  ```
+
+- Combine multiple checks of the same type:
+
+  ```
+  jobs:
+   
+    check_semver_label:
+      name: Check for semantic version label
+      runs-on: ubuntu-latest
+      steps:
+        - uses: docker://agilepathway/pull-request-label-checker:latest
+          with:
+            one_of: major,minor,patch
+            repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+    check_pull_request_type:
+      name: Check for pull request type label
+      runs-on: ubuntu-latest
+      steps:
+        - uses: docker://agilepathway/pull-request-label-checker:latest
+          with:
+            one_of: one_of: bug,enhancement
+            repo_token: ${{ secrets.GITHUB_TOKEN }}
+  ```
+
+
+## Suggestions / bug reports
+
+[Suggestions and bug reports](https://github.com/agilepathway/label-checker/issues) 
+are very welcome :slightly_smiling_face:
+
+## Why another label checker?
+
+- We couldn't find another label checker that had all the 4 check types available
+
+- Speed: the [Docker image](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
+  used for the checks is only 2.7 MB, so the checks are blazingly fast (c. 3 seconds)
