@@ -30,6 +30,7 @@ RUN apt-get update \
         honnef.co/go/tools/...@latest \
         github.com/mdempsky/gocode@latest \
         github.com/sqs/goreturns@latest \
+        # gopkgs is still needed even with gopls: https://github.com/microsoft/vscode-go/issues/3050#issuecomment-592263369
         github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest  \
         github.com/ramya-rao-a/go-outline@latest  \
         github.com/acroca/go-symbols@latest  \
