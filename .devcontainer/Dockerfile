@@ -28,7 +28,6 @@ RUN apt-get update \
     && GOPATH=/tmp/gotools GO111MODULE=on go get -v golang.org/x/tools/gopls@latest 2>&1 \
     && GOPATH=/tmp/gotools GO111MODULE=on go get -v \
         honnef.co/go/tools/...@latest \
-        golang.org/x/tools/cmd/goimports@latest \
         golang.org/x/lint/golint@latest \
         github.com/mdempsky/gocode@latest \
         github.com/cweill/gotests/...@latest \
