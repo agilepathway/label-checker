@@ -36,7 +36,6 @@ RUN apt-get update \
         github.com/acroca/go-symbols@latest  \
         github.com/rogpeppe/godef@latest  \
         github.com/fatih/gomodifytags@latest  \
-        github.com/mgechev/revive@latest  \
         github.com/go-delve/delve/cmd/dlv@latest 2>&1 \
         github.com/golangci/golangci-lint/cmd/golangci-lint@v1.27.0 \
     #
