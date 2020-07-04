@@ -1,0 +1,4 @@
+{
+    "go.testTimeout": "90s",
+    "go.testEnvFile": "${workspaceFolder}/.env"
+}
