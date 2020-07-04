@@ -39,7 +39,6 @@ RUN apt-get update \
         github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest  \
         github.com/ramya-rao-a/go-outline@latest  \
         github.com/acroca/go-symbols@latest  \
-        github.com/godoctor/godoctor@latest  \
         github.com/rogpeppe/godef@latest  \
         github.com/zmb3/gogetdoc@latest \
         github.com/fatih/gomodifytags@latest  \
