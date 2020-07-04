@@ -76,4 +76,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/gotools
 
 # Update this to "on" or "off" as appropriate
-ENV GO111MODULE=auto
+# Updated from "auto" to "on" as we are using Go modules for this project
+# See https://dev.to/maelvls/why-is-go111module-everywhere-and-everything-about-go-modules-24k
+ENV GO111MODULE=on
