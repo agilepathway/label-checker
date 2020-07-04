@@ -14,12 +14,13 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 # Configure apt, install packages and tools
+# hadolint ignore=DL3003,DL3008
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
     #
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
-    && apt-get -y install git openssh-client less iproute2 procps lsb-release \
+    && apt-get -y install --no-install-recommends git openssh-client less iproute2 procps lsb-release \
     #
     # Build Go tools w/module support
     && mkdir -p /tmp/gotools \
@@ -65,7 +66,7 @@ RUN apt-get update \
     && groupadd --gid $USER_GID $USERNAME \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
     # [Optional] Add sudo support
-    && apt-get install -y sudo \
+    && apt-get install -y --no-install-recommends sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     #
