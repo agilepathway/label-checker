@@ -41,9 +41,6 @@ RUN apt-get update \
         github.com/mgechev/revive@latest  \
         github.com/go-delve/delve/cmd/dlv@latest 2>&1 \
     #
-    # Build Go tools w/o module support
-    && GOPATH=/tmp/gotools go get -v github.com/alecthomas/gometalinter 2>&1 \
-    #
     # Build gocode-gomod
     && GOPATH=/tmp/gotools go get -x -d github.com/stamblerre/gocode 2>&1 \
     && GOPATH=/tmp/gotools go build -o gocode-gomod github.com/stamblerre/gocode \
