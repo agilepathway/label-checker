@@ -39,6 +39,7 @@ RUN apt-get update \
         github.com/fatih/gomodifytags@latest  \
         github.com/mgechev/revive@latest  \
         github.com/go-delve/delve/cmd/dlv@latest 2>&1 \
+        github.com/golangci/golangci-lint/cmd/golangci-lint@v1.27.0 \
     #
     # Build gocode-gomod
     && GOPATH=/tmp/gotools go get -x -d github.com/stamblerre/gocode 2>&1 \
@@ -47,9 +48,6 @@ RUN apt-get update \
     # Install Go tools
     && mv /tmp/gotools/bin/* /usr/local/bin/ \
     && mv gocode-gomod /usr/local/bin/ \
-    #
-    # Install golangci-lint
-    && curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin 2>&1 \
     #
     # Create a non-root user to use if preferred - see https://aka.ms/vscode-remote/containers/non-root-user.
     && groupadd --gid $USER_GID $USERNAME \
