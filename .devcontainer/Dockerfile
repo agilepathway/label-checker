@@ -29,7 +29,6 @@ RUN apt-get update \
     && GOPATH=/tmp/gotools GO111MODULE=on go get -v \
         honnef.co/go/tools/...@latest \
         github.com/mdempsky/gocode@latest \
-        github.com/haya14busa/goplay/cmd/goplay@latest \
         github.com/sqs/goreturns@latest \
         github.com/josharian/impl@latest \
         github.com/davidrjenni/reftools/cmd/fillstruct@latest \
