@@ -27,7 +27,6 @@ RUN apt-get update \
     && cd /tmp/gotools \
     && GOPATH=/tmp/gotools GO111MODULE=on go get -v golang.org/x/tools/gopls@latest 2>&1 \
     && GOPATH=/tmp/gotools GO111MODULE=on go get -v \
-        honnef.co/go/tools/...@latest \
         github.com/mdempsky/gocode@latest \
         github.com/sqs/goreturns@latest \
         # gopkgs is still needed even with gopls: https://github.com/microsoft/vscode-go/issues/3050#issuecomment-592263369
