@@ -30,7 +30,6 @@ RUN apt-get update \
         honnef.co/go/tools/...@latest \
         github.com/mdempsky/gocode@latest \
         github.com/sqs/goreturns@latest \
-        github.com/josharian/impl@latest \
         github.com/davidrjenni/reftools/cmd/fillstruct@latest \
         github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest  \
         github.com/ramya-rao-a/go-outline@latest  \
