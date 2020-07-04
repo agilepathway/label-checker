@@ -35,7 +35,6 @@ RUN apt-get update \
         github.com/ramya-rao-a/go-outline@latest  \
         github.com/acroca/go-symbols@latest  \
         github.com/rogpeppe/godef@latest  \
-        github.com/zmb3/gogetdoc@latest \
         github.com/fatih/gomodifytags@latest  \
         github.com/mgechev/revive@latest  \
         github.com/go-delve/delve/cmd/dlv@latest 2>&1 \
