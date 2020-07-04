@@ -30,7 +30,6 @@ RUN apt-get update \
         honnef.co/go/tools/...@latest \
         golang.org/x/tools/cmd/gorename@latest \
         golang.org/x/tools/cmd/goimports@latest \
-        golang.org/x/tools/cmd/guru@latest \
         golang.org/x/lint/golint@latest \
         github.com/mdempsky/gocode@latest \
         github.com/cweill/gotests/...@latest \
