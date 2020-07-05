@@ -7,6 +7,6 @@
     "go.lintTool": "golangci-lint",
     "go.lintFlags": ["--enable-all","--exclude-use-default=false"],
     "go.lintOnSave": "file",
-    "go.testTimeout": "90s",
+    "go.testTimeout": "240s",
     "go.testEnvFile": "${workspaceFolder}/.env",
 }
