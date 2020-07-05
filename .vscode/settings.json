@@ -1,4 +1,38 @@
 {
-    "go.testTimeout": "90s",
-    "go.testEnvFile": "${workspaceFolder}/.env"
+    "go.useLanguageServer": true,
+    "[go]": {
+        "editor.tabSize": 8,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true,
+        },
+        // Optional: Disable snippets, as they conflict with completion ranking.
+        "editor.snippetSuggestions": "none",
+    },
+    "[go.mod]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true,
+        },
+    },
+    "go.installDependenciesWhenBuilding": false, // the default is only true for backwards compatibility - see https://github.com/microsoft/vscode-go/issues/2836
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": ["--enable-all","--exclude-use-default=false"],
+    "go.lintOnSave": "file",
+    "go.testTimeout": "240s",
+    "go.testEnvFile": "${workspaceFolder}/.env",
+
+    // "VSCode will complain about the "gopls" settings, but they will still work. 
+    // Once we have a consistent set of settings, we will make the changes in the 
+    // VSCode plugin necessary to remove the errors."
+    // https://github.com/golang/tools/blob/master/gopls/doc/vscode.md
+    "gopls": {
+        // Add parameter placeholders when completing a function.
+       "usePlaceholders": true,
+   
+       // If true, enable additional analyses with staticcheck.
+       // Warning: This will significantly increase memory usage.
+       "staticcheck": false,
+   }
+
 }
