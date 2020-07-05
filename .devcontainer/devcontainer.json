@@ -8,6 +8,8 @@
 		"terminal.integrated.shell.linux": "/bin/bash",
 		"go.gopath": "/go",
 		"workbench.colorTheme": "Default Dark+",
+		"files.autoSave": "afterDelay",
+		"files.autoSaveDelay": 500,
 	},
 	
 	// Add the IDs of extensions you want installed when the container is created.
