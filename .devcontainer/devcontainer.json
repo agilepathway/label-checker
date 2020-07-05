@@ -6,15 +6,7 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": { 
 		"terminal.integrated.shell.linux": "/bin/bash",
-		"go.gopath": "/go",
-		"[go]": {
-			"editor.tabSize": 8
-		},
-		"go.useLanguageServer": true,
-		"go.installDependenciesWhenBuilding": false, // the default is only true for backwards compatibility - see https://github.com/microsoft/vscode-go/issues/2836
-		"go.lintTool": "golangci-lint",
-		"go.lintFlags": ["--enable-all","--exclude-use-default=false"],
-		"go.lintOnSave": "file"
+		"go.gopath": "/go"
 	},
 	
 	// Add the IDs of extensions you want installed when the container is created.
