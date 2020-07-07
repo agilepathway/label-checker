@@ -2,14 +2,24 @@ package test
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
+	"github.com/agilepathway/label-checker/internal/error/panic"
 	"github.com/magefile/mage/mage"
 )
+
+//nolint: gochecknoglobals
+var integration = flag.Bool(
+	"integration",
+	false,
+	"Make calls to real external services.  Requires INPUT_REPO_TOKEN environment variable.")
 
 // nolint: lll
 const (
@@ -19,6 +29,7 @@ const (
 	EnvRequireNoneOf        = "INPUT_NONE_OF"
 	EnvRequireAllOf         = "INPUT_ALL_OF"
 	EnvRequireAnyOf         = "INPUT_ANY_OF"
+	EnvHTTPSProxy           = "HTTPS_PROXY"
 	GitHubTestRepo          = "agilepathway/test-label-checker-consumer"
 	NoLabelsPR              = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
 	OneLabelPR              = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
@@ -27,6 +38,7 @@ const (
 	GitHubEventJSONDir      = "testdata/temp"
 	GitHubEventJSONFilename = "github_event.json"
 	MagefileVerbose         = "MAGEFILE_VERBOSE"
+	HoverflyProxyAddress    = "127.0.0.1:8500"
 	NeedNoneGotNone         = "Label check successful: required none of major, minor, patch, and found 0.\n"
 	NeedNoneGotOne          = "Label check failed: required none of major, minor, patch, but found 1: minor\n"
 	NeedNoneGotTwo          = "Label check failed: required none of major, minor, patch, but found 2: minor, patch\n"
@@ -119,10 +131,12 @@ func TestSplit(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
+	flag.Parse()
 	os.Mkdir(GitHubEventJSONDir, os.ModePerm)            //nolint
 	os.Setenv(EnvGitHubRepository, GitHubTestRepo)       //nolint
 	os.Setenv(EnvGitHubEventPath, gitHubEventFullPath()) //nolint
 	os.Setenv(MagefileVerbose, "1")                      //nolint
+	setupVirtualServicesIfNotInIntegrationMode()
 	os.Exit(testMainWrapper(m))
 }
 
@@ -133,9 +147,46 @@ func testMainWrapper(m *testing.M) int {
 		os.Unsetenv(EnvGitHubRepository)
 		os.Unsetenv(EnvGitHubEventPath)
 		os.Unsetenv(MagefileVerbose)
+		teardownVirtualServicesIfNotInIntegrationMode()
 	}()
 
 	return m.Run()
+}
+
+func setupVirtualServicesIfNotInIntegrationMode() {
+	if !*integration {
+		startHoverflyInSpyMode()
+		os.Setenv(EnvHTTPSProxy, HoverflyProxyAddress) //nolint
+		importGitHubSimulations()
+	}
+}
+
+func teardownVirtualServicesIfNotInIntegrationMode() {
+	if !*integration {
+		os.Unsetenv(EnvHTTPSProxy) //nolint
+		stopHoverfly()
+	}
+}
+
+func execHoverCtl(arg ...string) {
+	// #nosec 204 https://github.com/securego/gosec/issues/343
+	cmd := exec.Command("hoverctl", arg...)
+	stdout, err := cmd.Output()
+	panic.IfError(err)
+	log.Println(string(stdout))
+}
+
+func startHoverflyInSpyMode() {
+	execHoverCtl("start")
+	execHoverCtl("mode", "spy")
+}
+
+func importGitHubSimulations() {
+	execHoverCtl("import", "./testdata/github_api.json")
+}
+
+func stopHoverfly() {
+	execHoverCtl("stop")
 }
 
 func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
