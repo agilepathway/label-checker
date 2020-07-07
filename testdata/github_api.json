@@ -36,8 +36,8 @@
 				},
 				"response": {
 					"status": 200,
-					"body": "H4sIAAAAAAAAA6tWSkksSVSyqlYqSi3IL84syS+qBPEKSnNyglILS1OLS0DcnMSk1JxiECsvPyUVyIiOrQUBABUCAvE/AAAA",
-					"encodedBody": true,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[]}}}}}",
+					"encodedBody": false,
 					"headers": {
 						"Access-Control-Allow-Origin": [
 							"*"
@@ -49,7 +49,7 @@
 							"no-cache"
 						],
 						"Content-Encoding": [
-							"gzip"
+							"identity"
 						],
 						"Content-Security-Policy": [
 							"default-src 'none'"
@@ -148,8 +148,8 @@
 				},
 				"response": {
 					"status": 200,
-					"body": "H4sIAAAAAAAAAxXHMQ7AIAhA0btwDI/RtelAI4MJigIOjfHulT+9vyCjI6QFSl2suOgX1yfzRWOSeSzjS2yhJpkO7iOsBAlqaaKwnx39lLu4dU8AAAA=",
-					"encodedBody": true,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"minor\"}]}}}}}",
+					"encodedBody": false,
 					"headers": {
 						"Access-Control-Allow-Origin": [
 							"*"
@@ -161,7 +161,7 @@
 							"no-cache"
 						],
 						"Content-Encoding": [
-							"gzip"
+							"identity"
 						],
 						"Content-Security-Policy": [
 							"default-src 'none'"
@@ -260,8 +260,8 @@
 				},
 				"response": {
 					"status": 200,
-					"body": "H4sIAAAAAAAAA6tWSkksSVSyqlYqSi3IL84syS+qBPEKSnNyglILS1OLS0DcnMSk1JxiECsvPyUVyIgGshJzU5WslHIz8/KLlGp14AIFiSXJGUq1sbUgAAANI+uxYAAAAA==",
-					"encodedBody": true,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"minor\"},{\"name\":\"patch\"}]}}}}}",
+					"encodedBody": false,
 					"headers": {
 						"Access-Control-Allow-Origin": [
 							"*"
@@ -273,7 +273,7 @@
 							"no-cache"
 						],
 						"Content-Encoding": [
-							"gzip"
+							"identity"
 						],
 						"Content-Security-Policy": [
 							"default-src 'none'"
@@ -372,8 +372,8 @@
 				},
 				"response": {
 					"status": 200,
-					"body": "H4sIAAAAAAAAA1WIMQ6AIAwA/9LZF/AMV+NQpYmYShHKYAh/l07Gm+6ugUdFcA0yJSlBJT9WqTLPdFcqasm4ERezKJ6GLMPwInBw4SkZ+vSNEP8joe4H9LUbLyUQYixxAAAA",
-					"encodedBody": true,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"major\"},{\"name\":\"minor\"},{\"name\":\"patch\"}]}}}}}",
+					"encodedBody": false,
 					"headers": {
 						"Access-Control-Allow-Origin": [
 							"*"
@@ -385,7 +385,7 @@
 							"no-cache"
 						],
 						"Content-Encoding": [
-							"gzip"
+							"identity"
 						],
 						"Content-Security-Policy": [
 							"default-src 'none'"
