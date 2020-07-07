@@ -24,7 +24,7 @@ const (
 	OneLabelPR              = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
 	TwoLabelsPR             = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
 	ThreeLabelsPR           = 4 // https://github.com/agilepathway/test-label-checker-consumer/pull/4
-	GitHubEventJSONDir      = "testdata"
+	GitHubEventJSONDir      = "testdata/temp"
 	GitHubEventJSONFilename = "github_event.json"
 	MagefileVerbose         = "MAGEFILE_VERBOSE"
 	NeedNoneGotNone         = "Label check successful: required none of major, minor, patch, and found 0.\n"
