@@ -3,6 +3,7 @@ on: [push]  # yamllint disable-line rule:truthy
 name: Tests
 jobs:
   tests:
+    name: Integration
     strategy:
       matrix:
         go-version: [1.14.x]
@@ -18,4 +19,4 @@ jobs:
       - name: Tests
         env:
           INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: go test ./...
+        run: go test -integration -v .
