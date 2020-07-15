@@ -21,6 +21,7 @@
     "go.lintOnSave": "file",
     "go.testTimeout": "240s",
     "go.testEnvFile": "${workspaceFolder}/.env",
+    "go.testFlags": ["-v"],
 
     // "VSCode will complain about the "gopls" settings, but they will still work. 
     // Once we have a consistent set of settings, we will make the changes in the 
