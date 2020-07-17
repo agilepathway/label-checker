@@ -60,38 +60,38 @@ const (
 type specifyChecks func()
 
 // nolint: lll, funlen
-func TestSplit(t *testing.T) {
+func TestLabelChecks(t *testing.T) {
 	tests := map[string]struct {
 		prNumber       int
 		specifyChecks  specifyChecks
 		expectedStdout string
 		expectedStderr string
 	}{
-		"Need none, got none":                     {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
-		"Need none, got one":                      {OneLabelPR, checkNone, "", NeedNoneGotOne},
-		"Need none, got two":                      {TwoLabelsPR, checkNone, "", NeedNoneGotTwo},
-		"Need one, got none":                      {NoLabelsPR, checkOne, "", NeedOneGotNone},
-		"Need one, got one":                       {OneLabelPR, checkOne, NeedOneGotOne, ""},
-		"Need one, got two":                       {TwoLabelsPR, checkOne, "", NeedOneGotTwo},
-		"Need all, got none":                      {NoLabelsPR, checkAll, "", NeedAllGotNone},
-		"Need all, got one":                       {OneLabelPR, checkAll, "", NeedAllGotOne},
-		"Need all, got two":                       {TwoLabelsPR, checkAll, "", NeedAllGotTwo},
-		"Need all, got all":                       {ThreeLabelsPR, checkAll, NeedAllGotAll, ""},
-		"Need any, got none":                      {NoLabelsPR, checkAny, "", NeedAnyGotNone},
-		"Need any, got one":                       {OneLabelPR, checkAny, NeedAnyGotOne, ""},
-		"Need any, got two":                       {TwoLabelsPR, checkAny, NeedAnyGotTwo, ""},
-		"Need any, got three":                     {ThreeLabelsPR, checkAny, NeedAnyGotThree, ""},
-		"Need none, got none; need one, got none": {NoLabelsPR, checkNoneAndOne, NeedNoneGotNone, NeedOneGotNone},
-		"Need none, got one; need one, got one":   {OneLabelPR, checkNoneAndOne, NeedOneGotOne, NeedNoneGotOne},
-		"Need none, got two; need one, got two":   {TwoLabelsPR, checkNoneAndOne, "", NeedOneGotTwo + NeedNoneGotTwo},
-		"Need none, got none; need one, got none; need all, got none":                         {NoLabelsPR, checkNoneAndOneAndAll, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone},
-		"Need none, got one; need one, got one; need all, got one":                            {OneLabelPR, checkNoneAndOneAndAll, NeedOneGotOne, NeedNoneGotOne + NeedAllGotOne},
-		"Need none, got two; need one, got two; need all, got two":                            {TwoLabelsPR, checkNoneAndOneAndAll, "", NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
-		"Need none, got three; need one, got three; need all, got all":                        {ThreeLabelsPR, checkNoneAndOneAndAll, NeedAllGotAll, NeedOneGotThree + NeedNoneGotThree},
-		"Need none, got none; need one, got none; need all, got none; need any, got none":     {NoLabelsPR, checkNoneAndOneAndAllAndAny, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone + NeedAnyGotNone},
-		"Need none, got one; need one, got one; need all, got one; need any, got one":         {OneLabelPR, checkNoneAndOneAndAllAndAny, NeedOneGotOne + NeedAnyGotOne, NeedNoneGotOne + NeedAllGotOne},
-		"Need none, got two; need one, got two; need all, got two; need any, got two":         {TwoLabelsPR, checkNoneAndOneAndAllAndAny, NeedAnyGotTwo, NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
-		"Need none, got three; need one, got three; need all, got three; need any, got three": {ThreeLabelsPR, checkNoneAndOneAndAllAndAny, NeedAllGotAll + NeedAnyGotThree, NeedOneGotThree + NeedNoneGotThree},
+		"Need none,                  got none":  {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
+		"Need none,                  got one":   {OneLabelPR, checkNone, "", NeedNoneGotOne},
+		"Need none,                  got two":   {TwoLabelsPR, checkNone, "", NeedNoneGotTwo},
+		"Need one,                   got none":  {NoLabelsPR, checkOne, "", NeedOneGotNone},
+		"Need one,                   got one":   {OneLabelPR, checkOne, NeedOneGotOne, ""},
+		"Need one,                   got two":   {TwoLabelsPR, checkOne, "", NeedOneGotTwo},
+		"Need all,                   got none":  {NoLabelsPR, checkAll, "", NeedAllGotNone},
+		"Need all,                   got one":   {OneLabelPR, checkAll, "", NeedAllGotOne},
+		"Need all,                   got two":   {TwoLabelsPR, checkAll, "", NeedAllGotTwo},
+		"Need all,                   got all":   {ThreeLabelsPR, checkAll, NeedAllGotAll, ""},
+		"Need any,                   got none":  {NoLabelsPR, checkAny, "", NeedAnyGotNone},
+		"Need any,                   got one":   {OneLabelPR, checkAny, NeedAnyGotOne, ""},
+		"Need any,                   got two":   {TwoLabelsPR, checkAny, NeedAnyGotTwo, ""},
+		"Need any,                   got three": {ThreeLabelsPR, checkAny, NeedAnyGotThree, ""},
+		"Need [none, one],           got none":  {NoLabelsPR, checkNoneAndOne, NeedNoneGotNone, NeedOneGotNone},
+		"Need [none, one],           got one":   {OneLabelPR, checkNoneAndOne, NeedOneGotOne, NeedNoneGotOne},
+		"Need [none, one],           got two":   {TwoLabelsPR, checkNoneAndOne, "", NeedOneGotTwo + NeedNoneGotTwo},
+		"Need [none, one, all],      got none":  {NoLabelsPR, checkNoneAndOneAndAll, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone},
+		"Need [none, one, all],      got one":   {OneLabelPR, checkNoneAndOneAndAll, NeedOneGotOne, NeedNoneGotOne + NeedAllGotOne},
+		"Need [none, one, all],      got two":   {TwoLabelsPR, checkNoneAndOneAndAll, "", NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
+		"Need [none, one, all],      got three": {ThreeLabelsPR, checkNoneAndOneAndAll, NeedAllGotAll, NeedOneGotThree + NeedNoneGotThree},
+		"Need [none, one, all, any], got none":  {NoLabelsPR, checkNoneAndOneAndAllAndAny, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone + NeedAnyGotNone},
+		"Need [none, one, all, any], got one":   {OneLabelPR, checkNoneAndOneAndAllAndAny, NeedOneGotOne + NeedAnyGotOne, NeedNoneGotOne + NeedAllGotOne},
+		"Need [none, one, all, any], got two":   {TwoLabelsPR, checkNoneAndOneAndAllAndAny, NeedAnyGotTwo, NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
+		"Need [none, one, all, any], got three": {ThreeLabelsPR, checkNoneAndOneAndAllAndAny, NeedAllGotAll + NeedAnyGotThree, NeedOneGotThree + NeedNoneGotThree},
 	}
 	for name, tc := range tests {
 		tc := tc
