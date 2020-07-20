@@ -18,6 +18,8 @@ ARG USER_GID=$USER_UID
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
+    # Need zip and unzip for the Hoverfly installation
+    && apt-get -y install --no-install-recommends zip unzip \
     #
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -y install --no-install-recommends git openssh-client less iproute2 procps lsb-release \
@@ -63,3 +65,23 @@ RUN apt-get update \
 # Updated from "auto" to "on" as we are using Go modules for this project
 # See https://dev.to/maelvls/why-is-go111module-everywhere-and-everything-about-go-modules-24k
 ENV GO111MODULE=on
+
+# Install Hoverfly for virtualised tests: https://hoverfly.readthedocs.io/
+# hadolint ignore=DL3003
+RUN mkdir -p /tmp/hoverfly \
+    && cd /tmp/hoverfly || exit \
+    && export HOVERFLY_PLATFORM=linux_amd64 \
+    && export HOVERFLY_PLATFORM=linux_amd64 \
+    && export HOVERFLY_VERSION=v1.3.0 \
+    && export HOVERFLY_BUNDLE=hoverfly_bundle_$HOVERFLY_PLATFORM \
+    && wget https://github.com/SpectoLabs/hoverfly/releases/download/$HOVERFLY_VERSION/$HOVERFLY_BUNDLE.zip \
+    && unzip $HOVERFLY_BUNDLE.zip \
+    && mv hoverfly /usr/local/bin/ \
+    && mv hoverctl /usr/local/bin/ \
+    && chmod +x /usr/local/bin/hoverfly \
+    && chmod +x /usr/local/bin/hoverctl \
+    # Add the trusted Hoverfly certificate so that Hoverfly SSL calls work
+    && wget https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/cert.pem \
+    && cp cert.pem /usr/local/share/ca-certificates/hoverfly.crt \
+    && update-ca-certificates \
+    && rm -rf /tmp/hoverfly
