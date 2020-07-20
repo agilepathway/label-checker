@@ -1,0 +1,9 @@
+# See
+# https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
+# https://github.blog/2017-07-06-introducing-code-owners/
+
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners will be the default owners for everything in the repo.
+*       @johnboyes

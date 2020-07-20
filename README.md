@@ -116,10 +116,18 @@ You can have as many of the checks configured in the same YAML file as you like.
   ```
 
 
-## Suggestions / bug reports
+## Suggestions / bug reports / contributions
 
-[Suggestions and bug reports](https://github.com/agilepathway/label-checker/issues) 
-are very welcome :slightly_smiling_face:
+The project is [open source](https://opensource.guide/how-to-contribute/) and all contributions are very welcome :slightly_smiling_face: :boom: :thumbsup:
+
+* [How to report a bug or suggest a new feature](CONTRIBUTING.md#how-to-report-a-bug-or-suggest-a-new-feature)
+
+* [How to make a contribution](CONTRIBUTING.md#how-to-make-a-contribution)
+
+* [Local development](CONTRIBUTING.md#local-development)
+
+* [Running the tests](CONTRIBUTING.md#running-the-tests)
+  
 
 ## Why another label checker?
 
