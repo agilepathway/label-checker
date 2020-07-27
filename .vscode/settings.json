@@ -1,4 +1,6 @@
 {
+    "git.enableCommitSigning": true,
+
     "go.useLanguageServer": true,
     "[go]": {
         "editor.tabSize": 8,
