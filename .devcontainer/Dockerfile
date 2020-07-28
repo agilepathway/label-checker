@@ -14,7 +14,7 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 # Configure apt, install packages and tools
-# hadolint ignore=DL3003,DL3008
+# hadolint ignore=DL3003,DL3008,DL4006
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
@@ -23,6 +23,9 @@ RUN apt-get update \
     #
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -y install --no-install-recommends git openssh-client less iproute2 procps lsb-release \
+    # Install Zsh
+    && apt-get -y install --no-install-recommends zsh \
+    && wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
     #
     # Build Go tools w/module support
     && mkdir -p /tmp/gotools \
