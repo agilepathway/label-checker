@@ -20,10 +20,7 @@ jobs:
         uses: agilepathway/hoverfly-github-action@main
         with:
           runner_github_workspace_path: ${{ github.workspace }}
-      - name: Add and trust Hoverfly default certificate
-        run: |
-            wget https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/cert.pem
-            sudo mv cert.pem /usr/local/share/ca-certificates/hoverfly.crt
-            sudo update-ca-certificates
+      - name: Enable https calls to be simulated by Hoverfly
+        run: install-and-trust-hoverfly-default-cert.sh
       - name: Tests
         run: go test -v .
