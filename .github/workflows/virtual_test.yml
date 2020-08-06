@@ -17,20 +17,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install Hoverfly
-        working-directory: ${{ runner.temp }}
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/bin
-          export HOVERFLY_PLATFORM=linux_amd64
-          export HOVERFLY_VERSION=v1.3.0
-          export HOVERFLY_BUNDLE=hoverfly_bundle_$HOVERFLY_PLATFORM
-          export HOVERFLY_DOWNLOAD_URL=https://github.com/SpectoLabs/hoverfly/releases/download/
-          wget $HOVERFLY_DOWNLOAD_URL$HOVERFLY_VERSION/$HOVERFLY_BUNDLE.zip
-          unzip $HOVERFLY_BUNDLE.zip
-          mv hoverfly $GITHUB_WORKSPACE/bin/
-          mv hoverctl $GITHUB_WORKSPACE/bin/
-          echo "::add-path::$GITHUB_WORKSPACE/bin"
-          chmod +x $GITHUB_WORKSPACE/bin/hoverfly
-          chmod +x $GITHUB_WORKSPACE/bin/hoverctl
+        uses: agilepathway/hoverfly-github-action@main
+        with:
+          runner_github_workspace_path: ${{ github.workspace }}
       - name: Add and trust Hoverfly default certificate
         run: |
             wget https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/cert.pem
