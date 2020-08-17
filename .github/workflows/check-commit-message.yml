@@ -20,3 +20,4 @@ jobs:
         uses: mristin/opinionated-commit-message@v2.1.2
         with:
           allow-one-liners: 'true'
+          additional-verbs: 'notify'

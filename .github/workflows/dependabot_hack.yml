@@ -1,0 +1,21 @@
+---
+# See ../DEPENDENCIES.md#workaround-for-other-dependencies
+name: Dependabot hack
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - never-trigger-this-dependabot-hack-workflow
+
+jobs:
+
+  dependabot_hack:
+    name: Ensure dependabot version checks
+    runs-on: ubuntu-20.04
+    steps:
+
+      # update the version in `github_tag_and_release.yml` manually, too
+      - uses: golang/go@go1.14.7
+
+      # update the variant version in the devcontainer.json manually, too
+      # (see ../DEPENDENCIES.md#devcontainer-base-image-version for more info )
+      - uses: microsoft/vscode-dev-containers@v0.134.0
