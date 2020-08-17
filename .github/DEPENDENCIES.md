@@ -30,6 +30,22 @@ but that would be overkill for now.
 Eventually as Dependabot adds more features we may be able to remove this workaround.
 
 
+## Dockerfile dependencies
+
+We have [pinned the linux dependencies in the devcontainer Dockerfile](https://github.com/agilepathway/hoverfly-github-action/pull/112/files), but there is no mechanism to automatically update them, currently.  It looks like [it's on Dependabot's roadmap](https://github.com/dependabot/dependabot-core/issues/2129#issuecomment-511552345), so we have [an issue automatically created every 6 months](https://github.com/agilepathway/hoverfly-github-action/pull/112) to 
+1. update the dependencies manually
+2. see if Dependabot now offer this functionality
+
+
+### Updating the Dockerfile dependencies manually
+
+1. Temporarily unpin the versions (i.e. remove `=<version>` from each package in the Dockerfile)
+2. Execute the Dockerfile (e.g. if it's a remote container Dockerfile build the remote container)
+3. Run `apt-cache policy <package>` for each package, to see the version installed
+4. Pin all the versions, replacing any old versions with new ones
+
+
+
 ## Ubuntu version
 
 [Ubuntu releases annually in April](https://wiki.ubuntu.com/Releases).  In 2020 the GitHub Actions team [supported the new version by mid June](https://github.com/actions/virtual-environments/issues/228#issuecomment-644065532), so we have [an issue automatically created on for 15th July each year](https://github.com/agilepathway/label-checker/pull/111) to prompt us to update. 

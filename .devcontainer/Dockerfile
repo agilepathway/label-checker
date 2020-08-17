@@ -17,20 +17,26 @@ ARG USER_GID=$USER_UID
 # hadolint ignore=DL3003,DL3008,DL4006
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
+    && apt-get -y install --no-install-recommends apt-utils=1.8.2.1 dialog=1.3-20190211-1 2>&1 \
     # Need zip and unzip for the Hoverfly installation
-    && apt-get -y install --no-install-recommends zip unzip \
+    && apt-get -y install --no-install-recommends zip=3.0-11+b1 unzip=6.0-23+deb10u1 \
     #
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
-    && apt-get -y install --no-install-recommends git openssh-client less iproute2 procps lsb-release \
+    && apt-get -y install --no-install-recommends \
+        git=1:2.20.1-2+deb10u3 \
+        openssh-client=1:7.9p1-10+deb10u2 \
+        less=487-0.1+b1 \
+        iproute2=4.20.0-2 \
+        procps=2:3.3.15-2 \
+        lsb-release=10.2019051400 \
     # Install Zsh
-    && apt-get -y install --no-install-recommends zsh \
+    && apt-get -y install --no-install-recommends zsh=5.7.1-1 \
     && wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
     #
     # Build Go tools w/module support
     && mkdir -p /tmp/gotools \
     && cd /tmp/gotools \
-    && GOPATH=/tmp/gotools GO111MODULE=on go get -v golang.org/x/tools/gopls@latest 2>&1 \
+    && GOPATH=/tmp/gotools GO111MODULE=on go get -v golang.org/x/tools/gopls@v0.4.4 2>&1 \
     && GOPATH=/tmp/gotools GO111MODULE=on go get -v \
         github.com/mdempsky/gocode@latest \
         github.com/sqs/goreturns@latest \
@@ -55,7 +61,7 @@ RUN apt-get update \
     && groupadd --gid $USER_GID $USERNAME \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
     # [Optional] Add sudo support
-    && apt-get install -y --no-install-recommends sudo \
+    && apt-get install -y --no-install-recommends sudo=1.8.27-1+deb10u2 \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     #
