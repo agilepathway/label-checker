@@ -11,8 +11,7 @@ RUN CGO_ENABLED=0 GOFLAGS=-ldflags="-w" mage -compile /bin/check-labels -goos li
 RUN strip /bin/check-labels
 
 # Compress the compiled action using UPX (https://upx.github.io/) 
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get -y install --no-install-recommends upx
+RUN apt-get update && apt-get -y install --no-install-recommends upx-ucl=3.95-1
 RUN upx -q -9 /bin/check-labels
 
 # Use the most basic and empty container - no runtime, files, shell, libraries, etc.
