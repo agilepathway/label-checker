@@ -13,7 +13,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
 
-      # update the version in `github_tag_and_release.yml` manually, too
+      # update the version in these places manually when Dependabot changes it here:
+      # the base image in the devcontainer Dockerfile
+      # github_tag_and_release.yml
+      # integration_test.yml
+      # virtual_test.yml
+      # the go.mod (if it is a major or minor version change e.g. 1.14 to 1.15)
       - uses: golang/go@go1.14.7
 
       # update the versions in the devcontainer Dockerfile manually, too
