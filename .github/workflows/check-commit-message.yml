@@ -15,7 +15,7 @@ jobs:
   check-commit-message-style:
     if: (github.actor!= 'dependabot[bot]') && (contains(github.head_ref, 'dependabot/github_actions/') == false)
     name: Check commit message style
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Check
         uses: mristin/opinionated-commit-message@v2.1.2
