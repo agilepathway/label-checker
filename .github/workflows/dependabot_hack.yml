@@ -16,6 +16,12 @@ jobs:
       # update the version in `github_tag_and_release.yml` manually, too
       - uses: golang/go@go1.14.7
 
-      # update the variant version in the devcontainer.json manually, too
-      # (see ../DEPENDENCIES.md#devcontainer-base-image-version for more info )
-      - uses: microsoft/vscode-dev-containers@v0.134.0
+      # update the versions in the devcontainer Dockerfile manually, too
+      - uses: uudashr/gopkgs@v2.1.2
+      - uses: ramya-rao-a/go-outline@1.0.0
+      - uses: acroca/go-symbols@v0.1.1
+      - uses: rogpeppe/godef@v1.1.2
+      - uses: fatih/gomodifytags@v1.6.0
+      - uses: go-delve/delve@v1.5.0
+      - uses: golangci/golangci-lint@v1.30.0
+      - uses: SpectoLabs/hoverfly@v1.3.0
