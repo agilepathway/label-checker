@@ -9,7 +9,7 @@ on:  # yamllint disable-line rule:truthy
       - synchronize
   push:
     branches-ignore:
-      - main
+      - master
 
 jobs:
   check-commit-message-style:
