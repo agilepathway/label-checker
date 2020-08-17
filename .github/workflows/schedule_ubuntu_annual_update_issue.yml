@@ -1,0 +1,26 @@
+---
+name: Create issue annually to update Ubuntu
+on:  # yamllint disable-line rule:truthy
+  # Scheduled for 2am on 15th July every year
+  schedule:
+    - cron: '0 2 15 7 *'  # * is a special character in YAML so we have to quote this string
+
+jobs:
+  create_issue:
+    name: Create issue to update Ubuntu
+    runs-on: ubuntu-20.04
+    steps:
+
+      # Repo code checkout required if `template` is used
+      - name: Checkout
+        uses: actions/checkout@v2.3.2
+
+      - name: issue-bot
+        uses: imjohnbo/issue-bot@v2.3
+        with:
+          assignees: "johnboyes"
+          labels: "dependencies"
+          # assignees & labels in the template are overridden by the values specified in this action
+          template: ".github/ISSUE_TEMPLATE/scheduled/update-ubuntu-version-in-github-actions.md"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
