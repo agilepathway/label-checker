@@ -3,7 +3,10 @@
 # Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
 #-------------------------------------------------------------------------------------------------------------
 
-FROM golang:1
+# When we update the base image version (which we do manually, prompted by Dependabot
+# notifying us of a new Go version), make sure our new base images is listed at:
+# https://hub.docker.com/_/golang
+FROM golang:1.14.7-buster
 
 # This Dockerfile adds a non-root user with sudo access. Use the "remoteUser"
 # property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
