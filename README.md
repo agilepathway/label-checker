@@ -12,7 +12,21 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/agilepathway/label-checker)](https://goreportcard.com/report/github.com/agilepathway/label-checker)
 [![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/agilepathway/label-checker)](https://golang.org/)
 
+
+---
+
  **[GitHub Action](https://github.com/features/actions) to check pull requests (PRs) for the presence or absence of specified labels**
+
+---
+
+
+## Why another label checker?
+
+- We couldn't find another label checker that had all [our 4 check types](#checks) (`one_of`, `none_of`, `all_of`, `any_of`)
+
+- **Speed**: the [Docker image](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
+  used for the checks is only 2.7 MB, so the checks are blazingly fast (c. 3 seconds)
+
 
 ## Using the Label Checker action
 
@@ -127,14 +141,6 @@ The project is [open source](https://opensource.guide/how-to-contribute/) and al
 * [Local development](CONTRIBUTING.md#local-development)
 
 * [Running the tests](CONTRIBUTING.md#running-the-tests)
-  
-
-## Why another label checker?
-
-- We couldn't find another label checker that had all the 4 check types available
-
-- Speed: the [Docker image](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
-  used for the checks is only 2.7 MB, so the checks are blazingly fast (c. 3 seconds)
 
 
 ## Updating dependencies
