@@ -8,6 +8,8 @@ on:  # yamllint disable-line rule:truthy
       - reopened
       - synchronize
   push:
+    branches-ignore:
+      - main
 
 jobs:
   check-commit-message-style:
