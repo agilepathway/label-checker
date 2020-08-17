@@ -7,7 +7,7 @@ jobs:
 
   build_and_push_docker_image:
     name: Build and push image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2.3.2
       - uses: docker/build-push-action@v1.1.0
