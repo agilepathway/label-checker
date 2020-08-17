@@ -17,7 +17,7 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 # Configure apt, install packages and tools
-# hadolint ignore=DL3003,DL3008,DL4006
+# hadolint ignore=DL3003,DL4006
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends apt-utils=1.8.2.1 dialog=1.3-20190211-1 2>&1 \
