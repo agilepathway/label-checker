@@ -9,8 +9,8 @@ jobs:
     name: runner / golangci-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: reviewdog/action-golangci-lint@v1
+      - uses: actions/checkout@v2.3.2
+      - uses: reviewdog/action-golangci-lint@v1.11.0
         with:
           github_token: ${{ secrets.github_token }}
           golangci_lint_flags: "-c .golangci.yml"
@@ -22,9 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.2
       - name: hadolint
-        uses: reviewdog/action-hadolint@v1
+        uses: reviewdog/action-hadolint@v1.6.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
@@ -33,9 +33,9 @@ jobs:
     name: runner / yamllint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.2
       - name: yamllint
-        uses: reviewdog/action-yamllint@v1
+        uses: reviewdog/action-yamllint@v1.1.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
@@ -44,9 +44,9 @@ jobs:
     name: runner / shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.2
       - name: shellcheck
-        uses: reviewdog/action-shellcheck@v1
+        uses: reviewdog/action-shellcheck@v1.4.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
@@ -58,8 +58,8 @@ jobs:
     name: runner / misspell
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: reviewdog/action-misspell@v1
+      - uses: actions/checkout@v2.3.2
+      - uses: reviewdog/action-misspell@v1.5.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
@@ -68,8 +68,8 @@ jobs:
     name: runner / languagetool
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: reviewdog/action-languagetool@v1
+      - uses: actions/checkout@v2.3.2
+      - uses: reviewdog/action-languagetool@v1.3.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check

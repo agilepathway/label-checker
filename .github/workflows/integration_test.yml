@@ -8,18 +8,14 @@ name: Tests
 jobs:
   tests:
     name: Integration
-    strategy:
-      matrix:
-        go-version: [1.14.x]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v2.1.2
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.14.7
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.2
       - name: Tests
         env:
           INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
