@@ -1,0 +1,28 @@
+---
+name: Create issue every 6 months to update Dockerfile dependencies
+on:  # yamllint disable-line rule:truthy
+  # Scheduled for 4am on 10th March and 10th Sept every year
+  schedule:
+    - cron: '0 4 10 3,9 *'  # * is a special character in YAML so we have to quote this string
+
+jobs:
+  create_issue:
+    name: Create issue to update Dockerfile dependencies
+    runs-on: ubuntu-20.04
+    steps:
+
+      # Repo code checkout required if `template` is used
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: issue-bot
+        uses: imjohnbo/issue-bot@v2
+        with:
+          assignees: "johnboyes"
+          labels: "dependencies"
+          pinned: false
+          close-previous: false
+          # assignees & labels in the template are overridden by the values specified in this action
+          template: ".github/ISSUE_TEMPLATE/scheduled/update-dockerfile-dependencies.md"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
