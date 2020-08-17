@@ -8,19 +8,17 @@ name: Tests
 jobs:
   tests:
     name: Virtual
-    strategy:
-      matrix:
-        go-version: [1.14.x]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v2.1.2
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.14.7
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.2
       - name: Install Hoverfly
+        # do not specify a specific semver version or we will have an infinite circular dependency loop,
+        # between the hoverfly-github-action and this label-checker
         uses: agilepathway/hoverfly-github-action@main
         with:
           runner_github_workspace_path: ${{ github.workspace }}

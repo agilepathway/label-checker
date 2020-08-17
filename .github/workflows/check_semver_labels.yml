@@ -15,6 +15,7 @@ jobs:
     name: Check for semantic version label
     runs-on: ubuntu-latest
     steps:
+      # always use the latest version here, can't use Dependabot or we'll be caught in an infinite update loop
       - uses: docker://agilepathway/pull-request-label-checker:latest
         with:
           one_of: major,minor,patch

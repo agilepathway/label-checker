@@ -135,3 +135,8 @@ The project is [open source](https://opensource.guide/how-to-contribute/) and al
 
 - Speed: the [Docker image](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
   used for the checks is only 2.7 MB, so the checks are blazingly fast (c. 3 seconds)
+
+
+## Updating dependencies
+
+See the [DEPENDENCIES.md](.github/DEPENDENCIES.md)

@@ -87,3 +87,8 @@ Run the tests:
 The tests are [table driven](https://dave.cheney.net/2019/05/07/prefer-table-driven-tests), which is an important concept to know when amending them.
 
 The tests also have an integration mode which makes calls to real external services instead of using Hoverfly to virtualise the service calls.  You do not need to run the tests in integration mode when contributing (they will not pass unless you are a [maintainer](.github/CODEOWNERS) of the project who has the designated GitHub permissions).
+
+
+## Updating dependencies
+
+See the [DEPENDENCIES.md](.github/DEPENDENCIES.md)
