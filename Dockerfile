@@ -1,4 +1,4 @@
-FROM golang:1.14.7 AS builder
+FROM golang:1.15.0-buster AS builder
 
 WORKDIR /src
 COPY . .
