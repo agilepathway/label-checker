@@ -11,8 +11,9 @@ Whenever possible we let Dependabot update our dependencies automatically (by
 [automatically creating a PR](https://docs.github.com/en/github/administering-a-repository/managing-pull-requests-for-dependency-updates#about-github-dependabot-pull-requests)
 for us to merge).
 
-Dependabot will 
-[automatically update non-Docker dependencies in our GitHub Actions](https://github.blog/2020-06-25-dependabot-now-updates-your-actions-workflows/).
+Dependabot automatically updates our:
+- [Go modules dependencies](https://dependabot.com/go/)
+- [non-Docker dependencies in our GitHub Actions](https://github.blog/2020-06-25-dependabot-now-updates-your-actions-workflows/)
 
 
 ### Workaround for other dependencies
