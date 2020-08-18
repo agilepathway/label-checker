@@ -14,3 +14,14 @@ updates:
       - "patch"
     reviewers:
       - "johnboyes"
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      # Check for updates to GitHub Actions every weekday
+      interval: "daily"
+    labels:
+      - "dependencies"
+      - "patch"
+    reviewers:
+      - "johnboyes"
