@@ -13,7 +13,17 @@ for us to merge).
 
 Dependabot automatically updates our:
 - [Go modules dependencies](https://dependabot.com/go/)
-- [non-Docker dependencies in our GitHub Actions](https://github.blog/2020-06-25-dependabot-now-updates-your-actions-workflows/)
+- [GitHub Actions (non-Docker dependencies only, for now)](https://github.blog/2020-06-25-dependabot-now-updates-your-actions-workflows/)
+
+### Process for updating Go modules dependencies
+
+Dependabot updates our dependencies and modifies `go.mod` and `go.sum` accordingly.
+It [does not remove any now-obsolete entries from `go.sum`, though]().
+So we have to clean up `go.sum` by doing the following:
+1. check out the branch created by Dependabot, locally
+2. run `go mod tidy`
+3. commit and push the updated `go.sum` to the same Dependabot branch
+4. review and merge the PR
 
 
 ### Workaround for other dependencies
