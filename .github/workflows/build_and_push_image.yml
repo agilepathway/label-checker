@@ -9,7 +9,7 @@ jobs:
     name: Build and push image
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2.3.2
+      - uses: actions/checkout@v2.3.3
       - uses: docker/build-push-action@v1.1.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
