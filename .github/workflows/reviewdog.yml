@@ -24,7 +24,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2.3.3
       - name: hadolint
-        uses: reviewdog/action-hadolint@v1.7
+        uses: reviewdog/action-hadolint@v1.8
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
