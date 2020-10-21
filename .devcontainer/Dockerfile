@@ -48,7 +48,7 @@ RUN apt-get update \
         github.com/ramya-rao-a/go-outline@1.0.0  \
         github.com/acroca/go-symbols@v0.1.1  \
         github.com/rogpeppe/godef@v1.1.2  \
-        github.com/fatih/gomodifytags@v1.7.0  \
+        github.com/fatih/gomodifytags@v1.9.0  \
         github.com/go-delve/delve/cmd/dlv@v1.5.0 2>&1 \
         github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0 \
     #
