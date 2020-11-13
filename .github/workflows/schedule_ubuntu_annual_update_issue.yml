@@ -13,7 +13,7 @@ jobs:
 
       # Repo code checkout required if `template` is used
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v2.3.4
 
       - name: issue-bot
         uses: imjohnbo/issue-bot@v2.3
