@@ -39,7 +39,7 @@ RUN apt-get update \
     # Build Go tools w/module support
     && mkdir -p /tmp/gotools \
     && cd /tmp/gotools \
-    && GOPATH=/tmp/gotools GO111MODULE=on go get -v golang.org/x/tools/gopls@v0.5.5 2>&1 \
+    && GOPATH=/tmp/gotools GO111MODULE=on go get -v golang.org/x/tools/gopls@v0.6.0 2>&1 \
     && GOPATH=/tmp/gotools GO111MODULE=on go get -v \
         github.com/mdempsky/gocode@latest \
         github.com/sqs/goreturns@latest \
