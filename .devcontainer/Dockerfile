@@ -6,7 +6,7 @@
 # When we update the base image version (which we do manually, prompted by Dependabot
 # notifying us of a new Go version), make sure our new base images is listed at:
 # https://hub.docker.com/_/golang
-FROM golang:1.15.6-buster
+FROM golang:1.15
 
 # This Dockerfile adds a non-root user with sudo access. Use the "remoteUser"
 # property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
@@ -26,12 +26,12 @@ RUN apt-get update \
     #
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -y install --no-install-recommends \
-        git=1:2.20.1-2+deb10u3 \
-        openssh-client=1:7.9p1-10+deb10u2 \
-        less=487-0.1+b1 \
-        iproute2=4.20.0-2 \
-        procps=2:3.3.15-2 \
-        lsb-release=10.2019051400 \
+        git \
+        openssh-client \
+        less \
+        iproute2 \
+        procps \
+        lsb-release \
     # Install Zsh
     && apt-get -y install --no-install-recommends zsh \
     && wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
