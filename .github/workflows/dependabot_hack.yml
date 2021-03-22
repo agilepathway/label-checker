@@ -25,7 +25,7 @@ jobs:
       - uses: golang/go@go1.15.6
 
       # update the versions in the devcontainer Dockerfile manually, too
-      - uses: golang/tools@gopls/v0.6.5
+      - uses: golang/tools@gopls/v0.6.9
       - uses: uudashr/gopkgs@v2.1.2
       - uses: ramya-rao-a/go-outline@1.0.0
       - uses: acroca/go-symbols@v0.1.1
