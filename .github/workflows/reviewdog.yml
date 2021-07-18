@@ -70,10 +70,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2.3.4
-      - uses: reviewdog/action-languagetool@v1.4
+      - uses: reviewdog/action-languagetool@v1.6
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
           patterns: |
             **/*.md
           language: en
+          disabled_rules:
+            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END"
