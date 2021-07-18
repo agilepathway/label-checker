@@ -136,6 +136,10 @@ func TestMain(m *testing.M) {
 	os.Setenv(EnvGitHubRepository, GitHubTestRepo)       //nolint
 	os.Setenv(EnvGitHubEventPath, gitHubEventFullPath()) //nolint
 	os.Setenv(MagefileVerbose, "1")                      //nolint
+	os.Setenv(EnvRequireOneOf, " ")                      //nolint
+	os.Setenv(EnvRequireNoneOf, " ")                     //nolint
+	os.Setenv(EnvRequireAllOf, " ")                      //nolint
+	os.Setenv(EnvRequireAnyOf, " ")                      //nolint
 	setupVirtualServicesIfNotInIntegrationMode()
 	os.Exit(testMainWrapper(m))
 }
