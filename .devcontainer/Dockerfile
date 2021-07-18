@@ -41,13 +41,6 @@ RUN apt-get update \
     && cd /tmp/gotools \
     && GOPATH=/tmp/gotools go get -v golang.org/x/tools/gopls@v0.7.0 2>&1 \
     && GOPATH=/tmp/gotools go get -v \
-        github.com/sqs/goreturns@latest \
-        # gopkgs is still needed even with gopls: https://github.com/microsoft/vscode-go/issues/3050#issuecomment-592263369
-        github.com/uudashr/gopkgs/v2/cmd/gopkgs@v2.1.2  \
-        github.com/ramya-rao-a/go-outline@1.0.0  \
-        github.com/acroca/go-symbols@v0.1.1  \
-        github.com/rogpeppe/godef@v1.1.2  \
-        github.com/fatih/gomodifytags@v1.13.0  \
         github.com/go-delve/delve/cmd/dlv@v1.7.0 2>&1 \
         github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1 \
     #
