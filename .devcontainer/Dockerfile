@@ -36,11 +36,11 @@ RUN apt-get update \
     && apt-get -y install --no-install-recommends zsh=5.7.1-1 \
     && wget -q --show-progress https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
     #
-    # Build Go tools w/module support
+    # Build Go tools
     && mkdir -p /tmp/gotools \
     && cd /tmp/gotools \
-    && GOPATH=/tmp/gotools GO111MODULE=on go get -v golang.org/x/tools/gopls@v0.7.0 2>&1 \
-    && GOPATH=/tmp/gotools GO111MODULE=on go get -v \
+    && GOPATH=/tmp/gotools go get -v golang.org/x/tools/gopls@v0.7.0 2>&1 \
+    && GOPATH=/tmp/gotools go get -v \
         github.com/mdempsky/gocode@latest \
         github.com/sqs/goreturns@latest \
         # gopkgs is still needed even with gopls: https://github.com/microsoft/vscode-go/issues/3050#issuecomment-592263369
@@ -72,11 +72,6 @@ RUN apt-get update \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /tmp/gotools
-
-# Update this to "on" or "off" as appropriate
-# Updated from "auto" to "on" as we are using Go modules for this project
-# See https://dev.to/maelvls/why-is-go111module-everywhere-and-everything-about-go-modules-24k
-ENV GO111MODULE=on
 
 # Install Hoverfly for virtualised tests: https://hoverfly.readthedocs.io/
 # hadolint ignore=DL3003
