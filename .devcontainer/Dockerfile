@@ -49,7 +49,7 @@ RUN apt-get update \
         github.com/acroca/go-symbols@v0.1.1  \
         github.com/rogpeppe/godef@v1.1.2  \
         github.com/fatih/gomodifytags@v1.13.0  \
-        github.com/go-delve/delve/cmd/dlv@v1.6.0 2>&1 \
+        github.com/go-delve/delve/cmd/dlv@v1.7.0 2>&1 \
         github.com/golangci/golangci-lint/cmd/golangci-lint@v1.36.0 \
     #
     # Build gocode-gomod
