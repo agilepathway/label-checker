@@ -106,7 +106,7 @@ func (a *Action) anyRequired() []string {
 
 func (a *Action) getLabelsFromEnvVar(envVar string) []string {
 	specifiedLabels, present := os.LookupEnv(envVar)
-	if present {
+	if present && (len(strings.TrimSpace(specifiedLabels)) > 0) {
 		return strings.Split(specifiedLabels, ",")
 	}
 
