@@ -50,7 +50,7 @@ RUN apt-get update \
         github.com/rogpeppe/godef@v1.1.2  \
         github.com/fatih/gomodifytags@v1.13.0  \
         github.com/go-delve/delve/cmd/dlv@v1.7.0 2>&1 \
-        github.com/golangci/golangci-lint/cmd/golangci-lint@v1.36.0 \
+        github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1 \
     #
     # Build gocode-gomod
     && GOPATH=/tmp/gotools go get -x -d github.com/stamblerre/gocode 2>&1 \
