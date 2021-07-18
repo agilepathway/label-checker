@@ -34,7 +34,7 @@ RUN apt-get update \
         lsb-release=10.2019051400 \
     # Install Zsh
     && apt-get -y install --no-install-recommends zsh=5.7.1-1 \
-    && wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
+    && wget -q --show-progress https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
     #
     # Build Go tools w/module support
     && mkdir -p /tmp/gotools \
@@ -86,14 +86,14 @@ RUN mkdir -p /tmp/hoverfly \
     && export HOVERFLY_PLATFORM=linux_amd64 \
     && export HOVERFLY_VERSION=v1.3.0 \
     && export HOVERFLY_BUNDLE=hoverfly_bundle_$HOVERFLY_PLATFORM \
-    && wget https://github.com/SpectoLabs/hoverfly/releases/download/$HOVERFLY_VERSION/$HOVERFLY_BUNDLE.zip \
+    && wget -q --show-progress https://github.com/SpectoLabs/hoverfly/releases/download/$HOVERFLY_VERSION/$HOVERFLY_BUNDLE.zip \
     && unzip $HOVERFLY_BUNDLE.zip \
     && mv hoverfly /usr/local/bin/ \
     && mv hoverctl /usr/local/bin/ \
     && chmod +x /usr/local/bin/hoverfly \
     && chmod +x /usr/local/bin/hoverctl \
     # Add the trusted Hoverfly certificate so that Hoverfly SSL calls work
-    && wget https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/cert.pem \
+    && wget -q --show-progress https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/cert.pem \
     && cp cert.pem /usr/local/share/ca-certificates/hoverfly.crt \
     && update-ca-certificates \
     && rm -rf /tmp/hoverfly
