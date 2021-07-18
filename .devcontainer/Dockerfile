@@ -41,7 +41,6 @@ RUN apt-get update \
     && cd /tmp/gotools \
     && GOPATH=/tmp/gotools go get -v golang.org/x/tools/gopls@v0.7.0 2>&1 \
     && GOPATH=/tmp/gotools go get -v \
-        github.com/mdempsky/gocode@latest \
         github.com/sqs/goreturns@latest \
         # gopkgs is still needed even with gopls: https://github.com/microsoft/vscode-go/issues/3050#issuecomment-592263369
         github.com/uudashr/gopkgs/v2/cmd/gopkgs@v2.1.2  \
@@ -52,13 +51,8 @@ RUN apt-get update \
         github.com/go-delve/delve/cmd/dlv@v1.7.0 2>&1 \
         github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1 \
     #
-    # Build gocode-gomod
-    && GOPATH=/tmp/gotools go get -x -d github.com/stamblerre/gocode 2>&1 \
-    && GOPATH=/tmp/gotools go build -o gocode-gomod github.com/stamblerre/gocode \
-    #
     # Install Go tools
     && mv /tmp/gotools/bin/* /usr/local/bin/ \
-    && mv gocode-gomod /usr/local/bin/ \
     #
     # Create a non-root user to use if preferred - see https://aka.ms/vscode-remote/containers/non-root-user.
     && groupadd --gid $USER_GID $USERNAME \
