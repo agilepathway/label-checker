@@ -78,4 +78,4 @@ jobs:
             **/*.md
           language: en
           disabled_rules:
-            "GITHUB"
+            "GITHUB,DASH_RULE"
