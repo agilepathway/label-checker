@@ -78,4 +78,4 @@ jobs:
             **/*.md
           language: en
           disabled_rules:
-            "GITHUB,DASH_RULE"
+            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END"
