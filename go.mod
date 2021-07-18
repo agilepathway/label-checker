@@ -1,7 +1,7 @@
 module github.com/agilepathway/label-checker
 
 // major and minor version only - don't specify at patch level (e.g. don't put 1.14.7)
-go 1.15
+go 1.16
 
 require (
 	github.com/magefile/mage v1.11.0
