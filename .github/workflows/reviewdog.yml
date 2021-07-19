@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2.3.4
-      - uses: reviewdog/action-misspell@v1.7
+      - uses: reviewdog/action-misspell@v1.8.1
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
