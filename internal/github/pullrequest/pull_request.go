@@ -20,12 +20,12 @@ type PullRequest struct {
 }
 
 // New creates a new PullRequest
-func New(repoOwner string, repo string, prNumber int, ghToken string) *PullRequest {
+func New(repoOwner string, repo string, prNumber int, ghToken string, enterpriseEndpoint string) *PullRequest {
 	pr := new(PullRequest)
 	pr.repositoryOwner = repoOwner
 	pr.repository = repo
 	pr.number = prNumber
-	pr.Labels = pr.initLabels(apiClient(ghToken))
+	pr.Labels = pr.initLabels(apiClient(ghToken, enterpriseEndpoint))
 
 	return pr
 }
@@ -63,9 +63,13 @@ func (pr PullRequest) initLabels(apiClient *githubv4.Client) Labels {
 	return labels
 }
 
-func apiClient(token string) *githubv4.Client {
+func apiClient(token string, enterpriseEndpoint string) *githubv4.Client {
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	httpClient := oauth2.NewClient(context.Background(), tokenSource)
 
-	return githubv4.NewClient(httpClient)
+  if enterpriseEndpoint != "" {
+    return githubv4.NewEnterpriseClient(enterpriseEndpoint, httpClient)
+  } else {
+    return githubv4.NewClient(httpClient)
+  }
 }
