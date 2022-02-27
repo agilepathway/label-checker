@@ -125,7 +125,7 @@ You can have as many of the checks configured in the same YAML file as you like.
       steps:
         - uses: docker://agilepathway/pull-request-label-checker:latest
           with:
-            one_of: one_of: bug,enhancement
+            one_of: bug,enhancement
             repo_token: ${{ secrets.GITHUB_TOKEN }}
   ```
 
