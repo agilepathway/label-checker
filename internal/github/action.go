@@ -26,7 +26,13 @@ type Action struct {
 func (a *Action) CheckLabels() error {
 	fmt.Println("Checking GitHub labels ...")
 
-	pr := pullrequest.New(a.repositoryOwner(), a.repositoryName(), a.pullRequestNumber(), a.token(), a.enterpriseEndpoint())
+	pr := pullrequest.New(
+		a.repositoryOwner(),
+		a.repositoryName(),
+		a.pullRequestNumber(),
+		a.token(),
+		a.enterpriseEndpoint(),
+	)
 
 	a.runCheck(pr.Labels.HasExactlyOneOf, a.exactlyOneRequired)
 	a.runCheck(pr.Labels.HasNoneOf, a.noneRequired)
@@ -107,7 +113,6 @@ func (a *Action) allRequired() []string {
 func (a *Action) anyRequired() []string {
 	return a.getLabelsFromEnvVar("INPUT_ANY_OF")
 }
-
 
 func (a *Action) getLabelsFromEnvVar(envVar string) []string {
 	specifiedLabels, present := os.LookupEnv(envVar)

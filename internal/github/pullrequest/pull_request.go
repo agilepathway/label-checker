@@ -67,9 +67,9 @@ func apiClient(token string, enterpriseEndpoint string) *githubv4.Client {
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	httpClient := oauth2.NewClient(context.Background(), tokenSource)
 
-  if enterpriseEndpoint != "" {
-    return githubv4.NewEnterpriseClient(enterpriseEndpoint, httpClient)
-  } else {
-    return githubv4.NewClient(httpClient)
-  }
+	if enterpriseEndpoint != "" {
+		return githubv4.NewEnterpriseClient(enterpriseEndpoint, httpClient)
+	}
+
+	return githubv4.NewClient(httpClient)
 }
