@@ -88,6 +88,10 @@ The tests are [table driven](https://dave.cheney.net/2019/05/07/prefer-table-dri
 
 The tests also have an integration mode which makes calls to real external services instead of using Hoverfly to virtualise the service calls.  You do not need to run the tests in integration mode when contributing (they will not pass unless you are a [maintainer](.github/CODEOWNERS) of the project who has the designated GitHub permissions).
 
+If you are a maintainer, and you want to run the integration tests locally, you will need to set the `INPUT_REPO_TOKEN` environment variable, e.g. if using a VS Code Codespace you can run: 
+
+`INPUT_REPO_TOKEN=$GITHUB_TOKEN go test -integration -v .`
+
 
 ## Updating dependencies
 
