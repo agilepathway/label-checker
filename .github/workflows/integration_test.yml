@@ -9,6 +9,9 @@ jobs:
   tests:
     name: Integration
     runs-on: ubuntu-20.04
+    # Skip running on forks since forks don't have access to the agilepathway repo used
+    # in the integration tests
+    if: github.repository == 'agilepathway/label-checker'
     steps:
       - name: Install Go
         uses: actions/setup-go@v2.1.3
