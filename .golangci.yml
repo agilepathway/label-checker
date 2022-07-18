@@ -28,7 +28,7 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    - golint
+    - revive
     - goprintffuncname
     - godox
     - gomnd
@@ -36,14 +36,12 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - interfacer
     - lll
-    - maligned
     - misspell
     - prealloc
     - nakedret
     - rowserrcheck
-    - scopelint
+    - exportloopref
     - staticcheck
     - structcheck
     - stylecheck
