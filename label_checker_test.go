@@ -21,40 +21,55 @@ var integration = flag.Bool(
 	false,
 	"Make calls to real external services.  Requires INPUT_REPO_TOKEN environment variable.")
 
+//nolint: gochecknoglobals
+var enterpriseCloud = flag.Bool(
+	"enterprise-cloud",
+	false,
+	"Run the label checker against GitHub Enterprise Cloud instead of standard GitHub")
+
+//nolint: gochecknoglobals
+var enterpriseServer = flag.Bool(
+	"enterprise-server",
+	false,
+	"Run the label checker against GitHub Enterprise Server instead of standard GitHub")
+
 // nolint: lll
 const (
-	EnvGitHubRepository     = "GITHUB_REPOSITORY"
-	EnvGitHubEventPath      = "GITHUB_EVENT_PATH"
-	EnvRequireOneOf         = "INPUT_ONE_OF"
-	EnvRequireNoneOf        = "INPUT_NONE_OF"
-	EnvRequireAllOf         = "INPUT_ALL_OF"
-	EnvRequireAnyOf         = "INPUT_ANY_OF"
-	EnvHTTPSProxy           = "HTTPS_PROXY"
-	GitHubTestRepo          = "agilepathway/test-label-checker-consumer"
-	NoLabelsPR              = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
-	OneLabelPR              = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
-	TwoLabelsPR             = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
-	ThreeLabelsPR           = 4 // https://github.com/agilepathway/test-label-checker-consumer/pull/4
-	GitHubEventJSONDir      = "testdata/temp"
-	GitHubEventJSONFilename = "github_event.json"
-	MagefileVerbose         = "MAGEFILE_VERBOSE"
-	HoverflyProxyAddress    = "127.0.0.1:8500"
-	NeedNoneGotNone         = "Label check successful: required none of major, minor, patch, and found 0.\n"
-	NeedNoneGotOne          = "Label check failed: required none of major, minor, patch, but found 1: minor\n"
-	NeedNoneGotTwo          = "Label check failed: required none of major, minor, patch, but found 2: minor, patch\n"
-	NeedNoneGotThree        = "Label check failed: required none of major, minor, patch, but found 3: major, minor, patch\n"
-	NeedOneGotOne           = "Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
-	NeedOneGotNone          = "Label check failed: required 1 of major, minor, patch, but found 0.\n"
-	NeedOneGotTwo           = "Label check failed: required 1 of major, minor, patch, but found 2: minor, patch\n"
-	NeedOneGotThree         = "Label check failed: required 1 of major, minor, patch, but found 3: major, minor, patch\n"
-	NeedAllGotNone          = "Label check failed: required all of major, minor, patch, but found 0.\n"
-	NeedAllGotOne           = "Label check failed: required all of major, minor, patch, but found 1: minor\n"
-	NeedAllGotTwo           = "Label check failed: required all of major, minor, patch, but found 2: minor, patch\n"
-	NeedAllGotAll           = "Label check successful: required all of major, minor, patch, and found 3: major, minor, patch\n"
-	NeedAnyGotNone          = "Label check failed: required any of major, minor, patch, but found 0.\n"
-	NeedAnyGotOne           = "Label check successful: required any of major, minor, patch, and found 1: minor\n"
-	NeedAnyGotTwo           = "Label check successful: required any of major, minor, patch, and found 2: minor, patch\n"
-	NeedAnyGotThree         = "Label check successful: required any of major, minor, patch, and found 3: major, minor, patch\n"
+	EnvGitHubRepository            = "GITHUB_REPOSITORY"
+	EnvGitHubEventPath             = "GITHUB_EVENT_PATH"
+	EnvRequireOneOf                = "INPUT_ONE_OF"
+	EnvRequireNoneOf               = "INPUT_NONE_OF"
+	EnvRequireAllOf                = "INPUT_ALL_OF"
+	EnvRequireAnyOf                = "INPUT_ANY_OF"
+	EnvHTTPSProxy                  = "HTTPS_PROXY"
+	EnvGitHubEnterprise            = "INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL"
+	GitHubEnterpriseCloudEndpoint  = "https://api.github.com/graphql"
+	GitHubEnterpriseServerEndpoint = "https://example.com/api/graphql"
+	GitHubTestRepo                 = "agilepathway/test-label-checker-consumer"
+	NoLabelsPR                     = 1 // https://github.com/agilepathway/test-label-checker-consumer/pull/1
+	OneLabelPR                     = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
+	TwoLabelsPR                    = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
+	ThreeLabelsPR                  = 4 // https://github.com/agilepathway/test-label-checker-consumer/pull/4
+	GitHubEventJSONDir             = "testdata/temp"
+	GitHubEventJSONFilename        = "github_event.json"
+	MagefileVerbose                = "MAGEFILE_VERBOSE"
+	HoverflyProxyAddress           = "127.0.0.1:8500"
+	NeedNoneGotNone                = "Label check successful: required none of major, minor, patch, and found 0.\n"
+	NeedNoneGotOne                 = "Label check failed: required none of major, minor, patch, but found 1: minor\n"
+	NeedNoneGotTwo                 = "Label check failed: required none of major, minor, patch, but found 2: minor, patch\n"
+	NeedNoneGotThree               = "Label check failed: required none of major, minor, patch, but found 3: major, minor, patch\n"
+	NeedOneGotOne                  = "Label check successful: required 1 of major, minor, patch, and found 1: minor\n"
+	NeedOneGotNone                 = "Label check failed: required 1 of major, minor, patch, but found 0.\n"
+	NeedOneGotTwo                  = "Label check failed: required 1 of major, minor, patch, but found 2: minor, patch\n"
+	NeedOneGotThree                = "Label check failed: required 1 of major, minor, patch, but found 3: major, minor, patch\n"
+	NeedAllGotNone                 = "Label check failed: required all of major, minor, patch, but found 0.\n"
+	NeedAllGotOne                  = "Label check failed: required all of major, minor, patch, but found 1: minor\n"
+	NeedAllGotTwo                  = "Label check failed: required all of major, minor, patch, but found 2: minor, patch\n"
+	NeedAllGotAll                  = "Label check successful: required all of major, minor, patch, and found 3: major, minor, patch\n"
+	NeedAnyGotNone                 = "Label check failed: required any of major, minor, patch, but found 0.\n"
+	NeedAnyGotOne                  = "Label check successful: required any of major, minor, patch, and found 1: minor\n"
+	NeedAnyGotTwo                  = "Label check successful: required any of major, minor, patch, and found 2: minor, patch\n"
+	NeedAnyGotThree                = "Label check successful: required any of major, minor, patch, and found 3: major, minor, patch\n"
 )
 
 type specifyChecks func()
@@ -141,6 +156,7 @@ func TestMain(m *testing.M) {
 	os.Setenv(EnvRequireAllOf, " ")                      //nolint
 	os.Setenv(EnvRequireAnyOf, " ")                      //nolint
 	setupVirtualServicesIfNotInIntegrationMode()
+	setEnterpriseEndpointIfInEnterpriseMode()
 	os.Exit(testMainWrapper(m))
 }
 
@@ -151,6 +167,7 @@ func testMainWrapper(m *testing.M) int {
 		os.Unsetenv(EnvGitHubRepository)
 		os.Unsetenv(EnvGitHubEventPath)
 		os.Unsetenv(MagefileVerbose)
+		os.Unsetenv(EnvGitHubEnterprise)
 		teardownVirtualServicesIfNotInIntegrationMode()
 	}()
 
@@ -172,6 +189,14 @@ func teardownVirtualServicesIfNotInIntegrationMode() {
 	}
 }
 
+func setEnterpriseEndpointIfInEnterpriseMode() {
+	if *enterpriseCloud {
+		os.Setenv(EnvGitHubEnterprise, GitHubEnterpriseCloudEndpoint) //nolint
+	} else if *enterpriseServer {
+		os.Setenv(EnvGitHubEnterprise, GitHubEnterpriseServerEndpoint) //nolint
+	}
+}
+
 func execHoverCtl(arg ...string) {
 	// #nosec 204 https://github.com/securego/gosec/issues/343
 	cmd := exec.Command("hoverctl", arg...)
@@ -186,7 +211,11 @@ func startHoverflyInSpyMode() {
 }
 
 func importGitHubSimulations() {
-	execHoverCtl("import", "./testdata/github_api.json")
+	if *enterpriseServer {
+		execHoverCtl("import", "./testdata/github_enterprise_server_api.json")
+	} else {
+		execHoverCtl("import", "./testdata/github_api.json")
+	}
 }
 
 func stopHoverfly() {

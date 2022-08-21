@@ -1,3 +1,4 @@
+//go:build mage
 // +build mage
 
 //nolint:unused,deadcode,gochecknoglobals
