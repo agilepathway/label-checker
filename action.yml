@@ -32,6 +32,13 @@ inputs:
       See this link for an example of how to set this token:
       https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#example-passing-github_token-as-an-input
     required: true
+  github_enterprise_graphql_url:
+    description: >
+      Only provide this if you are using GitHub Enterprise.
+      For GitHub Enterprise Cloud enter `https://api.github.com/graphql` as the value.
+      For Github Enterprise Server enter `http(s)://<hostname>/api/graphql` as the value.
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
