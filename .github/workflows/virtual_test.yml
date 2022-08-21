@@ -31,4 +31,7 @@ jobs:
       - name: Enable https calls to be simulated by Hoverfly
         run: install-and-trust-hoverfly-default-cert.sh
       - name: Tests
-        run: go test -v .
+        run: |
+          go test -v .
+          go test -enterprise-cloud -v .
+          go test -enterprise-server -v .
