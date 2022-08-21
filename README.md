@@ -129,6 +129,43 @@ You can have as many of the checks configured in the same YAML file as you like.
             repo_token: ${{ secrets.GITHUB_TOKEN }}
   ```
 
+## GitHub Enterprise
+
+To use this label checker with [GitHub Enterprise](https://github.com/enterprise),
+specify the GitHub Enterprise GraphQL URL in an input, e.g. for 
+[Enterprise Cloud](https://docs.github.com/en/get-started/onboarding/getting-started-with-github-enterprise-cloud):
+
+   ```
+   jobs:
+   
+     check_labels:
+       name: Check labels
+       runs-on: ubuntu-latest
+       steps:
+         - uses: docker://agilepathway/pull-request-label-checker:latest
+           with:
+             github_enterprise_graphql_url: https://api.github.com/graphql
+             one_of: major,minor,patch # just an example
+             repo_token: ${{ secrets.GITHUB_TOKEN }}
+   ```
+
+  or for
+  [Enterprise Server](https://docs.github.com/en/enterprise-server/admin/overview/about-github-enterprise-server):
+
+   ```
+   jobs:
+   
+     check_labels:
+       name: Check labels
+       runs-on: ubuntu-latest
+       steps:
+         - uses: docker://agilepathway/pull-request-label-checker:latest
+           with:
+             github_enterprise_graphql_url: https://<hostname>/api/graphql
+             one_of: major,minor,patch # just an example
+             repo_token: ${{ secrets.GITHUB_TOKEN }}
+   ```
+
 
 ## Suggestions / bug reports / contributions
 

@@ -84,6 +84,16 @@ Run the tests:
 
 `go test -v .`
 
+Running the tests in GitHub Enterprise Cloud mode (verifying that the label checker 
+works properly on [GitHub Enterprise Cloud](https://docs.github.com/en/get-started/onboarding/getting-started-with-github-enterprise-cloud)):
+
+`go test -enterprise-cloud -v .`
+
+Running the tests in Github Enterprise Server mode (verifying that the label checker 
+works properly on [GitHub Enterprise Server](https://docs.github.com/en/enterprise-server/admin/overview/about-github-enterprise-server)):
+
+`go test -enterprise-server -v .`
+
 The tests are [table driven](https://dave.cheney.net/2019/05/07/prefer-table-driven-tests), which is an important concept to know when amending them.
 
 The tests also have an integration mode which makes calls to real external services instead of using Hoverfly to virtualise the service calls.  You do not need to run the tests in integration mode when contributing (they will not pass unless you are a [maintainer](.github/CODEOWNERS) of the project who has the designated GitHub permissions).
@@ -91,6 +101,13 @@ The tests also have an integration mode which makes calls to real external servi
 If you are a maintainer, and you want to run the integration tests locally, you will need to set the `INPUT_REPO_TOKEN` environment variable, e.g. if using a VS Code Codespace you can run: 
 
 `INPUT_REPO_TOKEN=$GITHUB_TOKEN go test -integration -v .`
+
+You can also run the integration tests locally in GitHub Enterprise Cloud mode:
+
+`INPUT_REPO_TOKEN=$GITHUB_TOKEN go test -integration -enterprise-cloud -v .`
+
+(we can't run the integration tests in GitHub Enterprise Server mode as that would require having
+a real GitHub Enterprise Server, which would be expensive in time and money to maintain)
 
 
 ## Updating dependencies
