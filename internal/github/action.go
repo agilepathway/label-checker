@@ -95,7 +95,7 @@ func (a *Action) token() string {
 }
 
 func (a *Action) enterpriseEndpoint() string {
-	return os.Getenv("GITHUB_GRAPHQL_URL")
+	return os.Getenv("INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL")
 }
 
 func (a *Action) exactlyOneRequired() []string {

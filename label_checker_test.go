@@ -42,7 +42,7 @@ const (
 	EnvRequireAllOf                = "INPUT_ALL_OF"
 	EnvRequireAnyOf                = "INPUT_ANY_OF"
 	EnvHTTPSProxy                  = "HTTPS_PROXY"
-	EnvGitHubEnterprise            = "GITHUB_GRAPHQL_URL"
+	EnvGitHubEnterprise            = "INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL"
 	GitHubEnterpriseCloudEndpoint  = "https://api.github.com/graphql"
 	GitHubEnterpriseServerEndpoint = "https://example.com/api/graphql"
 	GitHubTestRepo                 = "agilepathway/test-label-checker-consumer"
