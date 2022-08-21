@@ -22,4 +22,6 @@ jobs:
       - name: Tests
         env:
           INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: go test -integration -v .
+        run: |
+          go test -integration -v .
+          go test -integration -enterprise-cloud -v .
