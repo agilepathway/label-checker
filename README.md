@@ -129,6 +129,38 @@ You can have as many of the checks configured in the same YAML file as you like.
             repo_token: ${{ secrets.GITHUB_TOKEN }}
   ```
 
+
+## Allow failure mode
+
+You can set the label checker to not fail the build, even when a label check succeeds, and then use an
+[`if` condition](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsif)
+in a subsequent step or job to conditionally do something or not.
+For example: check if a pull request has a `preview` label
+and then only deploy an ephemeral environment if so.
+
+Set the `allow_failure` mode as an input parameter in the 
+[`with` section](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepswith): 
+`allow_failure: true`
+
+Example:
+
+  ```
+  steps:
+    - id: preview_label_check
+      uses: docker://agilepathway/pull-request-label-checker:latest
+      with:
+        all_of: preview
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        allow_failure: true
+    - if: steps.preview_label_check.outputs.label_check == 'success'
+      run: echo deploy to ephemeral environment
+  ```
+
+The label checker always exposes the `label_check` step output variable,
+regardless of whether `allow_failure` is set or not.
+The variable has a value of either `success` or `failure` which can then be queried in subsequent steps,
+as in the above example.
+
 ## GitHub Enterprise
 
 To use this label checker with [GitHub Enterprise](https://github.com/enterprise),

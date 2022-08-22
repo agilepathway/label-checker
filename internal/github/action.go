@@ -44,10 +44,25 @@ func (a *Action) CheckLabels() error {
 	}
 
 	if len(a.failMsg) > 0 {
-		return errors.New(a.trimTrailingNewLine(a.failMsg))
+		return a.handleFailure()
 	}
 
+	fmt.Println(a.resultStepOutput("success"))
+
 	return nil
+}
+
+func (a *Action) handleFailure() error {
+	fmt.Println(a.resultStepOutput("failure"))
+	err := errors.New(a.trimTrailingNewLine(a.failMsg))
+
+	if a.allowFailure() {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+
+		return nil
+	}
+
+	return err
 }
 
 func (a *Action) trimTrailingNewLine(input string) string {
@@ -90,8 +105,16 @@ func (a *Action) pullRequestNumber() int {
 	return event.PullRequestNumber
 }
 
+func (a *Action) resultStepOutput(result string) string {
+	return "::set-output name=label_check::" + result
+}
+
 func (a *Action) token() string {
 	return os.Getenv("INPUT_REPO_TOKEN")
+}
+
+func (a *Action) allowFailure() bool {
+	return os.Getenv("INPUT_ALLOW_FAILURE") == "true"
 }
 
 func (a *Action) enterpriseEndpoint() string {
