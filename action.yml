@@ -39,6 +39,15 @@ inputs:
       For Github Enterprise Server enter `http(s)://<hostname>/api/graphql` as the value.
     required: false
     default: ''
+  allow_failure:
+    description: >
+      Set this to `true` if you do not want the build to fail when the label checker fails,
+      e.g. if you want to use an `if` key in a following step or job to determine if that step
+      should skip/fail/succeed based on the output of the label checker step.  (The label
+      checker step always outputs a step output of `success` or `failure`, which can be
+      used for this purpose.)
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
