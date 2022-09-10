@@ -13,7 +13,7 @@ jobs:
 
   check_semver_label:
     name: Check for semantic version label
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       # always use the latest version here, can't use Dependabot or we'll be caught in an infinite update loop
       - uses: docker://agilepathway/pull-request-label-checker:latest

@@ -10,7 +10,7 @@ jobs:
 
   tag:
     name: Tag semantic version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
@@ -26,7 +26,7 @@ jobs:
   release:
     needs: tag
     name: Create GitHub Release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       -
         name: Checkout
@@ -50,7 +50,7 @@ jobs:
   build_and_push_docker_image:
     needs: tag
     name: Build and push image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: docker/build-push-action@v1.1.0

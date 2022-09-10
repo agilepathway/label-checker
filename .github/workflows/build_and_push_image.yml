@@ -7,7 +7,7 @@ jobs:
 
   build_and_push_docker_image:
     name: Build and push image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     # Skip running on forks since forks don't have access to secrets
     if: github.repository == 'agilepathway/label-checker'
     steps:

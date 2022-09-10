@@ -18,7 +18,7 @@ jobs:
       (contains(github.head_ref, 'dependabot/go_modules/') == false) &&
       (contains(github.head_ref, 'dependabot/github_actions/') == false)
     name: Check commit message style
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Check
         uses: mristin/opinionated-commit-message@v2.3.2

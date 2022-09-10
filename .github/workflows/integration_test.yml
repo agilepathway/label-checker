@@ -8,7 +8,7 @@ name: Tests
 jobs:
   tests:
     name: Integration
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     # Skip running on forks since forks don't have access to the agilepathway repo used
     # in the integration tests
     if: github.repository == 'agilepathway/label-checker'
