@@ -132,7 +132,7 @@ You can have as many of the checks configured in the same YAML file as you like.
 
 ## Allow failure mode
 
-You can set the label checker to not fail the build, even when a label check succeeds, and then use an
+You can set the label checker to not fail the build, even when a label check fails, and then use an
 [`if` condition](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsif)
 in a subsequent step or job to conditionally do something or not.
 For example: check if a pull request has a `preview` label
