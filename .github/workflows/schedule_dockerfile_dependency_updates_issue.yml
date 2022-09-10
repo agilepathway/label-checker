@@ -15,14 +15,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
+      - uses: imjohnbo/extract-issue-template-fields@v1
+        id: extract
+        with:
+          path: ".github/ISSUE_TEMPLATE/scheduled/update-dockerfile-dependencies.md"
+
       - name: issue-bot
         uses: imjohnbo/issue-bot@v3
         with:
           assignees: "johnboyes"
           labels: "dependencies"
+          title: ${{ steps.extract.outputs.title }}
+          body: ${{ steps.extract.outputs.body }}
           pinned: false
           close-previous: false
-          # assignees & labels in the template are overridden by the values specified in this action
-          template: ".github/ISSUE_TEMPLATE/scheduled/update-dockerfile-dependencies.md"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
