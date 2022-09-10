@@ -13,7 +13,7 @@ jobs:
 
   golangci-lint:
     name: runner / golangci-lint
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: reviewdog/action-golangci-lint@v1.24
@@ -25,7 +25,7 @@ jobs:
 
   hadolint:
     name: runner / hadolint
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out code
         uses: actions/checkout@v2.3.4
@@ -37,7 +37,7 @@ jobs:
 
   yamllint:
     name: runner / yamllint
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.3.4
       - name: yamllint
@@ -48,7 +48,7 @@ jobs:
 
   shellcheck:
     name: runner / shellcheck
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.3.4
       - name: shellcheck
@@ -62,7 +62,7 @@ jobs:
 
   misspell:
     name: runner / misspell
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: reviewdog/action-misspell@v1.12.2
@@ -73,7 +73,7 @@ jobs:
 
   languagetool:
     name: runner / languagetool
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: reviewdog/action-languagetool@v1.6
