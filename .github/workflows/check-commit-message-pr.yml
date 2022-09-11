@@ -1,0 +1,25 @@
+---
+name: 'Check commit message style on PRs'
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+jobs:
+  check-commit-message-style-pr:
+    name: Check commit message style on PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check
+        if: |
+          (github.actor!= 'dependabot[bot]') &&
+          (contains(github.head_ref, 'dependabot/github_actions/') == false)
+        uses: mristin/opinionated-commit-message@v3.0.0
+        with:
+          allow-one-liners: 'true'
+          # omit PR body as it is not part of our squashed commits
+          skip-body-check: 'true'
+          additional-verbs: 'notify, tidy'
