@@ -106,7 +106,7 @@ func (a *Action) pullRequestNumber() int {
 }
 
 func (a *Action) resultStepOutput(result string) string {
-	return "::set-output name=label_check::" + result
+	return "echo 'label_check=result' >> $GITHUB_OUTPUT" 
 }
 
 func (a *Action) token() string {
