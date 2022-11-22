@@ -115,10 +115,10 @@ func TestLabelChecks(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tc.expectedStdout = "Checking GitHub labels ...\n" + tc.expectedStdout
 			if len(tc.expectedStderr) > 0 {
-				tc.expectedStdout += "echo 'label_check=failure' >> $GITHUB_OUTPUT\n"
+				tc.expectedStdout += "::set-output name=label_check::failure\n"
 				tc.expectedStderr = "Error: " + tc.expectedStderr
 			} else {
-				tc.expectedStdout += "echo 'label_check=success' >> $GITHUB_OUTPUT\n"
+				tc.expectedStdout += "::set-output name=label_check::success\n"
 			}
 			setPullRequestNumber(tc.prNumber)
 			tc.specifyChecks()
@@ -191,10 +191,10 @@ func TestLabelChecksWithFailureAllowed(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tc.expectedStdout = "Checking GitHub labels ...\n" + tc.expectedStdout
 			if len(tc.expectedStderr) > 0 {
-				tc.expectedStdout += "echo 'label_check=failure' >> $GITHUB_OUTPUT\n"
+				tc.expectedStdout += "::set-output name=label_check::failure\n"
 				tc.expectedStderr = "Error: " + tc.expectedStderr
 			} else {
-				tc.expectedStdout += "echo 'label_check=success' >> $GITHUB_OUTPUT\n"
+				tc.expectedStdout += "::set-output name=label_check::success\n"
 			}
 			setPullRequestNumber(tc.prNumber)
 			tc.specifyChecks()
