@@ -106,7 +106,7 @@ func (a *Action) pullRequestNumber() int {
 }
 
 func (a *Action) resultStepOutput(result string) string {
-	return "echo 'label_check=result' >> $GITHUB_OUTPUT" 
+	return fmt.Sprintf("echo 'label_check=%s' >> $GITHUB_OUTPUT", result)
 }
 
 func (a *Action) token() string {
