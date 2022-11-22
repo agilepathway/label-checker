@@ -215,3 +215,4 @@ The project is [open source](https://opensource.guide/how-to-contribute/) and al
 ## Updating dependencies
 
 See the [DEPENDENCIES.md](.github/DEPENDENCIES.md)
+
