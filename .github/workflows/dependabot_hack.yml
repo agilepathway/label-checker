@@ -31,6 +31,6 @@ jobs:
       - uses: acroca/go-symbols@v0.1.1
       - uses: rogpeppe/godef@v1.1.2
       - uses: fatih/gomodifytags@v1.13.0
-      - uses: go-delve/delve@v1.7.0
+      - uses: go-delve/delve@v1.20.0
       - uses: golangci/golangci-lint@v1.41.1
       - uses: SpectoLabs/hoverfly@v1.3.0
