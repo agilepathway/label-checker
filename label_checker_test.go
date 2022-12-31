@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -44,6 +43,7 @@ const (
 	EnvHTTPSProxy                  = "HTTPS_PROXY"
 	EnvGitHubEnterprise            = "INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL"
 	EnvAllowFailure                = "INPUT_ALLOW_FAILURE"
+	EnvGitHubOutput                = "GITHUB_OUTPUT"
 	GitHubEnterpriseCloudEndpoint  = "https://api.github.com/graphql"
 	GitHubEnterpriseServerEndpoint = "https://example.com/api/graphql"
 	GitHubTestRepo                 = "agilepathway/test-label-checker-consumer"
@@ -53,6 +53,7 @@ const (
 	ThreeLabelsPR                  = 4 // https://github.com/agilepathway/test-label-checker-consumer/pull/4
 	GitHubEventJSONDir             = "testdata/temp"
 	GitHubEventJSONFilename        = "github_event.json"
+	GitHubOutputFilename           = "github_output"
 	MagefileVerbose                = "MAGEFILE_VERBOSE"
 	HoverflyProxyAddress           = "127.0.0.1:8500"
 	NeedNoneGotNone                = "Label check successful: required none of major, minor, patch, and found 0.\n"
@@ -83,8 +84,8 @@ func TestLabelChecks(t *testing.T) {
 		expectedStdout string
 		expectedStderr string
 	}{
-		"Need none,                  got none":  {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
-		"Need none,                  got one":   {OneLabelPR, checkNone, "", NeedNoneGotOne},
+		"Need none,                  got none": {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
+		"Need none,                  got one":  {OneLabelPR, checkNone, "", NeedNoneGotOne},
 		"Need none,                  got two":   {TwoLabelsPR, checkNone, "", NeedNoneGotTwo},
 		"Need one,                   got none":  {NoLabelsPR, checkOne, "", NeedOneGotNone},
 		"Need one,                   got one":   {OneLabelPR, checkOne, NeedOneGotOne, ""},
@@ -115,10 +116,7 @@ func TestLabelChecks(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tc.expectedStdout = "Checking GitHub labels ...\n" + tc.expectedStdout
 			if len(tc.expectedStderr) > 0 {
-				tc.expectedStdout += "::set-output name=label_check::failure\n"
 				tc.expectedStderr = "Error: " + tc.expectedStderr
-			} else {
-				tc.expectedStdout += "::set-output name=label_check::success\n"
 			}
 			setPullRequestNumber(tc.prNumber)
 			tc.specifyChecks()
@@ -149,83 +147,13 @@ func TestLabelChecks(t *testing.T) {
 	}
 }
 
-// nolint: lll, funlen, dupl
-func TestLabelChecksWithFailureAllowed(t *testing.T) {
-	tests := map[string]struct {
-		prNumber       int
-		specifyChecks  specifyChecks
-		expectedStdout string
-		expectedStderr string
-	}{
-		"Need none,                  got none":  {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
-		"Need none,                  got one":   {OneLabelPR, checkNone, "", NeedNoneGotOne},
-		"Need none,                  got two":   {TwoLabelsPR, checkNone, "", NeedNoneGotTwo},
-		"Need one,                   got none":  {NoLabelsPR, checkOne, "", NeedOneGotNone},
-		"Need one,                   got one":   {OneLabelPR, checkOne, NeedOneGotOne, ""},
-		"Need one,                   got two":   {TwoLabelsPR, checkOne, "", NeedOneGotTwo},
-		"Need all,                   got none":  {NoLabelsPR, checkAll, "", NeedAllGotNone},
-		"Need all,                   got one":   {OneLabelPR, checkAll, "", NeedAllGotOne},
-		"Need all,                   got two":   {TwoLabelsPR, checkAll, "", NeedAllGotTwo},
-		"Need all,                   got all":   {ThreeLabelsPR, checkAll, NeedAllGotAll, ""},
-		"Need any,                   got none":  {NoLabelsPR, checkAny, "", NeedAnyGotNone},
-		"Need any,                   got one":   {OneLabelPR, checkAny, NeedAnyGotOne, ""},
-		"Need any,                   got two":   {TwoLabelsPR, checkAny, NeedAnyGotTwo, ""},
-		"Need any,                   got three": {ThreeLabelsPR, checkAny, NeedAnyGotThree, ""},
-		"Need [none, one],           got none":  {NoLabelsPR, checkNoneAndOne, NeedNoneGotNone, NeedOneGotNone},
-		"Need [none, one],           got one":   {OneLabelPR, checkNoneAndOne, NeedOneGotOne, NeedNoneGotOne},
-		"Need [none, one],           got two":   {TwoLabelsPR, checkNoneAndOne, "", NeedOneGotTwo + NeedNoneGotTwo},
-		"Need [none, one, all],      got none":  {NoLabelsPR, checkNoneAndOneAndAll, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone},
-		"Need [none, one, all],      got one":   {OneLabelPR, checkNoneAndOneAndAll, NeedOneGotOne, NeedNoneGotOne + NeedAllGotOne},
-		"Need [none, one, all],      got two":   {TwoLabelsPR, checkNoneAndOneAndAll, "", NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
-		"Need [none, one, all],      got three": {ThreeLabelsPR, checkNoneAndOneAndAll, NeedAllGotAll, NeedOneGotThree + NeedNoneGotThree},
-		"Need [none, one, all, any], got none":  {NoLabelsPR, checkNoneAndOneAndAllAndAny, NeedNoneGotNone, NeedOneGotNone + NeedAllGotNone + NeedAnyGotNone},
-		"Need [none, one, all, any], got one":   {OneLabelPR, checkNoneAndOneAndAllAndAny, NeedOneGotOne + NeedAnyGotOne, NeedNoneGotOne + NeedAllGotOne},
-		"Need [none, one, all, any], got two":   {TwoLabelsPR, checkNoneAndOneAndAllAndAny, NeedAnyGotTwo, NeedOneGotTwo + NeedNoneGotTwo + NeedAllGotTwo},
-		"Need [none, one, all, any], got three": {ThreeLabelsPR, checkNoneAndOneAndAllAndAny, NeedAllGotAll + NeedAnyGotThree, NeedOneGotThree + NeedNoneGotThree},
-	}
-	for name, tc := range tests {
-		allowFailure()
-
-		tc := tc
-
-		t.Run(name, func(t *testing.T) {
-			tc.expectedStdout = "Checking GitHub labels ...\n" + tc.expectedStdout
-			if len(tc.expectedStderr) > 0 {
-				tc.expectedStdout += "::set-output name=label_check::failure\n"
-				tc.expectedStderr = "Error: " + tc.expectedStderr
-			} else {
-				tc.expectedStdout += "::set-output name=label_check::success\n"
-			}
-			setPullRequestNumber(tc.prNumber)
-			tc.specifyChecks()
-
-			exitCode, stderr, stdout := checkLabels()
-
-			if exitCode != 0 {
-				t.Fatalf("expected exit code 0 but got %v", exitCode)
-			}
-
-			if actual := stdout.String(); actual != tc.expectedStdout {
-				t.Fatalf("expected %q but got %q", tc.expectedStdout, actual)
-			}
-
-			if actual := stderr.String(); actual != tc.expectedStderr {
-				t.Fatalf("expected %q but got %q", tc.expectedStderr, actual)
-			}
-
-			os.Unsetenv(EnvRequireNoneOf) //nolint
-			os.Unsetenv(EnvRequireOneOf)  //nolint
-			os.Unsetenv(EnvRequireAllOf)  //nolint
-			os.Unsetenv(EnvRequireAnyOf)  //nolint
-		})
-	}
-}
-
 func TestMain(m *testing.M) {
 	flag.Parse()
 	os.Mkdir(GitHubEventJSONDir, os.ModePerm)            //nolint
+	os.Create(gitHubOutputFullPath())                    //nolint
 	os.Setenv(EnvGitHubRepository, GitHubTestRepo)       //nolint
 	os.Setenv(EnvGitHubEventPath, gitHubEventFullPath()) //nolint
+	os.Setenv(EnvGitHubOutput, gitHubOutputFullPath())   //nolint
 	os.Setenv(MagefileVerbose, "1")                      //nolint
 	os.Setenv(EnvRequireOneOf, " ")                      //nolint
 	os.Setenv(EnvRequireNoneOf, " ")                     //nolint
@@ -309,7 +237,7 @@ func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
 
 func setPullRequestNumber(prNumber int) {
 	githubEventJSON := []byte(fmt.Sprintf(`{ "number": %d }`, prNumber))
-	ioutil.WriteFile(gitHubEventFullPath(), githubEventJSON, os.ModePerm) //nolint
+	os.WriteFile(gitHubEventFullPath(), githubEventJSON, os.ModePerm) //nolint
 }
 
 func checkOne() {
@@ -343,10 +271,10 @@ func checkNoneAndOneAndAllAndAny() {
 	checkAny()
 }
 
-func allowFailure() {
-	os.Setenv(EnvAllowFailure, "true") //nolint
-}
-
 func gitHubEventFullPath() string {
 	return filepath.Join(GitHubEventJSONDir, GitHubEventJSONFilename)
+}
+
+func gitHubOutputFullPath() string {
+	return filepath.Join(GitHubEventJSONDir, GitHubOutputFilename)
 }

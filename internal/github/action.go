@@ -47,13 +47,13 @@ func (a *Action) CheckLabels() error {
 		return a.handleFailure()
 	}
 
-	fmt.Println(a.resultStepOutput("success"))
+	a.outputResult("success")
 
 	return nil
 }
 
 func (a *Action) handleFailure() error {
-	fmt.Println(a.resultStepOutput("failure"))
+	a.outputResult("failure")
 	err := errors.New(a.trimTrailingNewLine(a.failMsg))
 
 	if a.allowFailure() {
@@ -105,8 +105,17 @@ func (a *Action) pullRequestNumber() int {
 	return event.PullRequestNumber
 }
 
-func (a *Action) resultStepOutput(result string) string {
-	return "::set-output name=label_check::" + result
+func (a *Action) outputResult(result string) {
+	label_check_output := fmt.Sprintf("label_check=%s", result)
+	gitHubOutputFileName := filepath.Clean(os.Getenv("GITHUB_OUTPUT"))
+	githubOutputFile, err := os.OpenFile(gitHubOutputFileName, os.O_APPEND|os.O_WRONLY, 0644)
+	panic.IfError(err)
+	_, err = githubOutputFile.WriteString(label_check_output)
+	if err != nil {
+		githubOutputFile.Close()
+		panic.IfError(err)
+	}
+	githubOutputFile.Close()
 }
 
 func (a *Action) token() string {
