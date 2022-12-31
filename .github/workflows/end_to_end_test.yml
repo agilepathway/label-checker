@@ -11,7 +11,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  check_semver_label:
+  end_to_end_test_one_of:
     name: end-to-end test one_of
     runs-on: ubuntu-latest
     # Run the workflow using the label checker code in the branch for the current PR
@@ -20,4 +20,39 @@ jobs:
       - uses: ./
         with:
           one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  end_to_end_test_none_of:
+    name: end-to-end test none_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          none_of: missing
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  end_to_end_test_any_of:
+    name: end-to-end test any_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          any_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  end_to_end_test_multiple_checks:
+    name: end-to-end test multiple checks
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          one_of: major,minor,patch
+          none_of: missing
+          any_of: major,minor,patch
           repo_token: ${{ secrets.GITHUB_TOKEN }}
