@@ -1,0 +1,23 @@
+---
+name: End-to-end tests
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+jobs:
+
+  check_semver_label:
+    name: end-to-end test one_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
