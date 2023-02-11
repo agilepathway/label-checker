@@ -14,8 +14,6 @@ Firstly thanks for thinking of contributing - the project is [open source](https
   * [Tools and technologies](#tools-and-technologies)
     * [GitHub Actions](#github-actions)
     * [Go](#go)
-    * [Mage](#mage)
-
 [Running the tests](#running-the-tests)
 
 ## How to report a bug or suggest a new feature
@@ -72,27 +70,23 @@ Some reasons we chose [Go](https://golang.org/):
   * [ease of deployment](https://hub.packtpub.com/cloud-native-go-programming/)
   * [backwards compatibility](https://yourbasic.org/golang/advantages-over-java-python/#compatibility)
 
-#### Mage
-
-The application is built using [Mage](https://magefile.org/), which is the Go equivalent of [Make](https://www.gnu.org/software/make/).
-
 ## Running the tests
 
 As [above](#dependencies), you need [Hoverfly](https://hoverfly.readthedocs.io) to run the tests.
 
 Run the tests:
 
-`go test -v .`
+`go test ./... -v`
 
 Running the tests in GitHub Enterprise Cloud mode (verifying that the label checker 
 works properly on [GitHub Enterprise Cloud](https://docs.github.com/en/get-started/onboarding/getting-started-with-github-enterprise-cloud)):
 
-`go test -enterprise-cloud -v .`
+`go test ./... -enterprise-cloud -v`
 
 Running the tests in Github Enterprise Server mode (verifying that the label checker 
 works properly on [GitHub Enterprise Server](https://docs.github.com/en/enterprise-server/admin/overview/about-github-enterprise-server)):
 
-`go test -enterprise-server -v .`
+`go test ./... -enterprise-server -v`
 
 The tests are [table driven](https://dave.cheney.net/2019/05/07/prefer-table-driven-tests), which is an important concept to know when amending them.
 
@@ -100,11 +94,11 @@ The tests also have an integration mode which makes calls to real external servi
 
 If you are a maintainer, and you want to run the integration tests locally, you will need to set the `INPUT_REPO_TOKEN` environment variable, e.g. if using a VS Code Codespace you can run: 
 
-`INPUT_REPO_TOKEN=$GITHUB_TOKEN go test -integration -v .`
+`INPUT_REPO_TOKEN=$GITHUB_TOKEN go test ./... -integration -v`
 
 You can also run the integration tests locally in GitHub Enterprise Cloud mode:
 
-`INPUT_REPO_TOKEN=$GITHUB_TOKEN go test -integration -enterprise-cloud -v .`
+`INPUT_REPO_TOKEN=$GITHUB_TOKEN go test ./... -integration -enterprise-cloud -v`
 
 (we can't run the integration tests in GitHub Enterprise Server mode as that would require having
 a real GitHub Enterprise Server, which would be expensive in time and money to maintain)

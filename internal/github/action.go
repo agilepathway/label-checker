@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,13 +19,19 @@ import (
 
 // Action encapsulates the Label Checker GitHub Action
 type Action struct {
+	Stdout     io.Writer // writer to write stdout messages to
+	Stderr     io.Writer // writer to write stderr messages to
 	successMsg string
 	failMsg    string
 }
 
-// CheckLabels checks pull requests for the presence or absence of specified GitHub labels
-func (a *Action) CheckLabels() error {
-	fmt.Println("Checking GitHub labels ...")
+// CheckLabels checks pull requests for the specified GitHub labels.
+// It returns the exit code that callers should exit with - 0 if the
+// checks were successful and 1 if they failed.
+func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
+	a.Stdout = stdout
+	a.Stderr = stderr
+	fmt.Fprintln(a.Stdout, "Checking GitHub labels ...")
 
 	pr := pullrequest.New(
 		a.repositoryOwner(),
@@ -40,7 +47,7 @@ func (a *Action) CheckLabels() error {
 	a.runCheck(pr.Labels.HasAnyOf, a.anyRequired)
 
 	if len(a.successMsg) > 0 {
-		fmt.Println(a.trimTrailingNewLine(a.successMsg))
+		fmt.Fprintln(a.Stdout, a.trimTrailingNewLine(a.successMsg))
 	}
 
 	if len(a.failMsg) > 0 {
@@ -48,21 +55,19 @@ func (a *Action) CheckLabels() error {
 	}
 
 	a.outputResult("success")
-
-	return nil
+	return 0
 }
 
-func (a *Action) handleFailure() error {
+// handleFailure returns the exit code status for the
+// GitHub Action in the event of the label checks failing.
+func (a *Action) handleFailure() int {
 	a.outputResult("failure")
 	err := errors.New(a.trimTrailingNewLine(a.failMsg))
-
+	fmt.Fprintln(a.Stderr, "Error:", err)
 	if a.allowFailure() {
-		fmt.Fprintln(os.Stderr, "Error:", err)
-
-		return nil
+		return 0
 	}
-
-	return err
+	return 1
 }
 
 func (a *Action) trimTrailingNewLine(input string) string {

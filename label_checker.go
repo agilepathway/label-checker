@@ -1,15 +1,14 @@
-//go:build mage
-// +build mage
-
 //nolint:unused,deadcode,gochecknoglobals
 package main
 
-import "github.com/agilepathway/label-checker/internal/github"
+import (
+	"os"
 
-var Default = PullRequestLabelChecker
+	"github.com/agilepathway/label-checker/internal/github"
+)
 
-// PullRequestLabelChecker checks pull requests for the presence or absence of specified GitHub labels
-func PullRequestLabelChecker() error {
+func main() {
 	a := github.Action{}
-	return a.CheckLabels()
+	exitCode := a.CheckLabels(os.Stdout, os.Stderr)
+	os.Exit(exitCode)
 }

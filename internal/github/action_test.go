@@ -1,4 +1,4 @@
-package test
+package github
 
 import (
 	"bytes"
@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/agilepathway/label-checker/internal/error/panic"
-	"github.com/magefile/mage/mage"
 )
 
 //nolint: gochecknoglobals
@@ -51,10 +50,9 @@ const (
 	OneLabelPR                     = 2 // https://github.com/agilepathway/test-label-checker-consumer/pull/2
 	TwoLabelsPR                    = 3 // https://github.com/agilepathway/test-label-checker-consumer/pull/3
 	ThreeLabelsPR                  = 4 // https://github.com/agilepathway/test-label-checker-consumer/pull/4
-	GitHubEventJSONDir             = "testdata/temp"
+	GitHubEventJSONDir             = "../../testdata/temp"
 	GitHubEventJSONFilename        = "github_event.json"
 	GitHubOutputFilename           = "github_output"
-	MagefileVerbose                = "MAGEFILE_VERBOSE"
 	HoverflyProxyAddress           = "127.0.0.1:8500"
 	NeedNoneGotNone                = "Label check successful: required none of major, minor, patch, and found 0.\n"
 	NeedNoneGotOne                 = "Label check failed: required none of major, minor, patch, but found 1: minor\n"
@@ -84,8 +82,8 @@ func TestLabelChecks(t *testing.T) {
 		expectedStdout string
 		expectedStderr string
 	}{
-		"Need none,                  got none": {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
-		"Need none,                  got one":  {OneLabelPR, checkNone, "", NeedNoneGotOne},
+		"Need none,                  got none":  {NoLabelsPR, checkNone, NeedNoneGotNone, ""},
+		"Need none,                  got one":   {OneLabelPR, checkNone, "", NeedNoneGotOne},
 		"Need none,                  got two":   {TwoLabelsPR, checkNone, "", NeedNoneGotTwo},
 		"Need one,                   got none":  {NoLabelsPR, checkOne, "", NeedOneGotNone},
 		"Need one,                   got one":   {OneLabelPR, checkOne, NeedOneGotOne, ""},
@@ -121,7 +119,7 @@ func TestLabelChecks(t *testing.T) {
 			setPullRequestNumber(tc.prNumber)
 			tc.specifyChecks()
 
-			exitCode, stderr, stdout := checkLabels()
+			exitCode, stdout, stderr := checkLabels()
 
 			if (len(tc.expectedStderr) > 0) && (exitCode == 0) {
 				t.Fatalf("got exit code %v, err: %s", exitCode, stderr)
@@ -154,7 +152,6 @@ func TestMain(m *testing.M) {
 	os.Setenv(EnvGitHubRepository, GitHubTestRepo)       //nolint
 	os.Setenv(EnvGitHubEventPath, gitHubEventFullPath()) //nolint
 	os.Setenv(EnvGitHubOutput, gitHubOutputFullPath())   //nolint
-	os.Setenv(MagefileVerbose, "1")                      //nolint
 	os.Setenv(EnvRequireOneOf, " ")                      //nolint
 	os.Setenv(EnvRequireNoneOf, " ")                     //nolint
 	os.Setenv(EnvRequireAllOf, " ")                      //nolint
@@ -170,7 +167,6 @@ func testMainWrapper(m *testing.M) int {
 		os.RemoveAll(GitHubEventJSONDir)
 		os.Unsetenv(EnvGitHubRepository)
 		os.Unsetenv(EnvGitHubEventPath)
-		os.Unsetenv(MagefileVerbose)
 		os.Unsetenv(EnvGitHubEnterprise)
 		os.Unsetenv(EnvAllowFailure)
 		teardownVirtualServicesIfNotInIntegrationMode()
@@ -217,9 +213,9 @@ func startHoverflyInSpyMode() {
 
 func importGitHubSimulations() {
 	if *enterpriseServer {
-		execHoverCtl("import", "./testdata/github_enterprise_server_api.json")
+		execHoverCtl("import", "../../testdata/github_enterprise_server_api.json")
 	} else {
-		execHoverCtl("import", "./testdata/github_api.json")
+		execHoverCtl("import", "../../testdata/github_api.json")
 	}
 }
 
@@ -230,9 +226,8 @@ func stopHoverfly() {
 func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	invocation := mage.Invocation{Stderr: stderr, Stdout: stdout}
-
-	return mage.Invoke(invocation), stderr, stdout
+	a := Action{}
+	return a.CheckLabels(stdout, stderr), stdout, stderr
 }
 
 func setPullRequestNumber(prNumber int) {
