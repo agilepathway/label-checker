@@ -114,7 +114,7 @@ func TestLabelChecks(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tc.expectedStdout = "Checking GitHub labels ...\n" + tc.expectedStdout
 			if len(tc.expectedStderr) > 0 {
-				tc.expectedStderr = "Error: " + tc.expectedStderr
+				tc.expectedStderr = "::error:: " + tc.expectedStderr
 			}
 			setPullRequestNumber(tc.prNumber)
 			tc.specifyChecks()

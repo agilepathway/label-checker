@@ -63,7 +63,7 @@ func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 func (a *Action) handleFailure() int {
 	a.outputResult("failure")
 	err := errors.New(a.trimTrailingNewLine(a.failMsg))
-	fmt.Fprintln(a.Stderr, "Error:", err)
+	fmt.Fprintln(a.Stderr, "::error::", err)
 	if a.allowFailure() {
 		return 0
 	}
