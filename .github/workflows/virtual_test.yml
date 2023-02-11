@@ -32,6 +32,6 @@ jobs:
         run: install-and-trust-hoverfly-default-cert.sh
       - name: Tests
         run: |
-          go test -v .
-          go test -enterprise-cloud -v .
-          go test -enterprise-server -v .
+          go test ./... -v
+          go test ./... -enterprise-cloud -v
+          go test ./... -enterprise-server -v

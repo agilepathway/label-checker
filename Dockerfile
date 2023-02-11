@@ -3,8 +3,7 @@ FROM golang:1.16.6-buster AS builder
 WORKDIR /src
 COPY . .
 
-RUN scripts/install-mage.sh \
-    && CGO_ENABLED=0 GOFLAGS=-ldflags="-w" mage -compile /bin/check-labels -goos linux -goarch amd64 \
+RUN CGO_ENABLED=0 GOFLAGS=-ldflags="-w" GOOS=linux GOARCH=amd64 go build -o /bin/check-labels label_checker.go \
     # Strip any symbols - this is not a library
     && strip /bin/check-labels \
     # Compress the compiled action using UPX (https://upx.github.io/) 
