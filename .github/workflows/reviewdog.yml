@@ -84,4 +84,4 @@ jobs:
             **/*.md
           language: en
           disabled_rules:
-            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END"
+            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END,MISSING_COMMA_AFTER_INTRODUCTORY_PHRASE"

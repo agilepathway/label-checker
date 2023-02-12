@@ -41,10 +41,10 @@ func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 		a.enterpriseEndpoint(),
 	)
 
-	a.runCheck(pr.Labels.HasExactlyOneOf, a.exactlyOneRequired)
-	a.runCheck(pr.Labels.HasNoneOf, a.noneRequired)
-	a.runCheck(pr.Labels.HasAllOf, a.allRequired)
-	a.runCheck(pr.Labels.HasAnyOf, a.anyRequired)
+	a.runCheck(pr.Labels.HasExactlyOneOf, a.exactlyOneRequired(), a.prefixMode())
+	a.runCheck(pr.Labels.HasNoneOf, a.noneRequired(), a.prefixMode())
+	a.runCheck(pr.Labels.HasAllOf, a.allRequired(), a.prefixMode())
+	a.runCheck(pr.Labels.HasAnyOf, a.anyRequired(), a.prefixMode())
 
 	if len(a.successMsg) > 0 {
 		fmt.Fprintln(a.Stdout, a.trimTrailingNewLine(a.successMsg))
@@ -74,19 +74,25 @@ func (a *Action) trimTrailingNewLine(input string) string {
 	return strings.TrimSuffix(input, "\n")
 }
 
-type check func([]string) (bool, string)
+type check func([]string, bool) (bool, string)
 
 type specified func() []string
 
-func (a *Action) runCheck(chk check, specified specified) {
-	if len(specified()) > 0 {
-		valid, message := chk(specified())
-		if valid {
-			a.successMsg += message + "\n"
-		} else {
-			a.failMsg += message + "\n"
-		}
+func (a *Action) runCheck(chk check, specified []string, prefixMode bool) {
+	if len(specified) == 0 {
+		return
 	}
+	if prefixMode && len(specified) > 1 {
+		a.failMsg += "Currently the label checker only supports checking with one prefix, not multiple."
+		return
+	}
+	valid, message := chk(specified, prefixMode)
+	if valid {
+		a.successMsg += message + "\n"
+	} else {
+		a.failMsg += message + "\n"
+	}
+
 }
 
 func (a *Action) repositoryOwner() string {
@@ -129,6 +135,10 @@ func (a *Action) token() string {
 
 func (a *Action) allowFailure() bool {
 	return os.Getenv("INPUT_ALLOW_FAILURE") == "true"
+}
+
+func (a *Action) prefixMode() bool {
+	return os.Getenv("INPUT_PREFIX_MODE") == "true"
 }
 
 func (a *Action) enterpriseEndpoint() string {

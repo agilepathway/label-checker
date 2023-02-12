@@ -26,6 +26,8 @@
 - **Speed**: the [Docker image](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
   used for the checks is only 2.7 MB, so the checks are blazingly fast (c. 3 seconds)
 
+- [Prefix mode](#match-labels-based-on-prefix): check for the presence or absence of labels beginning with a certain prefix
+
 
 ## Using the Label Checker action
 
@@ -94,7 +96,7 @@ You can have as many of the checks configured in the same YAML file as you like.
 
 - Require each PR to have one or more of these labels: `any_of: documentation,enhancement,bug`
 
-- Combine multiple checks:
+#### Combine multiple checks
 
   ```
   with:
@@ -104,7 +106,7 @@ You can have as many of the checks configured in the same YAML file as you like.
     repo_token: ${{ secrets.GITHUB_TOKEN }}
   ```
 
-- Combine multiple checks of the same type:
+#### Combine multiple checks of the same type
 
   ```
   jobs:
@@ -128,6 +130,38 @@ You can have as many of the checks configured in the same YAML file as you like.
             repo_token: ${{ secrets.GITHUB_TOKEN }}
   ```
 
+## Match labels based on prefix
+
+You can set the label checker to check for the presence or absence of labels starting with the given prefix.
+
+This prefix label checking is a powerful feature that allows pull requests to have 
+scoped labels, [similarly to GitLab](https://docs.gitlab.com/ee/user/project/labels.html#scoped-labels).
+
+Set the `prefix_mode` as an input parameter in the 
+[`with` section](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepswith): 
+`prefix_mode: true` (it is an optional parameter as it defaults to false).
+
+Example:
+
+  ```
+  steps:
+    - id: prefix_label_check
+      uses: docker://agilepathway/pull-request-label-checker:latest
+      with:
+        prefix_mode: true
+        one_of: "type:"
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+  ```
+
+  This example will pass if there is exactly one label on the pull request starting with `type:`
+
+You can use any string as the prefix (it doesn't need to contain a `:`, that's just one example)
+
+You can use `one_of`, `any_of`, `none_of` when checking prefixes, but you cannot use `all_of` (as `all_of` does not
+make sense when checking for labels starting with the given prefix).
+
+You can only specify one prefix at a time. For instance you cannot specify `one_of: "type:","visibility/"`.
+You can specify [multiple prefix checks of the same type](#combine-multiple-checks-of-the-same-type) though.
 
 ## Allow failure mode
 
@@ -139,7 +173,7 @@ and then only deploy an ephemeral environment if so.
 
 Set the `allow_failure` mode as an input parameter in the 
 [`with` section](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepswith): 
-`allow_failure: true`
+`allow_failure: true` (it is an optional parameter as it defaults to false).
 
 Example:
 

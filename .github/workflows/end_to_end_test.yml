@@ -83,3 +83,15 @@ jobs:
         run: |
           echo "Allow failure failure scenario failed, exiting"
           exit 1
+
+  end_to_end_test_prefix_none_of:
+    name: end-to-end test prefix none_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          prefix_mode: true
+          none_of: "type:"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
