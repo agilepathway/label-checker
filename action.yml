@@ -48,6 +48,15 @@ inputs:
       used for this purpose.)
     required: false
     default: ''
+  prefix_mode:
+    description: >
+      Set this to `true` if you want to check for labels based on prefixes instead of checking
+      for the entire label name.  e.g. check for exactly one label with a prefix of "type/" or
+      check there are no labels with a prefix "rework:".  You can specify any string as the
+      prefix to check on, it doesn't need to have a forward slash or colon, these are just
+      examples.
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
