@@ -77,11 +77,11 @@ func (l Labels) hasXof(specified []string, checkFor string, prefixMode bool) (bo
 		"{{if .IsValid}}successful{{else }}failed{{end}}: " +
 		"required {{.CheckFor}} " +
 		"{{if .PrefixMode}}prefixed with{{else }}of{{end}} " +
-		"{{range $s := .Specified}}{{$s}}, {{end}}" +
+		"{{range $s := .Specified}}'{{$s}}', {{end}}" +
 		"{{if .IsValid}}and{{else }}but{{end}} " +
 		"found {{.NumberFound}}" +
 		"{{if .NumberFound}}: {{else }}.{{end}}" +
-		"{{range $i, $f := .Found}}{{if $i}}, {{end}}{{$f}}{{end}}"))
+		"{{range $i, $f := .Found}}{{if $i}}, {{end}}'{{$f}}'{{end}}"))
 
 	for i := 0; i < len(l); i++ {
 		if prefixMode {
