@@ -1,4 +1,4 @@
-FROM golang:1.20.1-buster AS builder
+FROM golang:1.20.1-bullseye AS builder
 
 WORKDIR /src
 COPY . .
@@ -7,7 +7,7 @@ RUN CGO_ENABLED=0 GOFLAGS=-ldflags="-w" GOOS=linux GOARCH=amd64 go build -o /bin
     # Strip any symbols - this is not a library
     && strip /bin/check-labels \
     # Compress the compiled action using UPX (https://upx.github.io/) 
-    && apt-get update && apt-get -y install --no-install-recommends upx-ucl=3.95-1 \
+    && apt-get update && apt-get -y install --no-install-recommends upx-ucl=3.96-2 \
     && upx -q -9 /bin/check-labels
 
 # Use the most basic and empty container - no runtime, files, shell, libraries, etc.
