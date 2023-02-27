@@ -32,10 +32,6 @@ RUN apt-get update \
         iproute2=4.20.0-2+deb10u1 \
         procps=2:3.3.15-2 \
         lsb-release=10.2019051400 \
-    # Install Zsh
-    && apt-get -y install --no-install-recommends zsh=5.7.1-1 \
-    && wget -q --show-progress https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true \
-    #
     # Build Go tools
     && mkdir -p /tmp/gotools \
     && cd /tmp/gotools \
