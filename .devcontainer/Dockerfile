@@ -17,21 +17,21 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 # Configure apt, install packages and tools
-# hadolint ignore=DL3003,DL4006
+# hadolint ignore=DL3003,DL3008,DL4006
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends apt-utils=1.8.2.3 dialog=1.3-20190211-1 2>&1 \
+    && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
     # Need zip and unzip for the Hoverfly installation
-    && apt-get -y install --no-install-recommends zip=3.0-11+b1 unzip=6.0-23+deb10u2 \
+    && apt-get -y install --no-install-recommends zip unzip \
     #
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -y install --no-install-recommends \
-        git=1:2.20.1-2+deb10u3 \
-        openssh-client=1:7.9p1-10+deb10u2 \
-        less=487-0.1+b1 \
-        iproute2=4.20.0-2+deb10u1 \
-        procps=2:3.3.15-2 \
-        lsb-release=10.2019051400 \
+        git \
+        openssh-client \
+        less \
+        iproute2 \
+        procps \
+        lsb-release \
     # Build Go tools
     && mkdir -p /tmp/gotools \
     && cd /tmp/gotools \
@@ -46,7 +46,7 @@ RUN apt-get update \
     && groupadd --gid $USER_GID $USERNAME \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
     # [Optional] Add sudo support
-    && apt-get install -y --no-install-recommends sudo=1.8.27-1+deb10u3 \
+    && apt-get install -y --no-install-recommends sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     #
