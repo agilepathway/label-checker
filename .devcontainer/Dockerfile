@@ -35,10 +35,9 @@ RUN apt-get update \
     # Build Go tools
     && mkdir -p /tmp/gotools \
     && cd /tmp/gotools \
-    && GOPATH=/tmp/gotools go get -v golang.org/x/tools/gopls@v0.7.0 2>&1 \
-    && GOPATH=/tmp/gotools go get -v \
-        github.com/go-delve/delve/cmd/dlv@v1 2>&1 \
-        github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1 \
+    && GOPATH=/tmp/gotools go install golang.org/x/tools/gopls@v0.7.0 2>&1 \
+    && GOPATH=/tmp/gotools go install github.com/go-delve/delve/cmd/dlv@v1 2>&1 \
+    && GOPATH=/tmp/gotools go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1 2>&1 \
     #
     # Install Go tools
     && mv /tmp/gotools/bin/* /usr/local/bin/ \
