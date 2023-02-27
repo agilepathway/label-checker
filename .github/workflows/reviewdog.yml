@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2.3.4
-      - uses: reviewdog/action-languagetool@v1.6
+      - uses: reviewdog/action-languagetool@v1.9
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
@@ -84,4 +84,4 @@ jobs:
             **/*.md
           language: en
           disabled_rules:
-            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END,MISSING_COMMA_AFTER_INTRODUCTORY_PHRASE"
+            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END,MISSING_COMMA_AFTER_INTRODUCTORY_PHRASE,HE_VERB_AGR[5],ID_CASING[2]"

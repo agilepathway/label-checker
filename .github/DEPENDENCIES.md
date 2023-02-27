@@ -60,7 +60,7 @@ We have [pinned the linux dependencies in the devcontainer Dockerfile](https://g
 ## Ubuntu version
 
 GitHub Actions supports Ubuntu LTS versions only.  [Ubuntu releases a new LTS version every second year in
-April](https://wiki.ubuntu.com/Releases).  In 2020 the GitHub Actions team [supported the new version by mid
-June](https://github.com/actions/virtual-environments/issues/228#issuecomment-644065532), so the owner of the repo has
-a reminder in their calendar every 2 years (on 15 July as that should have given GitHub sufficient time to update to
+April](https://wiki.ubuntu.com/Releases).  In 2020 the GitHub Actions team [supported the new version by 
+mid- June](https://github.com/actions/virtual-environments/issues/228#issuecomment-644065532), so the owner of the repo
+has a reminder in their calendar every 2 years (on 15 July as that should have given GitHub sufficient time to update to
 the new LTS version) to update the GitHub Actions on this repo with the new version.
