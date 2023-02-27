@@ -79,3 +79,12 @@ RUN mkdir -p /tmp/hoverfly \
     && cp cert.pem /usr/local/share/ca-certificates/hoverfly.crt \
     && update-ca-certificates \
     && rm -rf /tmp/hoverfly
+
+# Install Hadolint for Dockerfile linting
+# hadolint ignore=DL3003
+RUN mkdir -p /tmp/hadolint \
+    && cd /tmp/hadolint || exit \
+    && wget -q https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 \
+    && mv hadolint-Linux-x86_64 /usr/local/bin/hadolint \
+    && chmod +x /usr/local/bin/hadolint \
+    && rm -rf /tmp/hadolint
