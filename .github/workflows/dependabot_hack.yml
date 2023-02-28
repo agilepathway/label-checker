@@ -26,11 +26,6 @@ jobs:
 
       # update the versions in the devcontainer Dockerfile manually, too
       - uses: golang/tools@gopls/v0
-      - uses: uudashr/gopkgs@v2.1.2
-      - uses: ramya-rao-a/go-outline@1.0.0
-      - uses: acroca/go-symbols@v0.1.1
-      - uses: rogpeppe/godef@v1.1.2
-      - uses: fatih/gomodifytags@v1.13.0
       - uses: go-delve/delve@v1
       - uses: golangci/golangci-lint@v1
       - uses: SpectoLabs/hoverfly@v1.3.0
