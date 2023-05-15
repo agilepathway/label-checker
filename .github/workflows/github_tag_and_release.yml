@@ -15,7 +15,7 @@ jobs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Tag
-        uses: K-Phoen/semver-release-action@v1.3.1
+        uses: K-Phoen/semver-release-action@v1.3.2
         id: tag
         with:
           release_branch: master
