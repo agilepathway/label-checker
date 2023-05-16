@@ -21,7 +21,7 @@ jobs:
       # 5. virtual_test.yml
       # 6. the go.mod (if it is a major or minor version change e.g. 1.14 to 1.15)
       # NB bear in mind there is no `.0` patch level version, i.e. use 1.15 not 1.15.0
-      - uses: golang/go@go1.20.1
+      - uses: golang/go@go1.20.4
 
       # update the versions in the devcontainer Dockerfile manually, too
       - uses: golang/tools@gopls/v0
