@@ -273,7 +273,7 @@ func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
 }
 
 func setPullRequestNumber(prNumber int) {
-	githubEventJSON := []byte(fmt.Sprintf(`{ "pull_request": { "number": %d } }`, prNumber))
+	githubEventJSON := []byte(fmt.Sprintf(`{ "number": %d }`, prNumber))
 	os.WriteFile(gitHubEventFullPath(), githubEventJSON, os.ModePerm) //nolint
 }
 
