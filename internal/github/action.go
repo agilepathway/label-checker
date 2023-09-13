@@ -105,7 +105,9 @@ func (a *Action) repositoryName() string {
 
 func (a *Action) pullRequestNumber() int {
 	event := struct {
-		PullRequestNumber int `json:"number"`
+		PullRequest struct {
+			Number int `json:"number"`
+		} `json:"pull_request"`
 	}{}
 	githubEventJSONFile, err := os.Open(filepath.Clean(os.Getenv("GITHUB_EVENT_PATH")))
 	panic.IfError(err)
@@ -113,7 +115,7 @@ func (a *Action) pullRequestNumber() int {
 	byteValue, _ := ioutil.ReadAll(githubEventJSONFile)
 	panic.IfError(json.Unmarshal(byteValue, &event))
 
-	return event.PullRequestNumber
+	return event.PullRequest.Number
 }
 
 func (a *Action) outputResult(result string) {
