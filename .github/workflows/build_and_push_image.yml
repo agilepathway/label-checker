@@ -9,7 +9,7 @@ jobs:
     name: Build and push image
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build and push Docker image
         # Skip running on forks or Dependabot since neither has access to secrets
         if: |

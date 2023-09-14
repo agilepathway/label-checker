@@ -21,7 +21,7 @@ jobs:
         with:
           go-version: '1.21.0'
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Hoverfly
         # do not specify a specific semver version or we will have an infinite circular dependency loop,
         # between the hoverfly-github-action and this label-checker

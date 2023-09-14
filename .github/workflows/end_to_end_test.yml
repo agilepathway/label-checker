@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./
         with:
           one_of: major,minor,patch
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./
         with:
           none_of: missing
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./
         with:
           any_of: major,minor,patch
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./
         with:
           one_of: major,minor,patch
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: success_scenario
         uses: ./
         with:
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./
         with:
           prefix_mode: true
