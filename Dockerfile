@@ -3,7 +3,7 @@ FROM golang:1.21.1-bullseye AS builder
 WORKDIR /src
 COPY . .
 
-RUN CGO_ENABLED=0 GOFLAGS=-ldflags="-w" GOOS=linux GOARCH=amd64 go build -o /bin/check-labels label_checker.go \
+RUN CGO_ENABLED=0 GOFLAGS=-ldflags="-w" GOOS=linux GOARCH=${BUILDARCH} go build -o /bin/check-labels label_checker.go \
     # Strip any symbols - this is not a library
     && strip /bin/check-labels \
     # Compress the compiled action using UPX (https://upx.github.io/) 
