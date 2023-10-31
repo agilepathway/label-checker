@@ -14,7 +14,7 @@ jobs:
         if: |
           (github.actor!= 'dependabot[bot]') &&
           (contains(github.head_ref, 'dependabot/github_actions/') == false)
-        uses: mristin/opinionated-commit-message@v3.0.0
+        uses: mristin/opinionated-commit-message@v3.0.1
         with:
           allow-one-liners: 'true'
           additional-verbs: 'notify, tidy'
