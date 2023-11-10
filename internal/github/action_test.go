@@ -14,19 +14,19 @@ import (
 	"github.com/agilepathway/label-checker/internal/error/panic"
 )
 
-//nolint: gochecknoglobals
+// nolint: gochecknoglobals
 var integration = flag.Bool(
 	"integration",
 	false,
 	"Make calls to real external services.  Requires INPUT_REPO_TOKEN environment variable.")
 
-//nolint: gochecknoglobals
+// nolint: gochecknoglobals
 var enterpriseCloud = flag.Bool(
 	"enterprise-cloud",
 	false,
 	"Run the label checker against GitHub Enterprise Cloud instead of standard GitHub")
 
-//nolint: gochecknoglobals
+// nolint: gochecknoglobals
 var enterpriseServer = flag.Bool(
 	"enterprise-server",
 	false,
