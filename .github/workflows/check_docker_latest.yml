@@ -1,0 +1,22 @@
+---
+name: Check Docker latest tag is correct
+on:  # yamllint disable-line rule:truthy
+  push
+
+jobs:
+
+  check_latest_tag:
+    runs-on: ubuntu-22.04
+    steps:
+
+    - name: Check Docker latest tag is correct
+      id: latest_tag
+      uses: jacobtomlinson/gha-get-docker-hub-tags@0.1.1
+      with:
+        org: 'agilepathway'  # Docker Hub user or organisation name
+        repo: 'pull-request-label-checker'  # Docker Hub repository name
+
+    # Optionally check the tag we got back
+    - name: Check outputs
+      run: |
+        echo "Latest Image Tag - ${{ steps.latest_tag.outputs.tag }}"
