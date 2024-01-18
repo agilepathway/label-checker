@@ -17,10 +17,6 @@ jobs:
           docker pull agilepathway/pull-request-label-checker:${{ env.image_ver }}
           echo "IS_LATEST_TAGGED_CORRECTLY=$(docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags) | any( . == "agilepathway/pull-request-label-checker:latest") ')" >> "$GITHUB_OUTPUT"
       
-      - name: Echo echo
-        run: |
-          echo ${{ steps.is_latest_tagged_correctly.outputs.IS_LATEST_TAGGED_CORRECTLY }} 
-      
       - name: Fail if latest is not tagged correctly
         if: ${{ steps.is_latest_tagged_correctly.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }} 
         uses: actions/github-script@v3
