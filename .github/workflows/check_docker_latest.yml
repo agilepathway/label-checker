@@ -9,19 +9,19 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-    - name: Check Docker image with current semantic version is also tagged with latest
-      id: docker_semver
-      uses: jacobtomlinson/gha-get-docker-hub-tags@0.1.1
-      with:
-        org: 'agilepathway'  # Docker Hub user or organisation name
-        repo: 'pull-request-label-checker'  # Docker Hub repository name
+      - name: Check Docker image with current semantic version is also tagged with latest
+        id: docker_semver
+        uses: jacobtomlinson/gha-get-docker-hub-tags@0.1.1
+        with:
+          org: 'agilepathway'  # Docker Hub user or organisation name
+          repo: 'pull-request-label-checker'  # Docker Hub repository name
 
-    # Optionally check the tag we got back
-    - name: Check outputs
-      run: |
-        echo "Latest Image Tag - ${{ steps.latest_tag.outputs.tag }}"
+      # Optionally check the tag we got back
+      - name: Check outputs
+        run: |
+          echo "Latest Image Tag - ${{ steps.latest_tag.outputs.tag }}"
 
-    - name: Inspect image
-      run: |
-        docker pull agilepathway/pull-request-label-checker:${{ steps.docker_semver.outputs.tag }}
-        docker image inspect agilepathway/pull-request-label-checker:${{ steps.docker_semver.outputs.tag }}
+      - name: Inspect image
+        run: |
+          docker pull agilepathway/pull-request-label-checker:${{ steps.docker_semver.outputs.tag }}
+          docker image inspect agilepathway/pull-request-label-checker:${{ steps.docker_semver.outputs.tag }}
