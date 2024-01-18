@@ -15,10 +15,4 @@ jobs:
           image_ver: v1.6.13
         run: |
           docker pull agilepathway/pull-request-label-checker:${{ env.image_ver }}
-          docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags)'
-          echo "TAGS=$(docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags)')" >> $GITHUB_OUTPUT
-
-      - name: Check tags
-        run: |
-          echo 'here we are'
-          echo "${{ steps.get_image_tags.outputs.TAGS }}"
+          docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags)' | jq any(index("enterprise")) 
