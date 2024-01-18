@@ -15,4 +15,9 @@ jobs:
           image_ver: v1.6.13
         run: |
           docker pull agilepathway/pull-request-label-checker:${{ env.image_ver }}
-          docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags) | any( . == "agilepathway/pull-request-label-checker:latest") '
+          echo "FOO=$(docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags) | any( . == "agilepathway/pull-request-label-checker:latest") ')" >> $GITHUB_ENV
+      
+      - name: Use the value
+        id: step_two
+        run: |
+              echo "Here we are: ${{ env.FOO }}"
