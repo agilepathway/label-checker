@@ -15,4 +15,4 @@ jobs:
           image_ver: v1.6.13
         run: |
           docker pull agilepathway/pull-request-label-checker:${{ env.image_ver }}
-          docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags)' | jq any(index("enterprise")) 
+          docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags) | any(index("enterprise")) '
