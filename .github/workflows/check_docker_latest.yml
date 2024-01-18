@@ -16,12 +16,7 @@ jobs:
           org: 'agilepathway'  # Docker Hub user or organisation name
           repo: 'pull-request-label-checker'  # Docker Hub repository name
 
-      # Optionally check the tag we got back
-      - name: Check outputs
-        run: |
-          echo "Latest Image Tag - ${{ steps.latest_tag.outputs.tag }}"
-
       - name: Inspect image
         run: |
           docker pull agilepathway/pull-request-label-checker:${{ steps.docker_semver.outputs.tag }}
-          docker image inspect agilepathway/pull-request-label-checker:${{ steps.docker_semver.outputs.tag }}
+          docker image inspect agilepathway/pull-request-label-checker:${{ steps.docker_semver.outputs.tag }} | jq -r '.[] | (.RepoTags)'
