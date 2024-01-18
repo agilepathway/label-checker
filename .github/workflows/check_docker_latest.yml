@@ -12,10 +12,11 @@ jobs:
       - name: Is latest tagged correctly
         id: is_latest_tagged_correctly
         env:
+          repo: agilepathway/pull-request-label-checker
           image_ver: v1.6.13
         run: |
           docker pull agilepathway/pull-request-label-checker:${{ env.image_ver }}
-          echo "IS_LATEST_TAGGED_CORRECTLY=$(docker image inspect agilepathway/pull-request-label-checker:${{ env.image_ver }} | jq -r '.[] | (.RepoTags) | any( . == "agilepathway/pull-request-label-checker:latest") ')" >> "$GITHUB_OUTPUT"
+          echo "IS_LATEST_TAGGED_CORRECTLY=$(docker image inspect ${{env.repo}}:${{ env.image_ver }} | jq -r '.[] | (.RepoTags) | any( . == "${{env.repo}}:latest") ')" >> "$GITHUB_OUTPUT"
       
       - name: Fail if latest is not tagged correctly
         if: ${{ steps.is_latest_tagged_correctly.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }} 
