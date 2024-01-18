@@ -20,4 +20,4 @@ jobs:
       - name: Check tags
         run: |
           echo 'here we are'
-          echo ${{ steps.get_image_tags.outputs.TAGS }}
+          echo "${{ steps.get_image_tags.outputs.TAGS }}"
