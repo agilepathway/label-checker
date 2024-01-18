@@ -22,7 +22,7 @@ jobs:
           echo ${{ steps.is_latest_tagged_correctly.outputs.IS_LATEST_TAGGED_CORRECTLY }} 
       
       - name: Fail if latest is not tagged correctly
-        if: ${{ ! steps.is_latest_tagged_correctly.outputs.IS_LATEST_TAGGED_CORRECTLY }} 
+        if: ${{ steps.is_latest_tagged_correctly.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }} 
         uses: actions/github-script@v3
         with:
           script: |
