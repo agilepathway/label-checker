@@ -6,13 +6,16 @@ on:  # yamllint disable-line rule:truthy
     types:
       - closed
 
+env:
+  docker_repo: agilepathway/pull-request-label-checker
+
 jobs:
 
   tag:
     name: Tag semantic version
     runs-on: ubuntu-22.04
     outputs:
-      tag: ${{ steps.tag.outputs.tag }}
+      semver: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Tag
         uses: K-Phoen/semver-release-action@v1.3.2
@@ -65,6 +68,26 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          tags: agilepathway/pull-request-label-checker:${{ needs.tag.outputs.tag }}
+          tags: ${{env.docker_repo}}:${{ needs.tag.outputs.semver }}
           platforms: linux/amd64,linux/arm64
           push: true
+
+  check_latest_tag:
+    needs: [tag, build_and_push_docker_image]
+    runs-on: ubuntu-22.04
+    steps:
+
+      - name: Check Docker image for new release is tagged latest
+        id: check_docker_image_tagged_latest
+        # yamllint disable rule:line-length
+        run: |
+          docker pull ${{env.docker_repo}}:${{ needs.tag.outputs.semver }}
+          echo "IS_LATEST_TAGGED_CORRECTLY=$(docker image inspect ${{env.docker_repo}}:${{ needs.tag.outputs.semver }} | jq -r '.[] | (.RepoTags) | any( . == "${{env.docker_repo}}:latest") ')" >> "$GITHUB_OUTPUT"
+        # yamllint enable rule:line-length
+
+      - name: Fail if latest is not tagged correctly
+        if: ${{ steps.check_docker_image_tagged_latest.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('The newly released Docker image ${{ needs.tag.outputs.semver }} is not tagged latest. ')
