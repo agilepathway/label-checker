@@ -1,5 +1,5 @@
 ---
-name: Check Docker image with current semantic version is also tagged with latest
+name: Check newly released Docker image with current semantic version tag is also tagged with latest
 on:  # yamllint disable-line rule:truthy
   push
 
@@ -7,13 +7,13 @@ jobs:
 
   check_latest_tag:
     runs-on: ubuntu-22.04
+    env:
+      repo: agilepathway/pull-request-label-checker
+      image_ver: v1.6.13
     steps:
 
-      - name: Is latest tagged correctly
-        id: is_latest_tagged_correctly
-        env:
-          repo: agilepathway/pull-request-label-checker
-          image_ver: v1.6.13
+      - name: Check Docker image for new release is tagged latest
+        id: check_docker_image_tagged_latest
         # yamllint disable rule:line-length
         run: |
           docker pull ${{env.repo}}:${{ env.image_ver }}
@@ -21,8 +21,8 @@ jobs:
         # yamllint enable rule:line-length
 
       - name: Fail if latest is not tagged correctly
-        if: ${{ steps.is_latest_tagged_correctly.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }}
+        if: ${{ steps.check_docker_image_tagged_latest.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }}
         uses: actions/github-script@v3
         with:
           script: |
-                core.setFailed('Latest is not tagged correctly')
+                core.setFailed('The newly released Docker image ${{ env.image_ver }} is not tagged latest. ')
