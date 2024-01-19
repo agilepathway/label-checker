@@ -22,7 +22,7 @@ jobs:
 
       - name: Fail if latest is not tagged correctly
         if: ${{ steps.check_docker_image_tagged_latest.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v7
         with:
           script: |
                 core.setFailed('The newly released Docker image ${{ env.image_ver }} is not tagged latest. ')
