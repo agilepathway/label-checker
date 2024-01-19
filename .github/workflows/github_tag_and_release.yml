@@ -68,7 +68,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          tags: ${{env.docker_repo}}:${{ needs.tag.outputs.semver }}
+          tags: ${{env.docker_repo}}:${{ needs.tag.outputs.semver }},${{env.docker_repo}}:latest
           platforms: linux/amd64,linux/arm64
           push: true
 
@@ -78,6 +78,7 @@ jobs:
     steps:
 
       - name: Check Docker image for new release is tagged latest
+        # (it is important to have this check to catch any regression, e.g. if we move to a different way of releasing)
         id: check_docker_image_tagged_latest
         # yamllint disable rule:line-length
         run: |
