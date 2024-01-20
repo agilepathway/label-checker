@@ -12,6 +12,12 @@ jobs:
       image_ver: v1.6.15
     steps:
 
+      - name: Get Docker semver image id
+        id: get_docker_semver_image_id
+        run: |
+          docker pull ${{env.repo}}:${{ env.image_ver }}
+          docker image inspect ${{env.repo}}:${{ env.image_ver }} | jq -r '.[] | (.Id) '
+
       - name: Check Docker image for new release is tagged latest
         id: check_docker_image_tagged_latest
         # yamllint disable rule:line-length
