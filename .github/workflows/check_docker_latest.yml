@@ -15,8 +15,6 @@ jobs:
       - name: Get Docker semver image id
         id: get_docker_semver_image_id
         run: |
-          docker pull ${{env.repo}}:${{ env.image_ver }}
-          docker image inspect ${{env.repo}}:${{ env.image_ver }} | jq -r '.[] | (.Id) '
           docker inspect --format='{{index .RepoDigests 0}}' ${{env.repo}}:${{ env.image_ver }}
 
       - name: Check Docker image for new release is tagged latest
