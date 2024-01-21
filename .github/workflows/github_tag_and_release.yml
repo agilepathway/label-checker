@@ -81,8 +81,10 @@ jobs:
         # (it is important to have this check to catch any regression, e.g. if we move to a different way of releasing)
         id: check_docker_image_tagged_latest
         # yamllint disable rule:line-length
+        # we need to pull both docker tags to do the check
         run: |
           docker pull ${{env.docker_repo}}:${{ needs.tag.outputs.semver }}
+          docker pull ${{env.docker_repo}}:latest
           echo "IS_LATEST_TAGGED_CORRECTLY=$(docker image inspect ${{env.docker_repo}}:${{ needs.tag.outputs.semver }} | jq -r '.[] | (.RepoTags) | any( . == "${{env.docker_repo}}:latest") ')" >> "$GITHUB_OUTPUT"
         # yamllint enable rule:line-length
 
