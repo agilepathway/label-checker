@@ -16,7 +16,8 @@ jobs:
         id: get_docker_semver_image_id
         run: |
           docker pull ${{env.repo}}:${{ env.image_ver }}
-          docker image inspect ${{env.repo}}:${{ env.image_ver }}
+          docker pull ${{env.repo}}:latest
+          docker image inspect ${{env.repo}}:latest
           docker inspect --format='{{index .RepoDigests 0}}' ${{env.repo}}:${{ env.image_ver }}
         # docker image inspect ${{env.repo}}:${{ env.image_ver }} | jq -r '.[] | (.Id) '
 
