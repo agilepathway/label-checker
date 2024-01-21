@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       repo: agilepathway/pull-request-label-checker
-      image_ver: v1.6.15
+      image_ver: v1.6.14
     steps:
 
       - name: Check Docker image for new release is tagged latest
