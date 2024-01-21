@@ -17,6 +17,7 @@ jobs:
         # yamllint disable rule:line-length
         run: |
           docker pull ${{env.repo}}:${{ env.image_ver }}
+          docker pull ${{env.repo}}:latest
           docker image inspect ${{env.repo}}:${{ env.image_ver }}
           echo "IS_LATEST_TAGGED_CORRECTLY=$(docker image inspect ${{env.repo}}:${{ env.image_ver }} | jq -r '.[] | (.RepoTags) | any( . == "${{env.repo}}:latest") ')" >> "$GITHUB_OUTPUT"
         # yamllint enable rule:line-length
