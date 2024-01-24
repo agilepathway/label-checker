@@ -61,7 +61,7 @@ RUN mkdir -p /tmp/hoverfly \
     && cd /tmp/hoverfly || exit \
     && export HOVERFLY_PLATFORM=linux_amd64 \
     && export HOVERFLY_PLATFORM=linux_amd64 \
-    && export HOVERFLY_VERSION=v1.6.1 \
+    && export HOVERFLY_VERSION=v1.6.3 \
     && export "HOVERFLY_BUNDLE=hoverfly_bundle_$HOVERFLY_PLATFORM" \
     && wget -q --show-progress "https://github.com/SpectoLabs/hoverfly/releases/download/$HOVERFLY_VERSION/$HOVERFLY_BUNDLE.zip" \
     && unzip "$HOVERFLY_BUNDLE.zip" \
