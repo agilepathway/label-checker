@@ -64,6 +64,7 @@ func (a *Action) handleFailure() int {
 	a.outputResult("failure")
 	err := errors.New(a.trimTrailingNewLine(a.failMsg))
 	fmt.Fprintln(a.Stderr, "::error::", err)
+
 	if a.allowFailure() {
 		return 0
 	}
@@ -82,11 +83,14 @@ func (a *Action) runCheck(chk check, specified []string, prefixMode bool) {
 	if len(specified) == 0 {
 		return
 	}
+
 	if prefixMode && len(specified) > 1 {
 		a.failMsg += "Currently the label checker only supports checking with one prefix, not multiple."
 		return
 	}
+
 	valid, message := chk(specified, prefixMode)
+
 	if valid {
 		a.successMsg += message + "\n"
 	} else {
@@ -123,6 +127,7 @@ func (a *Action) outputResult(result string) {
 	githubOutputFile, err := os.OpenFile(gitHubOutputFileName, os.O_APPEND|os.O_WRONLY, 0644)
 	panic.IfError(err)
 	_, err = githubOutputFile.WriteString(labelCheckOutput)
+
 	if err != nil {
 		githubOutputFile.Close()
 		panic.IfError(err)
