@@ -55,6 +55,7 @@ func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 	}
 
 	a.outputResult("success")
+
 	return 0
 }
 
@@ -68,6 +69,7 @@ func (a *Action) handleFailure() int {
 	if a.allowFailure() {
 		return 0
 	}
+
 	return 1
 }
 
@@ -86,6 +88,7 @@ func (a *Action) runCheck(chk check, specified []string, prefixMode bool) {
 
 	if prefixMode && len(specified) > 1 {
 		a.failMsg += "Currently the label checker only supports checking with one prefix, not multiple."
+
 		return
 	}
 
