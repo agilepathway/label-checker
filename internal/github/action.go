@@ -132,10 +132,14 @@ func (a *Action) outputResult(result string) {
 	_, err = githubOutputFile.WriteString(labelCheckOutput)
 
 	if err != nil {
-		githubOutputFile.Close()
+		closingErr := githubOutputFile.Close()
+
 		panic.IfError(err)
+		panic.IfError(closingErr)
 	}
-	githubOutputFile.Close()
+
+	err = githubOutputFile.Close()
+	panic.IfError(err)
 }
 
 func (a *Action) token() string {
