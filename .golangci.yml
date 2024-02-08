@@ -14,7 +14,6 @@ linters:
   # enable-all is deprecated, so enable linters individually
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
