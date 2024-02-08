@@ -92,7 +92,6 @@ func (a *Action) runCheck(chk check, specified []string, prefixMode bool) {
 	} else {
 		a.failMsg += message + "\n"
 	}
-
 }
 
 func (a *Action) repositoryOwner() string {
