@@ -17,7 +17,7 @@ import (
 	"github.com/agilepathway/label-checker/internal/github/pullrequest"
 )
 
-// Action encapsulates the Label Checker GitHub Action
+// Action encapsulates the Label Checker GitHub Action.
 type Action struct {
 	Stdout     io.Writer // writer to write stdout messages to
 	Stderr     io.Writer // writer to write stderr messages to
