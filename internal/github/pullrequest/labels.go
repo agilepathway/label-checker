@@ -27,7 +27,7 @@ func (l Labels) HasNoneOf(specified []string, prefixMode bool) (bool, string) {
 // all of the specified labels, along with a report describing the result.
 func (l Labels) HasAllOf(specified []string, prefixMode bool) (bool, string) {
 	if prefixMode {
-		return false, "The label checker does not support prefix checking with `all_of`, as that is not a logical combination."
+		return false, "The label checker does not support prefix checking with `all_of`, as that is not a logical combination." //nolint:lll
 	}
 	return l.hasXof(specified, "all", prefixMode)
 }
