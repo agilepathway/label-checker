@@ -18,6 +18,7 @@ func Contains(slice []string, val string) bool {
 	return false
 }
 
+// StartsWithAnyOf returns true if the given slice starts with any of the given prefixes
 func StartsWithAnyOf(prefixes []string, candidate string) bool {
 	for _, prefix := range prefixes {
 		if strings.HasPrefix(candidate, prefix) {
