@@ -78,8 +78,6 @@ func (a *Action) trimTrailingNewLine(input string) string {
 
 type check func([]string, bool) (bool, string)
 
-type specified func() []string
-
 func (a *Action) runCheck(chk check, specified []string, prefixMode bool) {
 	if len(specified) == 0 {
 		return
