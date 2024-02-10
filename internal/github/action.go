@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -118,7 +117,7 @@ func (a *Action) pullRequestNumber() int {
 	githubEventJSONFile, err := os.Open(filepath.Clean(os.Getenv("GITHUB_EVENT_PATH")))
 	panic.IfError(err)
 	defer githubEventJSONFile.Close() //nolint
-	byteValue, _ := ioutil.ReadAll(githubEventJSONFile)
+	byteValue, _ := io.ReadAll(githubEventJSONFile)
 	panic.IfError(json.Unmarshal(byteValue, &event))
 
 	return event.PullRequest.Number
