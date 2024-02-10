@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,7 +16,7 @@ import (
 	"github.com/agilepathway/label-checker/internal/github/pullrequest"
 )
 
-// Action encapsulates the Label Checker GitHub Action
+// Action encapsulates the Label Checker GitHub Action.
 type Action struct {
 	Stdout     io.Writer // writer to write stdout messages to
 	Stderr     io.Writer // writer to write stderr messages to
@@ -55,6 +54,7 @@ func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 	}
 
 	a.outputResult("success")
+
 	return 0
 }
 
@@ -64,9 +64,11 @@ func (a *Action) handleFailure() int {
 	a.outputResult("failure")
 	err := errors.New(a.trimTrailingNewLine(a.failMsg))
 	fmt.Fprintln(a.Stderr, "::error::", err)
+
 	if a.allowFailure() {
 		return 0
 	}
+
 	return 1
 }
 
@@ -76,23 +78,24 @@ func (a *Action) trimTrailingNewLine(input string) string {
 
 type check func([]string, bool) (bool, string)
 
-type specified func() []string
-
 func (a *Action) runCheck(chk check, specified []string, prefixMode bool) {
 	if len(specified) == 0 {
 		return
 	}
+
 	if prefixMode && len(specified) > 1 {
 		a.failMsg += "Currently the label checker only supports checking with one prefix, not multiple."
+
 		return
 	}
+
 	valid, message := chk(specified, prefixMode)
+
 	if valid {
 		a.successMsg += message + "\n"
 	} else {
 		a.failMsg += message + "\n"
 	}
-
 }
 
 func (a *Action) repositoryOwner() string {
@@ -112,23 +115,30 @@ func (a *Action) pullRequestNumber() int {
 	githubEventJSONFile, err := os.Open(filepath.Clean(os.Getenv("GITHUB_EVENT_PATH")))
 	panic.IfError(err)
 	defer githubEventJSONFile.Close() //nolint
-	byteValue, _ := ioutil.ReadAll(githubEventJSONFile)
+	byteValue, _ := io.ReadAll(githubEventJSONFile)
 	panic.IfError(json.Unmarshal(byteValue, &event))
 
 	return event.PullRequest.Number
 }
 
 func (a *Action) outputResult(result string) {
-	label_check_output := fmt.Sprintf("label_check=%s", result)
+	const UserReadWriteFilePermission = 0o644
+
+	labelCheckOutput := fmt.Sprintf("label_check=%s", result)
 	gitHubOutputFileName := filepath.Clean(os.Getenv("GITHUB_OUTPUT"))
-	githubOutputFile, err := os.OpenFile(gitHubOutputFileName, os.O_APPEND|os.O_WRONLY, 0644)
+	githubOutputFile, err := os.OpenFile(gitHubOutputFileName, os.O_APPEND|os.O_WRONLY, UserReadWriteFilePermission) //nolint:gosec,lll
 	panic.IfError(err)
-	_, err = githubOutputFile.WriteString(label_check_output)
+	_, err = githubOutputFile.WriteString(labelCheckOutput)
+
 	if err != nil {
-		githubOutputFile.Close()
+		closingErr := githubOutputFile.Close()
+
 		panic.IfError(err)
+		panic.IfError(closingErr)
 	}
-	githubOutputFile.Close()
+
+	err = githubOutputFile.Close()
+	panic.IfError(err)
 }
 
 func (a *Action) token() string {
