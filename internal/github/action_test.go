@@ -14,25 +14,25 @@ import (
 	"github.com/agilepathway/label-checker/internal/error/panic"
 )
 
-//nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var integration = flag.Bool(
 	"integration",
 	false,
 	"Make calls to real external services.  Requires INPUT_REPO_TOKEN environment variable.")
 
-//nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var enterpriseCloud = flag.Bool(
 	"enterprise-cloud",
 	false,
 	"Run the label checker against GitHub Enterprise Cloud instead of standard GitHub")
 
-//nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var enterpriseServer = flag.Bool(
 	"enterprise-server",
 	false,
 	"Run the label checker against GitHub Enterprise Server instead of standard GitHub")
 
-// nolint: lll
+//nolint:lll
 const (
 	EnvGitHubRepository            = "GITHUB_REPOSITORY"
 	EnvGitHubEventPath             = "GITHUB_EVENT_PATH"
@@ -91,7 +91,7 @@ const (
 
 type specifyChecks func()
 
-// nolint: lll, funlen, dupl
+//nolint:lll,funlen,dupl
 func TestLabelChecks(t *testing.T) {
 	tests := map[string]struct {
 		prNumber       int

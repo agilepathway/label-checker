@@ -127,10 +127,9 @@ func (a *Action) pullRequestNumber() int {
 func (a *Action) outputResult(result string) {
 	labelCheckOutput := fmt.Sprintf("label_check=%s", result)
 	gitHubOutputFileName := filepath.Clean(os.Getenv("GITHUB_OUTPUT"))
-	githubOutputFile, err := os.OpenFile(gitHubOutputFileName, os.O_APPEND|os.O_WRONLY, 0644)
+	githubOutputFile, err := os.OpenFile(gitHubOutputFileName, os.O_APPEND|os.O_WRONLY, 0o644)
 	panic.IfError(err)
 	_, err = githubOutputFile.WriteString(labelCheckOutput)
-
 	if err != nil {
 		closingErr := githubOutputFile.Close()
 
