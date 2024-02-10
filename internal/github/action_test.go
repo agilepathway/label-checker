@@ -155,6 +155,7 @@ func TestLabelChecks(t *testing.T) {
 			if len(tc.expectedStderr) > 0 {
 				tc.expectedStderr = "::error:: " + tc.expectedStderr
 			}
+
 			setPullRequestNumber(tc.prNumber)
 			setPrefixMode(tc.prefixMode)
 			tc.specifyChecks()
@@ -269,6 +270,7 @@ func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	a := Action{}
+
 	return a.CheckLabels(stdout, stderr), stdout, stderr
 }
 
