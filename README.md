@@ -249,3 +249,16 @@ The project is [open source](https://opensource.guide/how-to-contribute/) and al
 
 See the [DEPENDENCIES.md](.github/DEPENDENCIES.md)
 
+## Reporting security vulnerabilities
+
+As per our [SECURITY.md](SECURITY.md) we welcome and appreciate security vulnerability reports.
+
+Our policy is for vulnerability reports to be [reported privately](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability).
+
+To report a new vulnerability:
+
+1. go to the [repository's Security Advisories page](https://github.com/agilepathway/label-checker/security/advisories)
+2. click on `Report a vulnerability`
+
+[Tips on creating a great vulnerability report](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/best-practices-for-writing-repository-security-advisories#best-practices)
+
