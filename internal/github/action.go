@@ -30,7 +30,7 @@ type Action struct {
 func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 	a.Stdout = stdout
 	a.Stderr = stderr
-	fmt.Fprintln(a.Stdout, "Checking GitHub labels ...")
+	fmt.Fprintln(a.Stdout, "Checking GitHub labels ...") //nolint:errcheck
 
 	pr := pullrequest.New(
 		a.repositoryOwner(),
@@ -46,7 +46,7 @@ func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 	a.runCheck(pr.Labels.HasAnyOf, a.anyRequired(), a.prefixMode())
 
 	if len(a.successMsg) > 0 {
-		fmt.Fprintln(a.Stdout, a.trimTrailingNewLine(a.successMsg))
+		fmt.Fprintln(a.Stdout, a.trimTrailingNewLine(a.successMsg)) //nolint:errcheck
 	}
 
 	if len(a.failMsg) > 0 {
@@ -63,7 +63,7 @@ func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 func (a *Action) handleFailure() int {
 	a.outputResult("failure")
 	err := errors.New(a.trimTrailingNewLine(a.failMsg))
-	fmt.Fprintln(a.Stderr, "::error::", err)
+	fmt.Fprintln(a.Stderr, "::error::", err) //nolint:errcheck
 
 	if a.allowFailure() {
 		return 0
