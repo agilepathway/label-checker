@@ -29,13 +29,13 @@ linters:
     - revive
     - goprintffuncname
     - godox
-    - gomnd
     - gosec
     - gosimple
     - govet
     - ineffassign
     - lll
     - misspell
+    - mnd
     - prealloc
     - nakedret
     - rowserrcheck
