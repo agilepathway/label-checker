@@ -33,7 +33,7 @@ jobs:
           (github.repository == 'agilepathway/label-checker') &&
           (github.actor!= 'dependabot[bot]') &&
           (contains(github.head_ref, 'dependabot/github_actions/') == false)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           tags: ${{ steps.meta.outputs.tags }}
           push: true
