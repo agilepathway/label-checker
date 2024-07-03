@@ -20,7 +20,7 @@ jobs:
       # 4. integration_test.yml
       # 5. virtual_test.yml
       # 6. the go.mod (if it is a major or minor version change e.g. 1.14 to 1.15)
-      - uses: golang/go@go1.22.4
+      - uses: golang/go@go1.22.5
 
       # update the versions in the devcontainer Dockerfile manually, too
       - uses: golang/tools@gopls/v0
