@@ -26,4 +26,4 @@ jobs:
       - uses: golang/tools@gopls/v0
       - uses: go-delve/delve@v1
       - uses: golangci/golangci-lint@v1
-      - uses: SpectoLabs/hoverfly@v1.10.4
+      - uses: SpectoLabs/hoverfly@v1.10.5
