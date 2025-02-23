@@ -52,9 +52,3 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           push: true
           platforms: ${{ matrix.image }}
-      - run: echo "First tag ${{ fromJSON(steps.meta.outputs.json).tags[1] }}."
-      - name: Check Docker image works on ${{ matrix.os }}
-        uses: docker://agilepathway/pull-request-label-checker:latest
-        with:
-          one_of: major,minor,patch
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
