@@ -6,8 +6,16 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   build_and_push_docker_image:
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-24.04"
+            image: "linux/amd64"
+          - os: "ubuntu-24.04-arm"
+            image: "linux/arm64"
+
     name: Build and push image
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -43,5 +51,4 @@ jobs:
         with:
           tags: ${{ steps.meta.outputs.tags }}
           push: true
-          # platforms: linux/amd64,linux/arm64
-          platforms: linux/arm64
+          platforms: ${{ matrix.image }}
