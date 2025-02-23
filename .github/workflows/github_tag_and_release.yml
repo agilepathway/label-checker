@@ -56,8 +56,8 @@ jobs:
         include:
           - os: "ubuntu-24.04"
             image: "linux/amd64"
-          - os: "ubuntu-24.04-arm"
-            image: "linux/arm64"
+          # - os: "ubuntu-24.04-arm"
+          #   image: "linux/arm64"
     needs: tag
     name: Build and push image
     runs-on: ${{ matrix.os }}
