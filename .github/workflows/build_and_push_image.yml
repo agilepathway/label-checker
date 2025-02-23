@@ -38,3 +38,13 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           push: true
           platforms: linux/amd64,linux/arm64
+
+  check_image:
+    needs: [build_and_push_docker_image]
+    name: Check newly pushed Docker image can be used successfully on ARM
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
