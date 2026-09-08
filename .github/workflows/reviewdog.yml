@@ -1,0 +1,87 @@
+---
+name: reviewdog
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+  push:
+
+jobs:
+
+  golangci-lint:
+    name: runner / golangci-lint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-golangci-lint@v2
+        with:
+          github_token: ${{ secrets.github_token }}
+          golangci_lint_flags: "-c .golangci.yml"
+          level: "error"
+          reporter: github-check
+
+  hadolint:
+    name: runner / hadolint
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: hadolint
+        uses: reviewdog/action-hadolint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-check
+
+  yamllint:
+    name: runner / yamllint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: yamllint
+        uses: reviewdog/action-yamllint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-check
+
+  shellcheck:
+    name: runner / shellcheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        uses: reviewdog/action-shellcheck@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-check
+          path: "."
+          pattern: "*.sh"
+          exclude: "./.git/*"
+
+  misspell:
+    name: runner / misspell
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-check
+          exclude: "./go.sum"
+
+  languagetool:
+    name: runner / languagetool
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-languagetool@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-check
+          patterns: |
+            **/*.md
+          language: en
+          disabled_rules:
+            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END,MISSING_COMMA_AFTER_INTRODUCTORY_PHRASE,HE_VERB_AGR[5],ID_CASING[2]"

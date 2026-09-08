@@ -1,0 +1,6 @@
+---
+project_name: label-checker
+version: 2
+release:
+  github:
+  prerelease: auto

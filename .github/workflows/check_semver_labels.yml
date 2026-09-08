@@ -1,0 +1,22 @@
+---
+name: Label Checker
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+jobs:
+
+  check_semver_label:
+    name: Check for semantic version label
+    runs-on: ubuntu-22.04
+    steps:
+      # always use the latest version here, can't use Dependabot or we'll be caught in an infinite update loop
+      - uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,799 @@
+{
+	"data": {
+		"pairs": [
+			{
+				"request": {
+					"path": [
+						{
+							"matcher": "exact",
+							"value": "/graphql"
+						}
+					],
+					"method": [
+						{
+							"matcher": "exact",
+							"value": "POST"
+						}
+					],
+					"destination": [
+						{
+							"matcher": "exact",
+							"value": "api.github.com"
+						}
+					],
+					"scheme": [
+						{
+							"matcher": "exact",
+							"value": "https"
+						}
+					],
+					"body": [
+						{
+							"matcher": "json",
+							"value": "{\"query\":\"query($name:String!$owner:String!$pullRequestNumber:Int!){repository(owner: $owner, name: $name){pullRequest(number: $pullRequestNumber){labels(first: 100){nodes{name}}}}}\",\"variables\":{\"name\":\"test-label-checker-consumer\",\"owner\":\"agilepathway\",\"pullRequestNumber\":1}}\n"
+						}
+					]
+				},
+				"response": {
+					"status": 200,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[]}}}}}",
+					"encodedBody": false,
+					"headers": {
+						"Access-Control-Allow-Origin": [
+							"*"
+						],
+						"Access-Control-Expose-Headers": [
+							"ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, Deprecation, Sunset"
+						],
+						"Cache-Control": [
+							"no-cache"
+						],
+						"Content-Encoding": [
+							"identity"
+						],
+						"Content-Security-Policy": [
+							"default-src 'none'"
+						],
+						"Content-Type": [
+							"application/json; charset=utf-8"
+						],
+						"Date": [
+							"Tue, 07 Jul 2020 06:01:34 GMT"
+						],
+						"Hoverfly": [
+							"Was-Here"
+						],
+						"Referrer-Policy": [
+							"origin-when-cross-origin, strict-origin-when-cross-origin"
+						],
+						"Server": [
+							"GitHub.com"
+						],
+						"Status": [
+							"200 OK"
+						],
+						"Strict-Transport-Security": [
+							"max-age=31536000; includeSubdomains; preload"
+						],
+						"Vary": [
+							"Accept-Encoding, Accept, X-Requested-With",
+							"Accept-Encoding"
+						],
+						"X-Accepted-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Content-Type-Options": [
+							"nosniff"
+						],
+						"X-Frame-Options": [
+							"deny"
+						],
+						"X-Github-Media-Type": [
+							"github.v4; format=json"
+						],
+						"X-Github-Request-Id": [
+							"DD25:5656:CAF466:106A982:5F040FBE"
+						],
+						"X-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Ratelimit-Limit": [
+							"5000"
+						],
+						"X-Ratelimit-Remaining": [
+							"4996"
+						],
+						"X-Ratelimit-Reset": [
+							"1594102919"
+						],
+						"X-Xss-Protection": [
+							"1; mode=block"
+						]
+					},
+					"templated": false
+				}
+			},
+			{
+				"request": {
+					"path": [
+						{
+							"matcher": "exact",
+							"value": "/graphql"
+						}
+					],
+					"method": [
+						{
+							"matcher": "exact",
+							"value": "POST"
+						}
+					],
+					"destination": [
+						{
+							"matcher": "exact",
+							"value": "api.github.com"
+						}
+					],
+					"scheme": [
+						{
+							"matcher": "exact",
+							"value": "https"
+						}
+					],
+					"body": [
+						{
+							"matcher": "json",
+							"value": "{\"query\":\"query($name:String!$owner:String!$pullRequestNumber:Int!){repository(owner: $owner, name: $name){pullRequest(number: $pullRequestNumber){labels(first: 100){nodes{name}}}}}\",\"variables\":{\"name\":\"test-label-checker-consumer\",\"owner\":\"agilepathway\",\"pullRequestNumber\":2}}\n"
+						}
+					]
+				},
+				"response": {
+					"status": 200,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"minor\"}]}}}}}",
+					"encodedBody": false,
+					"headers": {
+						"Access-Control-Allow-Origin": [
+							"*"
+						],
+						"Access-Control-Expose-Headers": [
+							"ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, Deprecation, Sunset"
+						],
+						"Cache-Control": [
+							"no-cache"
+						],
+						"Content-Encoding": [
+							"identity"
+						],
+						"Content-Security-Policy": [
+							"default-src 'none'"
+						],
+						"Content-Type": [
+							"application/json; charset=utf-8"
+						],
+						"Date": [
+							"Tue, 07 Jul 2020 06:01:37 GMT"
+						],
+						"Hoverfly": [
+							"Was-Here"
+						],
+						"Referrer-Policy": [
+							"origin-when-cross-origin, strict-origin-when-cross-origin"
+						],
+						"Server": [
+							"GitHub.com"
+						],
+						"Status": [
+							"200 OK"
+						],
+						"Strict-Transport-Security": [
+							"max-age=31536000; includeSubdomains; preload"
+						],
+						"Vary": [
+							"Accept-Encoding, Accept, X-Requested-With",
+							"Accept-Encoding"
+						],
+						"X-Accepted-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Content-Type-Options": [
+							"nosniff"
+						],
+						"X-Frame-Options": [
+							"deny"
+						],
+						"X-Github-Media-Type": [
+							"github.v4; format=json"
+						],
+						"X-Github-Request-Id": [
+							"DD25:5656:CAF4F1:106A996:5F040FBE"
+						],
+						"X-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Ratelimit-Limit": [
+							"5000"
+						],
+						"X-Ratelimit-Remaining": [
+							"4995"
+						],
+						"X-Ratelimit-Reset": [
+							"1594102919"
+						],
+						"X-Xss-Protection": [
+							"1; mode=block"
+						]
+					},
+					"templated": false
+				}
+			},
+			{
+				"request": {
+					"path": [
+						{
+							"matcher": "exact",
+							"value": "/graphql"
+						}
+					],
+					"method": [
+						{
+							"matcher": "exact",
+							"value": "POST"
+						}
+					],
+					"destination": [
+						{
+							"matcher": "exact",
+							"value": "api.github.com"
+						}
+					],
+					"scheme": [
+						{
+							"matcher": "exact",
+							"value": "https"
+						}
+					],
+					"body": [
+						{
+							"matcher": "json",
+							"value": "{\"query\":\"query($name:String!$owner:String!$pullRequestNumber:Int!){repository(owner: $owner, name: $name){pullRequest(number: $pullRequestNumber){labels(first: 100){nodes{name}}}}}\",\"variables\":{\"name\":\"test-label-checker-consumer\",\"owner\":\"agilepathway\",\"pullRequestNumber\":3}}\n"
+						}
+					]
+				},
+				"response": {
+					"status": 200,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"minor\"},{\"name\":\"patch\"}]}}}}}",
+					"encodedBody": false,
+					"headers": {
+						"Access-Control-Allow-Origin": [
+							"*"
+						],
+						"Access-Control-Expose-Headers": [
+							"ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, Deprecation, Sunset"
+						],
+						"Cache-Control": [
+							"no-cache"
+						],
+						"Content-Encoding": [
+							"identity"
+						],
+						"Content-Security-Policy": [
+							"default-src 'none'"
+						],
+						"Content-Type": [
+							"application/json; charset=utf-8"
+						],
+						"Date": [
+							"Tue, 07 Jul 2020 06:01:54 GMT"
+						],
+						"Hoverfly": [
+							"Was-Here"
+						],
+						"Referrer-Policy": [
+							"origin-when-cross-origin, strict-origin-when-cross-origin"
+						],
+						"Server": [
+							"GitHub.com"
+						],
+						"Status": [
+							"200 OK"
+						],
+						"Strict-Transport-Security": [
+							"max-age=31536000; includeSubdomains; preload"
+						],
+						"Vary": [
+							"Accept-Encoding, Accept, X-Requested-With",
+							"Accept-Encoding"
+						],
+						"X-Accepted-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Content-Type-Options": [
+							"nosniff"
+						],
+						"X-Frame-Options": [
+							"deny"
+						],
+						"X-Github-Media-Type": [
+							"github.v4; format=json"
+						],
+						"X-Github-Request-Id": [
+							"DD25:5656:CAF87A:106ADC2:5F040FCF"
+						],
+						"X-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Ratelimit-Limit": [
+							"5000"
+						],
+						"X-Ratelimit-Remaining": [
+							"4990"
+						],
+						"X-Ratelimit-Reset": [
+							"1594102919"
+						],
+						"X-Xss-Protection": [
+							"1; mode=block"
+						]
+					},
+					"templated": false
+				}
+			},
+			{
+				"request": {
+					"path": [
+						{
+							"matcher": "exact",
+							"value": "/graphql"
+						}
+					],
+					"method": [
+						{
+							"matcher": "exact",
+							"value": "POST"
+						}
+					],
+					"destination": [
+						{
+							"matcher": "exact",
+							"value": "api.github.com"
+						}
+					],
+					"scheme": [
+						{
+							"matcher": "exact",
+							"value": "https"
+						}
+					],
+					"body": [
+						{
+							"matcher": "json",
+							"value": "{\"query\":\"query($name:String!$owner:String!$pullRequestNumber:Int!){repository(owner: $owner, name: $name){pullRequest(number: $pullRequestNumber){labels(first: 100){nodes{name}}}}}\",\"variables\":{\"name\":\"test-label-checker-consumer\",\"owner\":\"agilepathway\",\"pullRequestNumber\":4}}\n"
+						}
+					]
+				},
+				"response": {
+					"status": 200,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"major\"},{\"name\":\"minor\"},{\"name\":\"patch\"}]}}}}}",
+					"encodedBody": false,
+					"headers": {
+						"Access-Control-Allow-Origin": [
+							"*"
+						],
+						"Access-Control-Expose-Headers": [
+							"ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, Deprecation, Sunset"
+						],
+						"Cache-Control": [
+							"no-cache"
+						],
+						"Content-Encoding": [
+							"identity"
+						],
+						"Content-Security-Policy": [
+							"default-src 'none'"
+						],
+						"Content-Type": [
+							"application/json; charset=utf-8"
+						],
+						"Date": [
+							"Tue, 07 Jul 2020 06:01:41 GMT"
+						],
+						"Hoverfly": [
+							"Was-Here"
+						],
+						"Referrer-Policy": [
+							"origin-when-cross-origin, strict-origin-when-cross-origin"
+						],
+						"Server": [
+							"GitHub.com"
+						],
+						"Status": [
+							"200 OK"
+						],
+						"Strict-Transport-Security": [
+							"max-age=31536000; includeSubdomains; preload"
+						],
+						"Vary": [
+							"Accept-Encoding, Accept, X-Requested-With",
+							"Accept-Encoding"
+						],
+						"X-Accepted-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Content-Type-Options": [
+							"nosniff"
+						],
+						"X-Frame-Options": [
+							"deny"
+						],
+						"X-Github-Media-Type": [
+							"github.v4; format=json"
+						],
+						"X-Github-Request-Id": [
+							"DD25:5656:CAF5A1:106AA4E:5F040FC1"
+						],
+						"X-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Ratelimit-Limit": [
+							"5000"
+						],
+						"X-Ratelimit-Remaining": [
+							"4994"
+						],
+						"X-Ratelimit-Reset": [
+							"1594102919"
+						],
+						"X-Xss-Protection": [
+							"1; mode=block"
+						]
+					},
+					"templated": false
+				}
+			},
+			{
+				"request": {
+					"path": [
+						{
+							"matcher": "exact",
+							"value": "/graphql"
+						}
+					],
+					"method": [
+						{
+							"matcher": "exact",
+							"value": "POST"
+						}
+					],
+					"destination": [
+						{
+							"matcher": "exact",
+							"value": "api.github.com"
+						}
+					],
+					"scheme": [
+						{
+							"matcher": "exact",
+							"value": "https"
+						}
+					],
+					"body": [
+						{
+							"matcher": "json",
+							"value": "{\"query\":\"query($name:String!$owner:String!$pullRequestNumber:Int!){repository(owner: $owner, name: $name){pullRequest(number: $pullRequestNumber){labels(first: 100){nodes{name}}}}}\",\"variables\":{\"name\":\"test-label-checker-consumer\",\"owner\":\"agilepathway\",\"pullRequestNumber\":5}}\n"
+						}
+					]
+				},
+				"response": {
+					"status": 200,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"type:fix\"}]}}}}}",
+					"encodedBody": false,
+					"headers": {
+						"Access-Control-Allow-Origin": [
+							"*"
+						],
+						"Access-Control-Expose-Headers": [
+							"ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, Deprecation, Sunset"
+						],
+						"Cache-Control": [
+							"no-cache"
+						],
+						"Content-Encoding": [
+							"identity"
+						],
+						"Content-Security-Policy": [
+							"default-src 'none'"
+						],
+						"Content-Type": [
+							"application/json; charset=utf-8"
+						],
+						"Date": [
+							"Tue, 07 Jul 2020 06:01:37 GMT"
+						],
+						"Hoverfly": [
+							"Was-Here"
+						],
+						"Referrer-Policy": [
+							"origin-when-cross-origin, strict-origin-when-cross-origin"
+						],
+						"Server": [
+							"GitHub.com"
+						],
+						"Status": [
+							"200 OK"
+						],
+						"Strict-Transport-Security": [
+							"max-age=31536000; includeSubdomains; preload"
+						],
+						"Vary": [
+							"Accept-Encoding, Accept, X-Requested-With",
+							"Accept-Encoding"
+						],
+						"X-Accepted-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Content-Type-Options": [
+							"nosniff"
+						],
+						"X-Frame-Options": [
+							"deny"
+						],
+						"X-Github-Media-Type": [
+							"github.v4; format=json"
+						],
+						"X-Github-Request-Id": [
+							"DD25:5656:CAF4F1:106A996:5F040FBE"
+						],
+						"X-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Ratelimit-Limit": [
+							"5000"
+						],
+						"X-Ratelimit-Remaining": [
+							"4995"
+						],
+						"X-Ratelimit-Reset": [
+							"1594102919"
+						],
+						"X-Xss-Protection": [
+							"1; mode=block"
+						]
+					},
+					"templated": false
+				}
+			},
+			{
+				"request": {
+					"path": [
+						{
+							"matcher": "exact",
+							"value": "/graphql"
+						}
+					],
+					"method": [
+						{
+							"matcher": "exact",
+							"value": "POST"
+						}
+					],
+					"destination": [
+						{
+							"matcher": "exact",
+							"value": "api.github.com"
+						}
+					],
+					"scheme": [
+						{
+							"matcher": "exact",
+							"value": "https"
+						}
+					],
+					"body": [
+						{
+							"matcher": "json",
+							"value": "{\"query\":\"query($name:String!$owner:String!$pullRequestNumber:Int!){repository(owner: $owner, name: $name){pullRequest(number: $pullRequestNumber){labels(first: 100){nodes{name}}}}}\",\"variables\":{\"name\":\"test-label-checker-consumer\",\"owner\":\"agilepathway\",\"pullRequestNumber\":6}}\n"
+						}
+					]
+				},
+				"response": {
+					"status": 200,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"type:fix\"},{\"name\":\"type:feature\"}]}}}}}",
+					"encodedBody": false,
+					"headers": {
+						"Access-Control-Allow-Origin": [
+							"*"
+						],
+						"Access-Control-Expose-Headers": [
+							"ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, Deprecation, Sunset"
+						],
+						"Cache-Control": [
+							"no-cache"
+						],
+						"Content-Encoding": [
+							"identity"
+						],
+						"Content-Security-Policy": [
+							"default-src 'none'"
+						],
+						"Content-Type": [
+							"application/json; charset=utf-8"
+						],
+						"Date": [
+							"Tue, 07 Jul 2020 06:01:37 GMT"
+						],
+						"Hoverfly": [
+							"Was-Here"
+						],
+						"Referrer-Policy": [
+							"origin-when-cross-origin, strict-origin-when-cross-origin"
+						],
+						"Server": [
+							"GitHub.com"
+						],
+						"Status": [
+							"200 OK"
+						],
+						"Strict-Transport-Security": [
+							"max-age=31536000; includeSubdomains; preload"
+						],
+						"Vary": [
+							"Accept-Encoding, Accept, X-Requested-With",
+							"Accept-Encoding"
+						],
+						"X-Accepted-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Content-Type-Options": [
+							"nosniff"
+						],
+						"X-Frame-Options": [
+							"deny"
+						],
+						"X-Github-Media-Type": [
+							"github.v4; format=json"
+						],
+						"X-Github-Request-Id": [
+							"DD25:5656:CAF4F1:106A996:5F040FBE"
+						],
+						"X-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Ratelimit-Limit": [
+							"5000"
+						],
+						"X-Ratelimit-Remaining": [
+							"4995"
+						],
+						"X-Ratelimit-Reset": [
+							"1594102919"
+						],
+						"X-Xss-Protection": [
+							"1; mode=block"
+						]
+					},
+					"templated": false
+				}
+			},
+			{
+				"request": {
+					"path": [
+						{
+							"matcher": "exact",
+							"value": "/graphql"
+						}
+					],
+					"method": [
+						{
+							"matcher": "exact",
+							"value": "POST"
+						}
+					],
+					"destination": [
+						{
+							"matcher": "exact",
+							"value": "api.github.com"
+						}
+					],
+					"scheme": [
+						{
+							"matcher": "exact",
+							"value": "https"
+						}
+					],
+					"body": [
+						{
+							"matcher": "json",
+							"value": "{\"query\":\"query($name:String!$owner:String!$pullRequestNumber:Int!){repository(owner: $owner, name: $name){pullRequest(number: $pullRequestNumber){labels(first: 100){nodes{name}}}}}\",\"variables\":{\"name\":\"test-label-checker-consumer\",\"owner\":\"agilepathway\",\"pullRequestNumber\":7}}\n"
+						}
+					]
+				},
+				"response": {
+					"status": 200,
+					"body": "{\"data\":{\"repository\":{\"pullRequest\":{\"labels\":{\"nodes\":[{\"name\":\"type:fix\"},{\"name\":\"type:feature\"},{\"name\":\"type:documentation\"}]}}}}}",
+					"encodedBody": false,
+					"headers": {
+						"Access-Control-Allow-Origin": [
+							"*"
+						],
+						"Access-Control-Expose-Headers": [
+							"ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, Deprecation, Sunset"
+						],
+						"Cache-Control": [
+							"no-cache"
+						],
+						"Content-Encoding": [
+							"identity"
+						],
+						"Content-Security-Policy": [
+							"default-src 'none'"
+						],
+						"Content-Type": [
+							"application/json; charset=utf-8"
+						],
+						"Date": [
+							"Tue, 07 Jul 2020 06:01:37 GMT"
+						],
+						"Hoverfly": [
+							"Was-Here"
+						],
+						"Referrer-Policy": [
+							"origin-when-cross-origin, strict-origin-when-cross-origin"
+						],
+						"Server": [
+							"GitHub.com"
+						],
+						"Status": [
+							"200 OK"
+						],
+						"Strict-Transport-Security": [
+							"max-age=31536000; includeSubdomains; preload"
+						],
+						"Vary": [
+							"Accept-Encoding, Accept, X-Requested-With",
+							"Accept-Encoding"
+						],
+						"X-Accepted-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Content-Type-Options": [
+							"nosniff"
+						],
+						"X-Frame-Options": [
+							"deny"
+						],
+						"X-Github-Media-Type": [
+							"github.v4; format=json"
+						],
+						"X-Github-Request-Id": [
+							"DD25:5656:CAF4F1:106A996:5F040FBE"
+						],
+						"X-Oauth-Scopes": [
+							"repo"
+						],
+						"X-Ratelimit-Limit": [
+							"5000"
+						],
+						"X-Ratelimit-Remaining": [
+							"4995"
+						],
+						"X-Ratelimit-Reset": [
+							"1594102919"
+						],
+						"X-Xss-Protection": [
+							"1; mode=block"
+						]
+					},
+					"templated": false
+				}
+			}
+		],
+		"globalActions": {
+			"delays": [],
+			"delaysLogNormal": []
+		}
+	},
+	"meta": {
+		"schemaVersion": "v5.1",
+		"hoverflyVersion": "v1.3.0",
+		"timeExported": "2020-07-07T13:03:21+07:00"
+	}
+}

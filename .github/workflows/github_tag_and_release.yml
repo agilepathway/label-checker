@@ -1,0 +1,104 @@
+---
+name: Release
+
+on:  # yamllint disable-line rule:truthy
+  pull_request_target:
+    types:
+      - closed
+
+env:
+  docker_repo: agilepathway/pull-request-label-checker
+
+jobs:
+
+  tag:
+    name: Tag semantic version
+    runs-on: ubuntu-22.04
+    outputs:
+      semver: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Tag
+        uses: K-Phoen/semver-release-action@v1.3.2
+        id: tag
+        with:
+          release_branch: master
+          release_strategy: tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: tag
+    name: Create GitHub Release
+    runs-on: ubuntu-22.04
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      -
+        name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.4'
+      -
+        name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_and_push_docker_image:
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-24.04"
+            image: "linux/amd64"
+            # - os: "ubuntu-24.04-arm"
+            #   image: "linux/arm64"
+    needs: tag
+    name: Build and push image
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          tags: ${{env.docker_repo}}:${{ needs.tag.outputs.semver }},${{env.docker_repo}}:latest
+          platforms: ${{ matrix.image }}
+          push: true
+
+  check_latest_tag:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    needs: [tag, build_and_push_docker_image]
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: Check Docker image for new release is tagged latest
+        # (it is important to have this check to catch any regression, e.g. if we move to a different way of releasing)
+        id: check_docker_image_tagged_latest
+        # yamllint disable rule:line-length
+        # we need to pull both docker tags to do the check
+        run: |
+          docker pull ${{env.docker_repo}}:${{ needs.tag.outputs.semver }}
+          docker pull ${{env.docker_repo}}:latest
+          echo "IS_LATEST_TAGGED_CORRECTLY=$(docker image inspect ${{env.docker_repo}}:${{ needs.tag.outputs.semver }} | jq -r '.[] | (.RepoTags) | any( . == "${{env.docker_repo}}:latest") ')" >> "$GITHUB_OUTPUT"
+        # yamllint enable rule:line-length
+
+      - name: Fail if latest is not tagged correctly
+        if: ${{ steps.check_docker_image_tagged_latest.outputs.IS_LATEST_TAGGED_CORRECTLY == 'false' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('The newly released Docker image ${{ needs.tag.outputs.semver }} is not tagged latest. ')

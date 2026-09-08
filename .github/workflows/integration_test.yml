@@ -1,0 +1,27 @@
+---
+on:  # yamllint disable-line rule:truthy
+  # Run the tests on every push, and also at 3am every night
+  push:
+  schedule:
+    - cron: '0 3 * * *'  # * is a special character in YAML so you have to quote this string
+name: Tests
+jobs:
+  tests:
+    name: Integration
+    runs-on: ubuntu-22.04
+    # Skip running on forks since forks don't have access to the agilepathway repo used
+    # in the integration tests
+    if: github.repository == 'agilepathway/label-checker'
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.4'
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Tests
+        env:
+          INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          go test ./... -integration -v
+          go test ./... -integration -enterprise-cloud -v

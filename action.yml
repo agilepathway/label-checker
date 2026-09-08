@@ -1,0 +1,65 @@
+---
+name: 'Label checker for pull requests'
+description: 'Checks pull requests for given labels'
+author: 'John Boyes'
+inputs:
+  one_of:
+    description: >
+      Comma-separated list of labels.
+      Each pull request must be labeled with exactly one of these labels.
+    required: false
+    default: ''
+  none_of:
+    description: >
+      Comma-separated list of labels.
+      Each pull request must not be labeled with any of these labels.
+    required: false
+    default: ''
+  all_of:
+    description: >
+      Comma-separated list of labels.
+      Each pull request must be labeled with all of these labels.
+    required: false
+    default: ''
+  any_of:
+    description: >
+      Comma-separated list of labels.
+      Each pull request must be labeled with one or more of these labels.
+    required: false
+    default: ''
+  repo_token:
+    description: >
+      See this link for an example of how to set this token:
+      https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#example-passing-github_token-as-an-input
+    required: true
+  github_enterprise_graphql_url:
+    description: >
+      Only provide this if you are using GitHub Enterprise.
+      For GitHub Enterprise Cloud enter `https://api.github.com/graphql` as the value.
+      For Github Enterprise Server enter `http(s)://<hostname>/api/graphql` as the value.
+    required: false
+    default: ''
+  allow_failure:
+    description: >
+      Set this to `true` if you do not want the build to fail when the label checker fails,
+      e.g. if you want to use an `if` key in a following step or job to determine if that step
+      should skip/fail/succeed based on the output of the label checker step.  (The label
+      checker step always outputs a step output of `success` or `failure`, which can be
+      used for this purpose.)
+    required: false
+    default: ''
+  prefix_mode:
+    description: >
+      Set this to `true` if you want to check for labels based on prefixes instead of checking
+      for the entire label name.  e.g. check for exactly one label with a prefix of "type/" or
+      check there are no labels with a prefix "rework:".  You can specify any string as the
+      prefix to check on, it doesn't need to have a forward slash or colon, these are just
+      examples.
+    required: false
+    default: ''
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'tag'
+  color: 'blue'

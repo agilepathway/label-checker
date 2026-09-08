@@ -1,0 +1,97 @@
+---
+name: End-to-end tests
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+jobs:
+
+  end_to_end_test_one_of:
+    name: end-to-end test one_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  end_to_end_test_none_of:
+    name: end-to-end test none_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          none_of: missing
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  end_to_end_test_any_of:
+    name: end-to-end test any_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          any_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  end_to_end_test_multiple_checks:
+    name: end-to-end test multiple checks
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          one_of: major,minor,patch
+          none_of: missing
+          any_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  end_to_end_test_allow_failure:
+    name: end-to-end test allow failure
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v4
+      - id: success_scenario
+        uses: ./
+        with:
+          one_of: major,minor,patch
+          allow_failure: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+      - id: failure_scenario
+        uses: ./
+        with:
+          one_of: missing
+          allow_failure: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+      - if: steps.success_scenario.outputs.label_check != 'success'
+        run: |
+          echo "Allow failure success scenario failed, exiting"
+          exit 1
+      - if: steps.failure_scenario.outputs.label_check != 'failure'
+        run: |
+          echo "Allow failure failure scenario failed, exiting"
+          exit 1
+
+  end_to_end_test_prefix_none_of:
+    name: end-to-end test prefix none_of
+    runs-on: ubuntu-latest
+    # Run the workflow using the label checker code in the branch for the current PR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          prefix_mode: true
+          none_of: "type:"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
