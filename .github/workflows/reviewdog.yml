@@ -19,7 +19,6 @@ jobs:
       - uses: reviewdog/action-golangci-lint@v2
         with:
           github_token: ${{ secrets.github_token }}
-          golangci_lint_flags: "-c .golangci.yml"
           level: "error"
           reporter: github-check
 
