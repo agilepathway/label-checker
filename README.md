@@ -67,6 +67,12 @@ Using this action is as simple as:
 
    (see the [checks](#checks) section below for the different checks you can configure)
 
+## Development
+
+The TypeScript action scaffold is bundled with Rollup. Install dependencies, then
+run `npm run typecheck` to type-check without emitting intermediate files or
+`npm run bundle` to regenerate the committed `dist/index.js` artifact.
+
 
 ## Checks
 
@@ -261,4 +267,3 @@ To report a new vulnerability:
 2. click on `Report a vulnerability`
 
 [Tips on creating a great vulnerability report](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/best-practices-for-writing-repository-security-advisories#best-practices)
-
