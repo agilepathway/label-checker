@@ -7,8 +7,7 @@ Firstly thanks for thinking of contributing - the project is [open source](https
 [How to make a contribution](#how-to-make-a-contribution)
 
 [Local development](#local-development)
-  * [Visual Studio Code](#visual-studio-code)
-  * [Codespaces](#codespaces)
+  * [Visual Studio Code and Codespaces](#visual-studio-code-and-codespaces)
   * [Local development from scratch](#local-development-from-scratch)
     * [Dependencies](#dependencies)
   * [Tools and technologies](#tools-and-technologies)
@@ -41,18 +40,28 @@ Firstly thanks for thinking of contributing - the project is [open source](https
 
 ## Local development
 
-### Visual Studio Code
+### Visual Studio Code and Codespaces
 
-The easiest way to set up your development environment (unless you have [Codespaces](#codespaces), which is even easier) is to use [Visual Studio Code](https://code.visualstudio.com/)'s [Remote Containers](https://code.visualstudio.com/docs/remote/containers) functionality:
-  * [System requirements](https://code.visualstudio.com/docs/remote/containers#_system-requirements)
-  * [Fork the project](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks) 
-  * [Open the local project folder in a container](https://code.visualstudio.com/docs/remote/containers#_quick-start-open-an-existing-folder-in-a-container)
-  * Everything will then be setup for you.  You'll be able to run the tests locally.
+The repository does not currently provide a custom development container. This is
+an interim arrangement while the project is migrated from Go to TypeScript.
+After that migration, we can reassess whether a custom development environment
+provides sufficient value.
 
-### Codespaces
+For local development, install [Visual Studio Code](https://code.visualstudio.com/)
+and clone or [fork the project](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks).
+For remote development, [GitHub Codespaces](https://github.com/features/codespaces/)
+uses its default environment when you open the repository; no custom
+devcontainer configuration is used.
 
-If you have access to [GitHub Codespaces](https://github.com/features/codespaces/) (which allows full remote
-development from within your browser) then all you need to do is [fork the project](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks) and open it in Codespaces - easy!
+In either environment, install the dependencies and tools listed below manually:
+
+* [Go](https://golang.org/)
+* [Hoverfly](https://hoverfly.readthedocs.io) (required for
+  [running the tests](#running-the-tests))
+
+See [Local development from scratch](#local-development-from-scratch) for the
+Hoverfly installation steps and [Running the tests](#running-the-tests) for the
+commands to verify the setup.
 
 ### Local development from scratch
 
