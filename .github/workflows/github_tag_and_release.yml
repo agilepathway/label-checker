@@ -15,6 +15,8 @@ jobs:
 
   tag:
     if: github.event.pull_request.merged
+    permissions:
+      contents: write
     name: Tag semantic version
     runs-on: ubuntu-22.04
     outputs:
@@ -31,6 +33,8 @@ jobs:
 
   release:
     needs: tag
+    permissions:
+      contents: write
     name: Create GitHub Release
     runs-on: ubuntu-22.04
     steps:
