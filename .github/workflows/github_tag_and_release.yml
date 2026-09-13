@@ -5,6 +5,8 @@ on:  # yamllint disable-line rule:truthy
   pull_request_target:
     types:
       - closed
+    branches:
+      - master
 
 env:
   docker_repo: agilepathway/pull-request-label-checker
@@ -12,6 +14,7 @@ env:
 jobs:
 
   tag:
+    if: github.event.pull_request.merged
     name: Tag semantic version
     runs-on: ubuntu-22.04
     outputs:
