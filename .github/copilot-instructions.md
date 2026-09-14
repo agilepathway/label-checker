@@ -15,3 +15,32 @@ When a commit pertains to an issue, which it generally will, use this body:
 
 Do not apply convention 7 when using this issue-reference body, because the
 issue provides the what and why context.
+
+## Commit message newline handling
+
+When creating or amending a commit, use actual newline characters between the
+subject, body, and trailers. Do not put literal escaped sequences such as
+`\n\n` in the final commit message.
+
+Prefer a quoted heredoc when creating a correctly formatted message:
+
+```sh
+git commit --amend -F - <<'EOF'
+Subject line
+
+Body text.
+
+Co-authored-by: ...
+EOF
+```
+
+Before pushing, verify the final message and check for literal backslash-n
+text:
+
+```sh
+git log -1 --format='%B'
+git log -1 --format='%B' | grep -F '\n'
+```
+
+The second command should produce no output. If it does, amend the commit
+before pushing.
