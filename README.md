@@ -69,9 +69,8 @@ Using this action is as simple as:
 
 ## Development
 
-The TypeScript action scaffold is bundled with Rollup. Install dependencies, then
-run `npm run typecheck` to type-check without emitting intermediate files or
-`npm run bundle` to regenerate the committed `dist/index.js` artifact.
+The TypeScript action scaffold is type-checked directly. Install dependencies,
+then run `npm run typecheck` to check the TypeScript without emitting files.
 
 
 ## Checks
