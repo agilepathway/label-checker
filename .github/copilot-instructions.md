@@ -54,3 +54,13 @@ force-push it to add an incremental change.
 The only exception is correcting a badly formatted commit message. For
 example, amend and force-push when a commit contains literal `\n\n` text
 instead of actual newline characters.
+
+## Pull request workflow
+
+After completing changes, commit them and push the branch. Do not create a pull
+request unless a human specifically asks you to do so; by default, a human
+creates the pull request.
+
+After committing and pushing, comment on the related GitHub issue with a summary
+of the completed work, tag `@coderabbitai`, and ask `@coderabbitai` to check
+that the work looks correct.
