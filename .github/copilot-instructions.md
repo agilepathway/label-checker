@@ -44,3 +44,13 @@ git log -1 --format='%B' | grep -F '\n'
 
 The second command should produce no output. If it does, amend the commit
 before pushing.
+
+## Incremental commit handling
+
+Create a new atomic commit for each incremental change, including when
+multiple changes relate to the same issue. Do not amend an existing commit and
+force-push it to add an incremental change.
+
+The only exception is correcting a badly formatted commit message. For
+example, amend and force-push when a commit contains literal `\n\n` text
+instead of actual newline characters.
