@@ -1,6 +1,7 @@
 ---
 project_name: label-checker
 version: 2
+dist: .goreleaser-dist
 release:
   github:
   prerelease: auto
