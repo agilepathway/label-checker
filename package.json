@@ -9,10 +9,14 @@
   },
   "scripts": {
     "bundle": "rollup --config",
+    "format": "biome format --write src rollup.config.js",
+    "format:check": "biome format src rollup.config.js",
+    "lint": "biome lint src rollup.config.js",
     "test": "node --test",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.13",
     "@rollup/plugin-typescript": "^12.1.4",
     "rollup": "^4.41.0",
     "tslib": "^2.8.1",
