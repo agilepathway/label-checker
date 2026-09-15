@@ -9,8 +9,7 @@
   },
   "scripts": {
     "format": "biome format --write src",
-    "format:check": "biome format src",
-    "lint": "biome lint src",
+    "check": "biome check src",
     "test": "node --test",
     "typecheck": "tsc --noEmit"
   },

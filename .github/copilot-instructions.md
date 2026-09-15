@@ -66,8 +66,8 @@ creates the pull request.
 Use the project-local `@biomejs/biome` version installed from
 `package-lock.json`. If the local package is unavailable, install the project
 dependencies before running the checks. After every code edit, run
-`npm run format:check` and `npm run lint`. Run both checks again before
-creating a commit. Do not use a globally installed Biome version.
+`npm run check`. Run it again before creating a commit. Do not use a globally
+installed Biome version.
 
 After committing and pushing, comment on the related GitHub issue with a summary
 of the completed work, tag `@coderabbitai`, and ask `@coderabbitai` to check
