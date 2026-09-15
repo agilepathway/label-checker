@@ -2,7 +2,7 @@
 	"linter": {
 		"rules": {
 			"style": {
-				// The action runs .ts files directly after erasing types instead of converting them to .js.
+				// The action runs .ts files directly after erasing types instead of converting them to .js. Enums cannot be erased, so they cannot be used in this codebase.
 				"noEnum": "error"
 			}
 		}
