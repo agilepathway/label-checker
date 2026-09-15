@@ -1,0 +1,10 @@
+{
+	"linter": {
+		"rules": {
+			"style": {
+				// The action runs .ts files directly after erasing types instead of converting them to .js.
+				"noEnum": "error"
+			}
+		}
+	}
+}
