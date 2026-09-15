@@ -73,5 +73,7 @@ dependencies before running the checks. After every code edit, run
 installed Biome version.
 
 After committing and pushing, comment on the related GitHub issue with a summary
-of the completed work, tag `@coderabbitai`, and ask `@coderabbitai` to check
-that the work looks correct.
+of the completed work. Start the comment with the exact `Comment by Copilot: `
+prefix, include the commit SHA and the branch containing that commit as plain
+text without backticks, tag `@coderabbitai`, and directly ask
+`@coderabbitai` to review that commit on that branch.
