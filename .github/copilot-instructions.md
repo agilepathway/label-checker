@@ -61,6 +61,9 @@ After completing changes, commit them and push the branch. Do not create a pull
 request unless a human specifically asks you to do so; by default, a human
 creates the pull request.
 
+Every comment posted on a GitHub issue during implementation, review, or
+follow-up work must start with the exact prefix `Comment by Copilot: `.
+
 ## Biome checks
 
 Use the project-local `@biomejs/biome` version installed from
