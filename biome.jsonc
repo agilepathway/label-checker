@@ -13,6 +13,18 @@
 				// The action runs .ts files directly after erasing types instead of converting them to .js. Parameter properties cannot be erased, so they cannot be used in this codebase.
 				"noParameterProperties": "error"
 			},
+			"complexity": {
+				// Cognitive complexity 5 is an empirical starting point intended to provide
+				// the same engineering discipline as a McCabe-5 policy, which has served
+				// us very well on another project, not a numerical conversion between
+				// the two metrics.
+				"noExcessiveCognitiveComplexity": {
+					"level": "error",
+					"options": {
+						"maxAllowedComplexity": 5
+					}
+				}
+			},
 			"nursery": {
 				// Type assertions can bypass TypeScript's type checking and hide invalid assumptions.
 				"noUnsafeTypeAssertion": "error"
