@@ -4,6 +4,8 @@
 			"style": {
 				// The action runs .ts files directly after erasing types instead of converting them to .js. Enums cannot be erased, so they cannot be used in this codebase.
 				"noEnum": "error",
+				// Namespaces are not erasable TypeScript syntax and cannot be used in this codebase.
+				"noNamespace": "error",
 				// The action runs .ts files directly after erasing types instead of converting them to .js. Parameter properties cannot be erased, so they cannot be used in this codebase.
 				"noParameterProperties": "error"
 			},
