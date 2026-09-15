@@ -6,6 +6,10 @@
 				"noEnum": "error",
 				// The action runs .ts files directly after erasing types instead of converting them to .js. Parameter properties cannot be erased, so they cannot be used in this codebase.
 				"noParameterProperties": "error"
+			},
+			"nursery": {
+				// Type assertions can bypass TypeScript's type checking and hide invalid assumptions.
+				"noUnsafeTypeAssertion": "error"
 			}
 		}
 	}
