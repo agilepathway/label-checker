@@ -1,4 +1,13 @@
 {
+	"assist": {
+		"actions": {
+			"source": {
+				// Deterministic imports keep AI-generated diffs stable and remove
+				// incidental ordering changes without making organization a lint error.
+				"organizeImports": "on"
+			}
+		}
+	},
 	"linter": {
 		"rules": {
 			"complexity": {
@@ -12,6 +21,15 @@
 						"maxAllowedComplexity": 5
 					}
 				}
+			},
+			"correctness": {
+				// Stale imports are a common residue of AI-generated refactors and
+				// can hide incomplete changes even when the imported module exists.
+				"noUnusedImports": "error",
+				// Node 24 executes this project's TypeScript as ESM, so relative
+				// imports must name their .ts files instead of relying on extension
+				// resolution.
+				"useImportExtensions": "error"
 			},
 			"suspicious": {
 				// Explicit any disables type checking and can hide invalid assumptions
@@ -28,6 +46,12 @@
 				// failures; require control flow or explicit handling so runtime
 				// behavior matches TypeScript's assumptions.
 				"noNonNullAssertion": "error",
+				// Explicit type-only imports prevent a type from being loaded or
+				// confused with a runtime value at the module boundary.
+				"useImportType": "error",
+				// Explicit type-only exports prevent type declarations from being
+				// emitted or confused with runtime exports at the module boundary.
+				"useExportType": "error",
 				// The action runs .ts files directly after erasing types instead of
 				// converting them to .js. Enums cannot be erased, so they cannot be
 				// used in this codebase.
