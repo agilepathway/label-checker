@@ -63,7 +63,16 @@
 				"noUnnecessaryConditions": "error",
 				// Async functions without await can return an asynchronous operation
 				// without keeping its failures in the function's intended error path.
-				"useAwait": "error"
+				"useAwait": "error",
+				// Focused tests can silently exclude the rest of the suite and create
+				// false confidence when an AI-generated test leaves `.only` enabled.
+				"noFocusedTests": "error",
+				// Skipped or disabled tests can appear to provide coverage while the
+				// intended behavior is not actually exercised.
+				"noSkippedTests": "error",
+				// Duplicate setup or teardown hooks can make test lifecycle behavior
+				// ambiguous and hide an accidental or misleading test structure.
+				"noDuplicateTestHooks": "error"
 			},
 			"style": {
 				// Non-null assertions override nullability checks and can cause runtime
