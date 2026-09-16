@@ -72,6 +72,7 @@ Using this action is as simple as:
 The TypeScript action scaffold is type-checked directly. Install dependencies,
 then run `npm run typecheck` to check the TypeScript without emitting files.
 
+
 ## Checks
 
 There are 4 types of label checks available:
