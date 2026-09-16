@@ -14,29 +14,19 @@
 				}
 			},
 			"suspicious": {
-				// Why prevent explicit any? Because any disables type checking. Why
-				// prevent disabled checking? Because it hides invalid assumptions. Why
-				// avoid hidden assumptions? Because AI-produced code can look valid
-				// while failing at runtime. Why require checked types? Because the
-				// compiler can then expose those failures before the action runs. Why
-				// catch this during linting? Because prevention is cheaper than repair.
+				// Explicit any disables type checking and can hide invalid assumptions
+				// in AI-produced code; require checked types so the compiler can expose
+				// failures before the action runs.
 				"noExplicitAny": "error",
-				// Why prevent evolving types? Because unannotated variables can become
-				// any through reassignment. Why avoid evolved any? Because it silently
-				// disables type checking. Why is silent loss risky? Because generated
-				// code may rely on an accidental type. Why require annotations? Because
-				// they make the intended type explicit and reviewable. Why make intent
-				// reviewable? Because reviewers can then detect unsafe assumptions.
+				// Unannotated variables can silently evolve into any through
+				// reassignment; require explicit intent so reviewers can detect unsafe
+				// assumptions in generated code.
 				"noEvolvingTypes": "error"
 			},
 			"style": {
-				// Why prevent non-null assertions? Because ! overrides nullability
-				// checks. Why avoid overridden checks? Because the assertion may be
-				// false. Why is a false assertion risky? Because it can cause a
-				// runtime failure. Why require proven nullability? Because control
-				// flow or explicit handling keeps the safety guarantee in the types.
-				// Why preserve that guarantee? Because runtime behavior should match
-				// the assumptions checked by TypeScript.
+				// Non-null assertions override nullability checks and can cause runtime
+				// failures; require control flow or explicit handling so runtime
+				// behavior matches TypeScript's assumptions.
 				"noNonNullAssertion": "error",
 				// The action runs .ts files directly after erasing types instead of
 				// converting them to .js. Enums cannot be erased, so they cannot be
