@@ -72,6 +72,21 @@ Using this action is as simple as:
 The TypeScript action scaffold is type-checked directly. Install dependencies,
 then run `npm run typecheck` to check the TypeScript without emitting files.
 
+Biome linting also applies focused type-safety guardrails in `biome.jsonc`:
+
+- `noExplicitAny` rejects explicit `any`, which disables TypeScript checking.
+- `noEvolvingTypes` rejects unannotated variables that can evolve into `any`
+  through reassignment.
+- `noNonNullAssertion` rejects the `!` operator when it bypasses nullability
+  checks.
+
+These rules are supported by the locked `@biomejs/biome` 2.5.13 dependency and
+are configured as errors. The current TypeScript source has no diagnostics for
+these rules. To verify that each rule is active, run the local Biome binary
+against a temporary TypeScript fixture containing an explicit `any`, an
+evolving variable, and a non-null assertion; Biome reports the corresponding
+rule for each construct. `npm run check` verifies the repository source, while
+`npm run typecheck` remains the authoritative TypeScript semantic check.
 
 ## Checks
 
