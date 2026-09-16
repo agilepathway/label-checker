@@ -4,6 +4,9 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "erasableSyntaxOnly": true,
+    // Node 24 executes our TypeScript source directly, so relative imports use
+    // `.ts` extensions rather than the `.js` extensions used by compiled output.
+    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "strict": true,
     "esModuleInterop": true,
