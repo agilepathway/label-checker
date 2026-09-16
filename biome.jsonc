@@ -60,7 +60,10 @@
 				"noSelfCompare": "error",
 				// Conditions proven redundant add control flow that cannot affect the
 				// result and obscure the actual behavior of the code.
-				"noUnnecessaryConditions": "error"
+				"noUnnecessaryConditions": "error",
+				// Async functions without await can return an asynchronous operation
+				// without keeping its failures in the function's intended error path.
+				"useAwait": "error"
 			},
 			"style": {
 				// Non-null assertions override nullability checks and can cause runtime
