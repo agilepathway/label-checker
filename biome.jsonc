@@ -88,7 +88,14 @@
 			},
 			"nursery": {
 				// Type assertions can bypass TypeScript's type checking and hide invalid assumptions.
-				"noUnsafeTypeAssertion": "error"
+				"noUnsafeTypeAssertion": "error",
+				// Implicit function, variable, and parameter types can hide an AI-generated
+				// contract change; require explicit types so reviewers can see intended
+				// assumptions at the declaration.
+				"useExplicitType": "error",
+				// Return annotations wider than the implementation can conceal the precise
+				// contract from callers and make incorrect assumptions harder to detect.
+				"noMisleadingReturnType": "error"
 			}
 		}
 	}
