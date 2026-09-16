@@ -92,6 +92,12 @@
 			"nursery": {
 				// Type assertions can bypass TypeScript's type checking and hide invalid assumptions.
 				"noUnsafeTypeAssertion": "error",
+				// Floating Promises can leave filesystem or GitHub API failures unhandled
+				// and allow asynchronous operations to run out of sequence.
+				"noFloatingPromises": "error",
+				// Promises used as conditions or synchronous callbacks can silently skip
+				// intended asynchronous work, such as ordered API or filesystem operations.
+				"noMisusedPromises": "error",
 				// Implicit function, variable, and parameter types can hide an AI-generated
 				// contract change; require explicit types so reviewers can see intended
 				// assumptions at the declaration.
