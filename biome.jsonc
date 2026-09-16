@@ -26,6 +26,18 @@
 				// Stale imports are a common residue of AI-generated refactors and
 				// can hide incomplete changes even when the imported module exists.
 				"noUnusedImports": "error",
+				// Unused bindings are usually dead code left by incomplete changes
+				// or accidental declarations that obscure the intended behavior.
+				"noUnusedVariables": "error",
+				// Unreachable statements obscure control flow and can signal a logic
+				// mistake or incomplete refactor in generated code.
+				"noUnreachable": "error",
+				// Constant conditions can hide a mistaken comparison or misleading
+				// branch that makes the code harder to reason about.
+				"noConstantCondition": "error",
+				// Undeclared references are straightforward incorrect-code hazards
+				// that should be reported before the action can execute.
+				"noUndeclaredVariables": "error",
 				// Node 24 executes this project's TypeScript as ESM, so relative
 				// imports must name their .ts files instead of relying on extension
 				// resolution.
@@ -39,7 +51,16 @@
 				// Unannotated variables can silently evolve into any through
 				// reassignment; require explicit intent so reviewers can detect unsafe
 				// assumptions in generated code.
-				"noEvolvingTypes": "error"
+				"noEvolvingTypes": "error",
+				// Duplicate object keys silently overwrite earlier values and make
+				// the intended object shape ambiguous.
+				"noDuplicateObjectKeys": "error",
+				// Comparing a value with itself is usually a typo that can conceal a
+				// logic error while appearing to be a meaningful comparison.
+				"noSelfCompare": "error",
+				// Conditions proven redundant add control flow that cannot affect the
+				// result and obscure the actual behavior of the code.
+				"noUnnecessaryConditions": "error"
 			},
 			"style": {
 				// Non-null assertions override nullability checks and can cause runtime
