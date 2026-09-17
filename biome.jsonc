@@ -38,6 +38,15 @@
 				// Undeclared references are straightforward incorrect-code hazards
 				// that should be reported before the action can execute.
 				"noUndeclaredVariables": "error",
+				// Runtime source must declare every package it imports instead of
+				// relying on transitive dependencies; devDependencies are not
+				// permitted in checked source or test files.
+				"noUndeclaredDependencies": {
+					"level": "error",
+					"options": {
+						"devDependencies": false
+					}
+				},
 				// Node 24 executes this project's TypeScript as ESM, so relative
 				// imports must name their .ts files instead of relying on extension
 				// resolution.
@@ -103,8 +112,16 @@
 				// namespaces; ECMAScript modules provide the module mechanism we need while
 				// keeping the source erasable - so forbidding namespaces entirely is the way to go.
 				"noNamespace": "error",
+				// The action is an ESM package, so CommonJS imports and exports
+				// would contradict the module-system decision.
+				"noCommonJs": "error",
 				// The action runs .ts files directly after erasing types instead of converting them to .js. Parameter properties cannot be erased, so they cannot be used in this codebase.
 				"noParameterProperties": "error"
+			},
+			"security": {
+				// Heuristic secret detection helps prevent credentials from being
+				// committed; retain Biome's default entropy threshold.
+				"noSecrets": "error"
 			},
 			"nursery": {
 				// Type assertions can bypass TypeScript's type checking and hide invalid assumptions.
