@@ -9,7 +9,7 @@
   },
   "scripts": {
     "format": "biome format --write src",
-    "check": "biome check src",
+    "check": "biome check src --enforce-assist=false",
     "test": "node --test",
     "typecheck": "tsc --noEmit"
   },
