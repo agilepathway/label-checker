@@ -48,6 +48,14 @@
 				// in AI-produced code; require checked types so the compiler can expose
 				// failures before the action runs.
 				"noExplicitAny": "error",
+				// Circular imports can make module initialization order unclear and
+				// leave exports partially initialized at runtime.
+				"noImportCycles": {
+					"level": "error",
+					"options": {
+						"ignoreTypes": true
+					}
+				},
 				// Unannotated variables can silently evolve into any through
 				// reassignment; require explicit intent so reviewers can detect unsafe
 				// assumptions in generated code.
