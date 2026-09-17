@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -36,17 +36,29 @@ test("executes the Go label checker through the test adapter", async () => {
 	assert(address && typeof address !== "string");
 
 	try {
-		const result = spawnSync(adapter, {
-			encoding: "utf8",
-			env: {
-				...process.env,
-				GITHUB_REPOSITORY: "agilepathway/test-label-checker-consumer",
-				GITHUB_EVENT_PATH: eventPath,
-				GITHUB_OUTPUT: outputPath,
-				INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: `http://127.0.0.1:${address.port}`,
-				INPUT_ONE_OF: "major,minor,patch",
-				INPUT_REPO_TOKEN: "test-token",
-			},
+		const result = await new Promise((resolve, reject) => {
+			const child = spawn(adapter, {
+				env: {
+					...process.env,
+					GITHUB_REPOSITORY: "agilepathway/test-label-checker-consumer",
+					GITHUB_EVENT_PATH: eventPath,
+					GITHUB_OUTPUT: outputPath,
+					INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: `http://127.0.0.1:${address.port}`,
+					INPUT_ONE_OF: "major,minor,patch",
+					INPUT_REPO_TOKEN: "test-token",
+				},
+			});
+			let stdout = "";
+			let stderr = "";
+
+			child.stdout.on("data", (chunk) => {
+				stdout += chunk;
+			});
+			child.stderr.on("data", (chunk) => {
+				stderr += chunk;
+			});
+			child.on("error", reject);
+			child.on("close", (status) => resolve({ status, stdout, stderr }));
 		});
 
 		assert.equal(result.status, 0);
