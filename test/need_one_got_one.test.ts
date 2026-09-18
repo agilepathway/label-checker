@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 test("executes the Go label checker for Need one, got one", async () => {
-	const integration = process.argv.includes("--integration");
+	const integration = process.env.TEST_MODE === "integration";
 	console.log(`Running in ${integration ? "integration" : "virtual"} mode`);
 
 	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
