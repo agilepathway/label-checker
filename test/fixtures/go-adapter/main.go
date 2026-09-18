@@ -8,7 +8,10 @@ import (
 )
 
 func main() {
-	redirectGitHubAPI()
+	if os.Getenv("TEST_MODE") != "integration" {
+		redirectGitHubAPI()
+	}
+
 	action := github.Action{}
 	os.Exit(action.CheckLabels(os.Stdout, os.Stderr))
 }
