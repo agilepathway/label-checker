@@ -11,6 +11,7 @@
     "format": "biome format --write src",
     "check": "biome check src --enforce-assist=false",
     "test": "node --test",
+    "test:integration": "INPUT_REPO_TOKEN=${INPUT_REPO_TOKEN:?INPUT_REPO_TOKEN must be set} node --test test/integration.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

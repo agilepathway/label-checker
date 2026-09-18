@@ -17,11 +17,18 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.23.4'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
       - name: Tests
         env:
           INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           go test ./... -integration -v
           go test ./... -integration -enterprise-cloud -v
+          npm run test:integration
