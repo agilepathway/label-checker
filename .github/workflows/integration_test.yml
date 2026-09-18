@@ -31,4 +31,4 @@ jobs:
         run: |
           go test ./... -integration -v
           go test ./... -integration -enterprise-cloud -v
-          npm test
+          npm run test:integration
