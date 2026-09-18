@@ -27,6 +27,7 @@ jobs:
         run: npm ci
       - name: Tests
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           go test ./... -integration -v
