@@ -32,44 +32,49 @@ test("executes the Go label checker for Need one, got one", async () => {
 	writeFileSync(eventPath, JSON.stringify({ pull_request: { number: 2 } }));
 	writeFileSync(outputPath, "");
 	await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
-	const address = server.address();
-	assert(address && typeof address !== "string");
+	try {
+		const address = server.address();
+		assert(address && typeof address !== "string");
 
-	const result = await new Promise<{
-		status: number | null;
-		stdout: string;
-		stderr: string;
-	}>((resolve, reject) => {
-		const child = spawn(adapter, {
-			env: {
-				...process.env,
-				GITHUB_REPOSITORY: "agilepathway/test-label-checker-consumer",
-				GITHUB_EVENT_PATH: eventPath,
-				GITHUB_OUTPUT: outputPath,
-				GITHUB_API_URL: `http://127.0.0.1:${address.port}`,
-				INPUT_ONE_OF: "major,minor,patch",
-			},
-		});
-		let stdout = "";
-		let stderr = "";
+		const result = await new Promise<{
+			status: number | null;
+			stdout: string;
+			stderr: string;
+		}>((resolve, reject) => {
+			const child = spawn(adapter, {
+				env: {
+					...process.env,
+					GITHUB_REPOSITORY: "agilepathway/test-label-checker-consumer",
+					GITHUB_EVENT_PATH: eventPath,
+					GITHUB_OUTPUT: outputPath,
+					GITHUB_API_URL: `http://127.0.0.1:${address.port}`,
+					INPUT_ONE_OF: "major,minor,patch",
+				},
+			});
+			let stdout = "";
+			let stderr = "";
 
-		child.stdout.on("data", (chunk: Buffer) => {
-			stdout += chunk;
+			child.stdout.on("data", (chunk: Buffer) => {
+				stdout += chunk;
+			});
+			child.stderr.on("data", (chunk: Buffer) => {
+				stderr += chunk;
+			});
+			child.on("error", reject);
+			child.on("close", (status) => resolve({ status, stdout, stderr }));
 		});
-		child.stderr.on("data", (chunk: Buffer) => {
-			stderr += chunk;
-		});
-		child.on("error", reject);
-		child.on("close", (status) => resolve({ status, stdout, stderr }));
-	});
-	server.close();
 
-	assert.equal(result.status, 0);
-	assert.equal(
-		result.stdout,
-		"Checking GitHub labels ...\n" +
-			"Label check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-	);
-	assert.equal(result.stderr, "");
-	assert.equal(readFileSync(outputPath, "utf8"), "label_check=success");
+		assert.equal(result.status, 0);
+		assert.equal(
+			result.stdout,
+			"Checking GitHub labels ...\n" +
+				"Label check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		);
+		assert.equal(result.stderr, "");
+		assert.equal(readFileSync(outputPath, "utf8"), "label_check=success");
+	} finally {
+		await new Promise<void>((resolve, reject) => {
+			server.close((error) => (error ? reject(error) : resolve()));
+		});
+	}
 });

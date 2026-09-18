@@ -37,7 +37,7 @@ func (a *Action) CheckLabels(stdout, stderr io.Writer) int {
 		a.repositoryName(),
 		a.pullRequestNumber(),
 		a.token(),
-		a.graphQLEndpoint(),
+		a.enterpriseEndpoint(),
 	)
 
 	a.runCheck(pr.Labels.HasExactlyOneOf, a.exactlyOneRequired(), a.prefixMode())
@@ -153,16 +153,8 @@ func (a *Action) prefixMode() bool {
 	return os.Getenv("INPUT_PREFIX_MODE") == "true"
 }
 
-func (a *Action) graphQLEndpoint() string {
-	if endpoint := os.Getenv("INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL"); endpoint != "" {
-		return endpoint
-	}
-
-	if apiURL := os.Getenv("GITHUB_API_URL"); apiURL != "" {
-		return strings.TrimRight(apiURL, "/") + "/graphql"
-	}
-
-	return ""
+func (a *Action) enterpriseEndpoint() string {
+	return os.Getenv("INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL")
 }
 
 func (a *Action) exactlyOneRequired() []string {
