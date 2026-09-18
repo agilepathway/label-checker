@@ -1,21 +1,20 @@
 import { run } from "node:test";
 
-const integration = process.argv.includes("--integration");
-console.log(`Running in ${integration ? "integration" : "virtual"} mode`);
-
 const tests = run({
 	argv: process.argv.slice(2),
 	files: ["test/need_one_got_one.test.ts"],
 });
 
-let failed = false;
-
 for await (const event of tests) {
-	if (event.type === "test:fail") {
-		failed = true;
+	if (event.type === "test:stdout") {
+		process.stdout.write(event.data.message);
 	}
-}
 
-if (failed) {
-	process.exitCode = 1;
+	if (event.type === "test:stderr") {
+		process.stderr.write(event.data.message);
+	}
+
+	if (event.type === "test:summary" && event.data.file === undefined) {
+		process.exitCode = event.data.success ? 0 : 1;
+	}
 }
