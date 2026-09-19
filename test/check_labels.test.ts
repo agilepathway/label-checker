@@ -549,23 +549,43 @@ for (const scenario of scenarios) {
 	});
 }
 
-for (const requirement of ["all", "none", "one", "any"] as const) {
-	test(`rejects prefix ${requirement} configuration`, async () => {
+for (const scenario of [
+	{
+		name: "all",
+		requirements: { all: "type:" },
+		stderr:
+			"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
+	},
+	{
+		name: "none",
+		requirements: { none: "type:,visibility/" },
+		stderr:
+			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+	},
+	{
+		name: "one",
+		requirements: { one: "type:,visibility/" },
+		stderr:
+			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+	},
+	{
+		name: "any",
+		requirements: { any: "type:,visibility/" },
+		stderr:
+			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+	},
+] as const) {
+	test(`rejects prefix ${scenario.name} configuration`, async () => {
 		const result = await runLabelCheck({
 			pullRequestNumber: 1,
 			labels: [],
-			requirements: {
-				[requirement]: requirement === "all" ? "type:" : "type:,visibility/",
-			},
+			requirements: scenario.requirements,
 			prefixMode: true,
 		});
 
 		assert.equal(result.status, 1);
 		assert.equal(result.stdout, "Checking GitHub labels ...\n");
-		assert.equal(
-			result.stderr,
-			`::error:: ${requirement === "all" ? "The label checker does not support prefix checking with `all_of`, as that is not a logical combination." : "Currently the label checker only supports checking with one prefix, not multiple."}\n`,
-		);
+		assert.equal(result.stderr, scenario.stderr);
 		assert.equal(result.output, "label_check=failure");
 	});
 }
