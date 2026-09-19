@@ -36,7 +36,7 @@ test("executes the Go label checker for Need one, got none", async () => {
 
 test("executes the Go label checker for Need all, got one", async () => {
 	const result = await runLabelCheck({
-		pullRequestNumber: 1,
+		pullRequestNumber: 2,
 		labels: ["minor"],
 		requirement: "all",
 	});
