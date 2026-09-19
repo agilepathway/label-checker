@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: 24.21.0
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Hoverfly
         # do not specify a specific semver version or we will have an infinite circular dependency loop,
         # between the hoverfly-github-action and this label-checker
