@@ -7,6 +7,45 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 test("executes the Go label checker for Need one, got one", async () => {
+	const result = await runLabelCheck({
+		pullRequestNumber: 2,
+		labels: ["minor"],
+	});
+
+	assert.equal(result.status, 0);
+	assert.equal(
+		result.stdout,
+		"Checking GitHub labels ...\n" +
+			"Label check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+	);
+	assert.equal(result.stderr, "");
+	assert.equal(result.output, "label_check=success");
+});
+
+test("executes the Go label checker for Need one, got none", async () => {
+	const result = await runLabelCheck({ pullRequestNumber: 1, labels: [] });
+
+	assert.notEqual(result.status, 0);
+	assert.equal(result.stdout, "Checking GitHub labels ...\n");
+	assert.equal(
+		result.stderr,
+		"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+	);
+	assert.notEqual(result.output, "label_check=success");
+});
+
+async function runLabelCheck({
+	pullRequestNumber,
+	labels,
+}: {
+	pullRequestNumber: number;
+	labels: string[];
+}): Promise<{
+	status: number | null;
+	stdout: string;
+	stderr: string;
+	output: string;
+}> {
 	const integration = process.env.TEST_MODE === "integration";
 	const enterprisePlatform = process.env.TEST_GITHUB_PLATFORM;
 	const enterpriseServer = enterprisePlatform === "enterprise-server";
@@ -32,7 +71,7 @@ test("executes the Go label checker for Need one, got one", async () => {
 							repository: {
 								pullRequest: {
 									labels: {
-										nodes: [{ name: "minor" }],
+										nodes: labels.map((name) => ({ name })),
 									},
 								},
 							},
@@ -42,7 +81,10 @@ test("executes the Go label checker for Need one, got one", async () => {
 			});
 
 	execFileSync("go", ["build", "-o", adapter, "./test/fixtures/go-adapter"]);
-	writeFileSync(eventPath, JSON.stringify({ pull_request: { number: 2 } }));
+	writeFileSync(
+		eventPath,
+		JSON.stringify({ pull_request: { number: pullRequestNumber } }),
+	);
 	writeFileSync(outputPath, "");
 	const endpoint = await startServer(server);
 
@@ -64,18 +106,11 @@ test("executes the Go label checker for Need one, got one", async () => {
 			collectProcessResult(child).then(resolve, reject);
 		});
 
-		assert.equal(result.status, 0);
-		assert.equal(
-			result.stdout,
-			"Checking GitHub labels ...\n" +
-				"Label check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-		);
-		assert.equal(result.stderr, "");
-		assert.equal(readFileSync(outputPath, "utf8"), "label_check=success");
+		return { ...result, output: readFileSync(outputPath, "utf8") };
 	} finally {
 		await closeServer(server);
 	}
-});
+}
 
 function createAdapterEnvironment({
 	endpoint,
