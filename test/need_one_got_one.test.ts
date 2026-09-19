@@ -52,40 +52,16 @@ test("executes the Go label checker for Need one, got one", async () => {
 			stdout: string;
 			stderr: string;
 		}>((resolve, reject) => {
-			const {
-				GITHUB_API_URL: _githubApiURL,
-				INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: _enterpriseEndpoint,
-				...environment
-			} = process.env;
 			const child = spawn(adapter, {
-				env: {
-					...environment,
-					GITHUB_REPOSITORY: "agilepathway/test-label-checker-consumer",
-					GITHUB_EVENT_PATH: eventPath,
-					GITHUB_OUTPUT: outputPath,
-					...(endpoint ? { GITHUB_API_URL: endpoint } : {}),
-					...(enterprisePlatform
-						? {
-								INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL:
-									enterpriseServer
-										? "https://example.com/api/graphql"
-										: endpoint ?? "https://api.github.com/graphql",
-							}
-						: {}),
-					INPUT_ONE_OF: "major,minor,patch",
-				},
+				env: createAdapterEnvironment({
+					endpoint,
+					enterprisePlatform,
+					eventPath,
+					outputPath,
+					enterpriseServer,
+				}),
 			});
-			let stdout = "";
-			let stderr = "";
-
-			child.stdout.on("data", (chunk: Buffer) => {
-				stdout += chunk;
-			});
-			child.stderr.on("data", (chunk: Buffer) => {
-				stderr += chunk;
-			});
-			child.on("error", reject);
-			child.on("close", (status) => resolve({ status, stdout, stderr }));
+			collectProcessResult(child).then(resolve, reject);
 		});
 
 		assert.equal(result.status, 0);
@@ -100,6 +76,62 @@ test("executes the Go label checker for Need one, got one", async () => {
 		await closeServer(server);
 	}
 });
+
+function createAdapterEnvironment({
+	endpoint,
+	enterprisePlatform,
+	eventPath,
+	outputPath,
+	enterpriseServer,
+}: {
+	endpoint: string | undefined;
+	enterprisePlatform: string | undefined;
+	eventPath: string;
+	outputPath: string;
+	enterpriseServer: boolean;
+}): NodeJS.ProcessEnv {
+	const {
+		GITHUB_API_URL: _githubApiURL,
+		INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: _enterpriseEndpoint,
+		...environment
+	} = process.env;
+
+	return {
+		...environment,
+		GITHUB_REPOSITORY: "agilepathway/test-label-checker-consumer",
+		GITHUB_EVENT_PATH: eventPath,
+		GITHUB_OUTPUT: outputPath,
+		...(endpoint ? { GITHUB_API_URL: endpoint } : {}),
+		...(enterprisePlatform
+			? {
+					INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: enterpriseServer
+						? "https://example.com/api/graphql"
+						: (endpoint ?? "https://api.github.com/graphql"),
+				}
+			: {}),
+		INPUT_ONE_OF: "major,minor,patch",
+	};
+}
+
+function collectProcessResult(child: ReturnType<typeof spawn>): Promise<{
+	status: number | null;
+	stdout: string;
+	stderr: string;
+}> {
+	return new Promise((resolve, reject) => {
+		let stdout = "";
+		let stderr = "";
+
+		child.stdout.on("data", (chunk: Buffer) => {
+			stdout += chunk;
+		});
+		child.stderr.on("data", (chunk: Buffer) => {
+			stderr += chunk;
+		});
+		child.on("error", reject);
+		child.on("close", (status) => resolve({ status, stdout, stderr }));
+	});
+}
 
 async function startServer(
 	server: ReturnType<typeof createServer> | undefined,
