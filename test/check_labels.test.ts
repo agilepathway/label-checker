@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { type Requirements, runLabelCheck } from "./test_harness.ts";
+import {
+	type Requirements,
+	runLabelCheck,
+} from "./check_labels_test_harness.ts";
 
 type Scenario = {
 	name: string;
