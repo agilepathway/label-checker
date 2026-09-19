@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { test } from "node:test";
+import { before, test } from "node:test";
 
 type Requirement = "none" | "one" | "all" | "any";
 type Requirements = Partial<Record<Requirement, string>>;
@@ -533,6 +533,19 @@ const scenarios: Scenario[] = [
 	},
 ];
 
+let adapterPath: string;
+
+before(() => {
+	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
+	adapterPath = join(directory, "go-adapter");
+	execFileSync("go", [
+		"build",
+		"-o",
+		adapterPath,
+		"./test/fixtures/go-adapter",
+	]);
+});
+
 for (const scenario of scenarios) {
 	test(`executes Go label checker for ${scenario.name}`, async () => {
 		const result = await runLabelCheck({
@@ -618,7 +631,6 @@ async function runLabelCheck({
 	console.log(`Running in ${integration ? "integration" : "virtual"} mode`);
 
 	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
-	const adapter = join(directory, "go-adapter");
 	const eventPath = join(directory, "event.json");
 	const outputPath = join(directory, "github-output");
 	const server = integration
@@ -646,7 +658,6 @@ async function runLabelCheck({
 				);
 			});
 
-	execFileSync("go", ["build", "-o", adapter, "./test/fixtures/go-adapter"]);
 	writeFileSync(
 		eventPath,
 		JSON.stringify({ pull_request: { number: pullRequestNumber } }),
@@ -660,7 +671,7 @@ async function runLabelCheck({
 			stdout: string;
 			stderr: string;
 		}>((resolve, reject) => {
-			const child = spawn(adapter, {
+			const child = spawn(adapterPath, {
 				env: createAdapterEnvironment({
 					endpoint,
 					enterprisePlatform,
