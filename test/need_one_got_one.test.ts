@@ -9,6 +9,7 @@ import { test } from "node:test";
 test("executes the Go label checker for Need one, got one", async () => {
 	const integration = process.env.TEST_MODE === "integration";
 	const enterprisePlatform = process.env.TEST_GITHUB_PLATFORM;
+	const enterpriseServer = enterprisePlatform === "enterprise-server";
 	console.log(`Running in ${integration ? "integration" : "virtual"} mode`);
 
 	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
@@ -17,7 +18,13 @@ test("executes the Go label checker for Need one, got one", async () => {
 	const outputPath = join(directory, "github-output");
 	const server = integration
 		? undefined
-		: createServer((_request, response) => {
+		: createServer((request, response) => {
+				if (enterpriseServer && request.url !== "/api/graphql") {
+					response.statusCode = 404;
+					response.end();
+					return;
+				}
+
 				response.setHeader("content-type", "application/json");
 				response.end(
 					JSON.stringify({
@@ -60,7 +67,9 @@ test("executes the Go label checker for Need one, got one", async () => {
 					...(enterprisePlatform
 						? {
 								INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL:
-									endpoint ?? "https://api.github.com/graphql",
+									enterpriseServer
+										? "https://example.com/api/graphql"
+										: endpoint ?? "https://api.github.com/graphql",
 							}
 						: {}),
 					INPUT_ONE_OF: "major,minor,patch",
