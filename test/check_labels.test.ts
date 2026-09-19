@@ -574,6 +574,12 @@ for (const scenario of [
 		stderr:
 			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
 	},
+	{
+		name: "all with multiple prefixes",
+		requirements: { all: "type:,visibility/" },
+		stderr:
+			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+	},
 ] as const) {
 	test(`rejects prefix ${scenario.name} configuration`, async () => {
 		const result = await runLabelCheck({
