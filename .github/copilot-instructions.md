@@ -1,3 +1,16 @@
+## Test validation
+
+Before committing, run all supported TypeScript test modes:
+
+| GitHub platform | Virtual tests | Integration tests |
+| --- | --- | --- |
+| Standard GitHub | `node --test test/check_labels.test.ts` | `npm run test:integration` |
+| Enterprise Cloud | `TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/check_labels.test.ts` | `TEST_GITHUB_PLATFORM=enterprise-cloud npm run test:integration` |
+| Enterprise Server | `TEST_GITHUB_PLATFORM=enterprise-server node --test test/check_labels.test.ts` | Not supported |
+
+Enterprise Server is intentionally virtual-only; do not attempt Enterprise
+Server integration tests.
+
 # Commit messages
 
 Follow [the Chris Beams commit message conventions](https://cbea.ms/git-commit/):
