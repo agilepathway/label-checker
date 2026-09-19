@@ -10,6 +10,7 @@
     "verbatimModuleSyntax": true,
     "strict": true,
     "esModuleInterop": true,
+    "types": ["node"],
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "noEmit": true
