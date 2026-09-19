@@ -58,8 +58,8 @@ inputs:
     required: false
     default: ''
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: 'node24'
+  main: 'src/index.ts'
 branding:
   icon: 'tag'
   color: 'blue'
