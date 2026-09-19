@@ -50,14 +50,33 @@ test("executes the Go label checker for Need all, got one", async () => {
 	assert.equal(result.output, "label_check=failure");
 });
 
+test("executes the Go label checker for prefix Need one, got one", async () => {
+	const result = await runLabelCheck({
+		pullRequestNumber: 5,
+		labels: ["type:fix"],
+		prefixMode: true,
+	});
+
+	assert.equal(result.status, 0);
+	assert.equal(
+		result.stdout,
+		"Checking GitHub labels ...\n" +
+			"Label check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
+	);
+	assert.equal(result.stderr, "");
+	assert.equal(result.output, "label_check=success");
+});
+
 async function runLabelCheck({
 	pullRequestNumber,
 	labels,
 	requirement = "one",
+	prefixMode = false,
 }: {
 	pullRequestNumber: number;
 	labels: string[];
 	requirement?: "one" | "all";
+	prefixMode?: boolean;
 }): Promise<{
 	status: number | null;
 	stdout: string;
@@ -120,6 +139,7 @@ async function runLabelCheck({
 					outputPath,
 					enterpriseServer,
 					requirement,
+					prefixMode,
 				}),
 			});
 			collectProcessResult(child).then(resolve, reject);
@@ -138,6 +158,7 @@ function createAdapterEnvironment({
 	outputPath,
 	enterpriseServer,
 	requirement,
+	prefixMode,
 }: {
 	endpoint: string | undefined;
 	enterprisePlatform: string | undefined;
@@ -145,12 +166,14 @@ function createAdapterEnvironment({
 	outputPath: string;
 	enterpriseServer: boolean;
 	requirement: "one" | "all";
+	prefixMode: boolean;
 }): NodeJS.ProcessEnv {
 	const {
 		GITHUB_API_URL: _githubApiURL,
 		INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: _enterpriseEndpoint,
 		INPUT_ONE_OF: _inputOneOf,
 		INPUT_ALL_OF: _inputAllOf,
+		INPUT_PREFIX_MODE: _prefixMode,
 		...environment
 	} = process.env;
 
@@ -167,18 +190,30 @@ function createAdapterEnvironment({
 						: (endpoint ?? "https://api.github.com/graphql"),
 				}
 			: {}),
-		...createRequirementEnvironment(requirement),
+		...createRequirementEnvironment(requirement, prefixMode),
+		...createPrefixModeEnvironment(prefixMode),
 	};
+}
+
+function createPrefixModeEnvironment(
+	prefixMode: boolean,
+): Pick<NodeJS.ProcessEnv, "INPUT_PREFIX_MODE"> {
+	if (prefixMode) {
+		return { INPUT_PREFIX_MODE: "true" };
+	}
+
+	return {};
 }
 
 function createRequirementEnvironment(
 	requirement: "one" | "all",
+	prefixMode: boolean,
 ): Pick<NodeJS.ProcessEnv, "INPUT_ONE_OF" | "INPUT_ALL_OF"> {
 	if (requirement === "all") {
 		return { INPUT_ALL_OF: "major,minor,patch" };
 	}
 
-	return { INPUT_ONE_OF: "major,minor,patch" };
+	return { INPUT_ONE_OF: prefixMode ? "type:" : "major,minor,patch" };
 }
 
 function collectProcessResult(child: ReturnType<typeof spawn>): Promise<{
