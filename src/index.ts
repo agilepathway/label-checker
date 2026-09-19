@@ -21,6 +21,9 @@ type GraphQLResponse = {
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The action coordinates its observable steps.
 export async function main(): Promise<void> {
+	if (process.env.GITHUB_ACTIONS === "true") {
+		console.log("Running as TypeScript action");
+	}
 	process.stdout.write("Checking GitHub labels ...\n");
 
 	const event: Event = JSON.parse(
