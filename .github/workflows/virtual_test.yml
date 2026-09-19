@@ -42,3 +42,6 @@ jobs:
           node --test test/check_labels.test.ts
           TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/check_labels.test.ts
           TEST_GITHUB_PLATFORM=enterprise-server node --test test/check_labels.test.ts
+          TEST_IMPLEMENTATION=go node --test test/check_labels.test.ts
+          TEST_IMPLEMENTATION=go TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/check_labels.test.ts
+          TEST_IMPLEMENTATION=go TEST_GITHUB_PLATFORM=enterprise-server node --test test/check_labels.test.ts
