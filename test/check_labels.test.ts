@@ -149,6 +149,8 @@ function createAdapterEnvironment({
 	const {
 		GITHUB_API_URL: _githubApiURL,
 		INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: _enterpriseEndpoint,
+		INPUT_ONE_OF: _inputOneOf,
+		INPUT_ALL_OF: _inputAllOf,
 		...environment
 	} = process.env;
 
