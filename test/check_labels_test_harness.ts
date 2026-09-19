@@ -8,7 +8,7 @@ import { join } from "node:path";
 export type Requirement = "none" | "one" | "all" | "any";
 export type Requirements = Partial<Record<Requirement, string>>;
 
-let adapterPath: string | undefined;
+let goAdapterPath: string | undefined;
 
 export async function runLabelCheck({
 	pullRequestNumber,
@@ -72,8 +72,10 @@ export async function runLabelCheck({
 			stdout: string;
 			stderr: string;
 		}>((resolve, reject) => {
-			const child = spawn(getAdapterPath(), {
+			const adapter = getAdapter();
+			const child = spawn(adapter.command, adapter.args, {
 				env: createAdapterEnvironment({
+					implementation: adapter.implementation,
 					endpoint,
 					enterprisePlatform,
 					eventPath,
@@ -92,23 +94,39 @@ export async function runLabelCheck({
 	}
 }
 
-function getAdapterPath(): string {
-	if (adapterPath) {
-		return adapterPath;
+function getAdapter(): {
+	command: string;
+	args: string[];
+	implementation: "go" | "typescript";
+} {
+	if (process.env.TEST_IMPLEMENTATION !== "go") {
+		return {
+			command: process.execPath,
+			args: [
+				"--experimental-strip-types",
+				new URL("../src/index.ts", import.meta.url).pathname,
+			],
+			implementation: "typescript",
+		};
 	}
 
+	if (goAdapterPath) {
+		return { command: goAdapterPath, args: [], implementation: "go" };
+	}
 	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
-	adapterPath = join(directory, "go-adapter");
+	goAdapterPath = join(directory, "go-adapter");
 	execFileSync("go", [
 		"build",
 		"-o",
-		adapterPath,
+		goAdapterPath,
 		"./test/fixtures/go-adapter",
 	]);
-	return adapterPath;
+	return { command: goAdapterPath, args: [], implementation: "go" };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The environment mirrors both adapter modes and platforms.
 function createAdapterEnvironment({
+	implementation,
 	endpoint,
 	enterprisePlatform,
 	eventPath,
@@ -117,6 +135,7 @@ function createAdapterEnvironment({
 	requirements,
 	prefixMode,
 }: {
+	implementation: "go" | "typescript";
 	endpoint: string | undefined;
 	enterprisePlatform: string | undefined;
 	eventPath: string;
@@ -145,7 +164,9 @@ function createAdapterEnvironment({
 		...(enterprisePlatform
 			? {
 					INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: enterpriseServer
-						? "https://example.com/api/graphql"
+						? implementation === "typescript"
+							? `${endpoint}/api/graphql`
+							: "https://example.com/api/graphql"
 						: (endpoint ?? "https://api.github.com/graphql"),
 				}
 			: {}),
