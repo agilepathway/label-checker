@@ -1,3 +1,26 @@
+# Validation
+
+## Test validation
+
+Before committing, run all supported TypeScript test modes:
+
+| GitHub platform | Virtual tests | Integration tests |
+| --- | --- | --- |
+| Standard GitHub | `node --test test/check_labels.test.ts` | `npm run test:integration` |
+| Enterprise Cloud | `TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/check_labels.test.ts` | `TEST_GITHUB_PLATFORM=enterprise-cloud npm run test:integration` |
+| Enterprise Server | `TEST_GITHUB_PLATFORM=enterprise-server node --test test/check_labels.test.ts` | Not supported |
+
+Enterprise Server is intentionally virtual-only; do not attempt Enterprise
+Server integration tests.
+
+## Biome validation
+
+Use the project-local `@biomejs/biome` version installed from
+`package-lock.json`. If the local package is unavailable, install the project
+dependencies before running the checks. After every code edit, run
+`npm run check`. Run it again before creating a commit. Do not use a globally
+installed Biome version.
+
 # Commit messages
 
 Follow [the Chris Beams commit message conventions](https://cbea.ms/git-commit/):
@@ -63,14 +86,6 @@ creates the pull request.
 
 Every comment posted on a GitHub issue during implementation, review, or
 follow-up work must start with the exact prefix `Comment by Copilot: `.
-
-## Biome checks
-
-Use the project-local `@biomejs/biome` version installed from
-`package-lock.json`. If the local package is unavailable, install the project
-dependencies before running the checks. After every code edit, run
-`npm run check`. Run it again before creating a commit. Do not use a globally
-installed Biome version.
 
 After committing and pushing, comment on the related GitHub issue with a summary
 of the completed work. Start the comment with the exact `Comment by Copilot: `
