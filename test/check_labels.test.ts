@@ -6,76 +6,253 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
-test("executes the Go label checker for Need one, got one", async () => {
-	const result = await runLabelCheck({
-		pullRequestNumber: 2,
-		labels: ["minor"],
+type Requirement = "none" | "one" | "all" | "any";
+type Requirements = Partial<Record<Requirement, string>>;
+
+const standardLabels = ["major", "minor", "patch"];
+const standardRows = [
+	[1, []],
+	[2, ["minor"]],
+	[3, ["minor", "patch"]],
+	[4, standardLabels],
+] as const;
+
+for (const requirement of ["none", "one", "all", "any"] as const) {
+	for (const [pullRequestNumber, labels] of standardRows) {
+		test(`executes Go label checker for ${requirement}, got ${labels.length}`, async () => {
+			await assertScenario({
+				pullRequestNumber,
+				labels,
+				requirements: { [requirement]: standardLabels.join(",") },
+			});
+		});
+	}
+}
+
+for (const requirements of [
+	{ none: standardLabels, one: standardLabels },
+	{ none: standardLabels, one: standardLabels, all: standardLabels },
+	{
+		none: standardLabels,
+		one: standardLabels,
+		all: standardLabels,
+		any: standardLabels,
+	},
+] satisfies Requirements[]) {
+	for (const [pullRequestNumber, labels] of standardRows) {
+		test(`executes Go label checker for ${Object.keys(requirements).join(", ")}, got ${labels.length}`, async () => {
+			await assertScenario({
+				pullRequestNumber,
+				labels,
+				requirements: toRequirements(requirements),
+			});
+		});
+	}
+}
+
+const prefixRows = [
+	[1, []],
+	[5, ["type:fix"]],
+	[6, ["type:fix", "type:feature"]],
+	[7, ["type:fix", "type:feature", "type:documentation"]],
+] as const;
+
+for (const requirement of ["none", "one", "any"] as const) {
+	for (const [pullRequestNumber, labels] of prefixRows) {
+		test(`executes Go prefix label checker for ${requirement}, got ${labels.length}`, async () => {
+			await assertScenario({
+				pullRequestNumber,
+				labels,
+				requirements: { [requirement]: "type:" },
+				prefixMode: true,
+			});
+		});
+	}
+}
+
+for (const [pullRequestNumber, labels] of prefixRows) {
+	test(`rejects Go prefix all-of check with ${labels.length} labels`, async () => {
+		await assertScenario({
+			pullRequestNumber,
+			labels,
+			requirements: { all: "type:" },
+			prefixMode: true,
+			expectedError:
+				"The label checker does not support prefix checking with `all_of`, as that is not a logical combination.",
+		});
 	});
+}
 
-	assert.equal(result.status, 0);
-	assert.equal(
-		result.stdout,
-		"Checking GitHub labels ...\n" +
-			"Label check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-	);
-	assert.equal(result.stderr, "");
-	assert.equal(result.output, "label_check=success");
-});
-
-test("executes the Go label checker for Need one, got none", async () => {
-	const result = await runLabelCheck({ pullRequestNumber: 1, labels: [] });
-
-	assert.notEqual(result.status, 0);
-	assert.equal(result.stdout, "Checking GitHub labels ...\n");
-	assert.equal(
-		result.stderr,
-		"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
-	);
-	assert.equal(result.output, "label_check=failure");
-});
-
-test("executes the Go label checker for Need all, got one", async () => {
-	const result = await runLabelCheck({
-		pullRequestNumber: 2,
-		labels: ["minor"],
-		requirement: "all",
+for (const requirement of ["none", "one", "any", "all"] as const) {
+	test(`rejects multiple prefixes for ${requirement}`, async () => {
+		await assertScenario({
+			pullRequestNumber: 1,
+			labels: [],
+			requirements: { [requirement]: "type:,visibility/" },
+			prefixMode: true,
+			expectedError:
+				"Currently the label checker only supports checking with one prefix, not multiple.",
+		});
 	});
+}
 
-	assert.notEqual(result.status, 0);
-	assert.equal(result.stdout, "Checking GitHub labels ...\n");
-	assert.equal(
-		result.stderr,
-		"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-	);
-	assert.equal(result.output, "label_check=failure");
-});
-
-test("executes the Go label checker for prefix Need one, got one", async () => {
+async function assertScenario({
+	pullRequestNumber,
+	labels,
+	requirements,
+	prefixMode = false,
+	expectedError,
+}: {
+	pullRequestNumber: number;
+	labels: readonly string[];
+	requirements: Requirements;
+	prefixMode?: boolean;
+	expectedError?: string;
+}): Promise<void> {
 	const result = await runLabelCheck({
-		pullRequestNumber: 5,
-		labels: ["type:fix"],
-		prefixMode: true,
+		pullRequestNumber,
+		labels: [...labels],
+		requirements,
+		prefixMode,
 	});
+	const messages = expectedError
+		? { stdout: "", stderr: `::error:: ${expectedError}\n`, success: false }
+		: expectedMessages(requirements, labels, prefixMode);
 
-	assert.equal(result.status, 0);
+	assert.equal(result.status === 0, messages.success);
+	assert.equal(result.stdout, `Checking GitHub labels ...\n${messages.stdout}`);
+	assert.equal(result.stderr, messages.stderr);
 	assert.equal(
-		result.stdout,
-		"Checking GitHub labels ...\n" +
-			"Label check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
+		result.output,
+		messages.success ? "label_check=success" : "label_check=failure",
 	);
-	assert.equal(result.stderr, "");
-	assert.equal(result.output, "label_check=success");
-});
+}
+
+// Keep the expected message ordering aligned with Action.CheckLabels.
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: matrix expectation helper
+function expectedMessages(
+	requirements: Requirements,
+	labels: readonly string[],
+	prefixMode: boolean,
+): { stdout: string; stderr: string; success: boolean } {
+	const stdout: string[] = [];
+	const stderr: string[] = [];
+
+	for (const requirement of ["one", "none", "all", "any"] as const) {
+		const expected = expectedMessageFor(
+			requirement,
+			requirements[requirement],
+			labels,
+			prefixMode,
+		);
+		if (expected) {
+			(expected.passed ? stdout : stderr).push(expected.message);
+		}
+	}
+
+	return {
+		stdout: stdout.length > 0 ? `${stdout.join("\n")}\n` : "",
+		stderr: stderr.length > 0 ? `::error:: ${stderr.join("\n")}\n` : "",
+		success: stderr.length === 0,
+	};
+}
+
+function expectedMessageFor(
+	requirement: Requirement,
+	configuredLabels: string | undefined,
+	labels: readonly string[],
+	prefixMode: boolean,
+): { message: string; passed: boolean } | undefined {
+	if (!configuredLabels) {
+		return undefined;
+	}
+
+	const required = configuredLabels.split(",");
+	const matchingLabels = matchingLabelsFor(required, labels, prefixMode);
+	const passed = requirementPassed(
+		requirement,
+		matchingLabels.length,
+		required.length,
+	);
+
+	return {
+		message: formatMessage(
+			requirement,
+			required,
+			matchingLabels,
+			prefixMode,
+			passed,
+		),
+		passed,
+	};
+}
+
+function toRequirements(
+	requirements: Partial<Record<Requirement, readonly string[]>>,
+): Requirements {
+	return {
+		...(requirements.none ? { none: requirements.none.join(",") } : {}),
+		...(requirements.one ? { one: requirements.one.join(",") } : {}),
+		...(requirements.all ? { all: requirements.all.join(",") } : {}),
+		...(requirements.any ? { any: requirements.any.join(",") } : {}),
+	};
+}
+
+function matchingLabelsFor(
+	required: readonly string[],
+	labels: readonly string[],
+	prefixMode: boolean,
+): readonly string[] {
+	if (prefixMode) {
+		return labels.filter((label) => label.startsWith(required[0] ?? ""));
+	}
+
+	return labels.filter((label) => required.includes(label));
+}
+
+function requirementPassed(
+	requirement: Requirement,
+	matchingCount: number,
+	requiredCount: number,
+): boolean {
+	switch (requirement) {
+		case "none":
+			return matchingCount === 0;
+		case "one":
+			return matchingCount === 1;
+		case "all":
+			return matchingCount === requiredCount;
+		case "any":
+			return matchingCount > 0;
+	}
+}
+
+function formatMessage(
+	requirement: Requirement,
+	required: readonly string[],
+	matchingLabels: readonly string[],
+	prefixMode: boolean,
+	passed: boolean,
+): string {
+	const requiredText = prefixMode
+		? `prefixed with '${required[0]}'`
+		: `of '${required.join("', '")}'`;
+	const foundText =
+		matchingLabels.length === 0 ? "." : `: '${matchingLabels.join("', '")}'`;
+	const conjunction = passed ? "and" : "but";
+
+	return `Label check ${passed ? "successful" : "failed"}: required ${requirement === "one" ? "1" : requirement} ${requiredText}, ${conjunction} found ${matchingLabels.length}${foundText}`;
+}
 
 async function runLabelCheck({
 	pullRequestNumber,
 	labels,
-	requirement = "one",
+	requirements,
 	prefixMode = false,
 }: {
 	pullRequestNumber: number;
 	labels: string[];
-	requirement?: "one" | "all";
+	requirements: Requirements;
 	prefixMode?: boolean;
 }): Promise<{
 	status: number | null;
@@ -138,7 +315,7 @@ async function runLabelCheck({
 					eventPath,
 					outputPath,
 					enterpriseServer,
-					requirement,
+					requirements,
 					prefixMode,
 				}),
 			});
@@ -157,7 +334,7 @@ function createAdapterEnvironment({
 	eventPath,
 	outputPath,
 	enterpriseServer,
-	requirement,
+	requirements,
 	prefixMode,
 }: {
 	endpoint: string | undefined;
@@ -165,7 +342,7 @@ function createAdapterEnvironment({
 	eventPath: string;
 	outputPath: string;
 	enterpriseServer: boolean;
-	requirement: "one" | "all";
+	requirements: Requirements;
 	prefixMode: boolean;
 }): NodeJS.ProcessEnv {
 	const {
@@ -173,6 +350,8 @@ function createAdapterEnvironment({
 		INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: _enterpriseEndpoint,
 		INPUT_ONE_OF: _inputOneOf,
 		INPUT_ALL_OF: _inputAllOf,
+		INPUT_NONE_OF: _inputNoneOf,
+		INPUT_ANY_OF: _inputAnyOf,
 		INPUT_PREFIX_MODE: _prefixMode,
 		...environment
 	} = process.env;
@@ -190,7 +369,7 @@ function createAdapterEnvironment({
 						: (endpoint ?? "https://api.github.com/graphql"),
 				}
 			: {}),
-		...createRequirementEnvironment(requirement, prefixMode),
+		...createRequirementEnvironment(requirements),
 		...createPrefixModeEnvironment(prefixMode),
 	};
 }
@@ -206,14 +385,17 @@ function createPrefixModeEnvironment(
 }
 
 function createRequirementEnvironment(
-	requirement: "one" | "all",
-	prefixMode: boolean,
-): Pick<NodeJS.ProcessEnv, "INPUT_ONE_OF" | "INPUT_ALL_OF"> {
-	if (requirement === "all") {
-		return { INPUT_ALL_OF: "major,minor,patch" };
-	}
-
-	return { INPUT_ONE_OF: prefixMode ? "type:" : "major,minor,patch" };
+	requirements: Requirements,
+): Pick<
+	NodeJS.ProcessEnv,
+	"INPUT_NONE_OF" | "INPUT_ONE_OF" | "INPUT_ALL_OF" | "INPUT_ANY_OF"
+> {
+	return {
+		...(requirements.none ? { INPUT_NONE_OF: requirements.none } : {}),
+		...(requirements.one ? { INPUT_ONE_OF: requirements.one } : {}),
+		...(requirements.all ? { INPUT_ALL_OF: requirements.all } : {}),
+		...(requirements.any ? { INPUT_ANY_OF: requirements.any } : {}),
+	};
 }
 
 function collectProcessResult(child: ReturnType<typeof spawn>): Promise<{
