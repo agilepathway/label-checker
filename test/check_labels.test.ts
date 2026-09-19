@@ -34,12 +34,30 @@ test("executes the Go label checker for Need one, got none", async () => {
 	assert.equal(result.output, "label_check=failure");
 });
 
+test("executes the Go label checker for Need all, got one", async () => {
+	const result = await runLabelCheck({
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirement: "all",
+	});
+
+	assert.notEqual(result.status, 0);
+	assert.equal(result.stdout, "Checking GitHub labels ...\n");
+	assert.equal(
+		result.stderr,
+		"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+	);
+	assert.equal(result.output, "label_check=failure");
+});
+
 async function runLabelCheck({
 	pullRequestNumber,
 	labels,
+	requirement = "one",
 }: {
 	pullRequestNumber: number;
 	labels: string[];
+	requirement?: "one" | "all";
 }): Promise<{
 	status: number | null;
 	stdout: string;
@@ -101,6 +119,7 @@ async function runLabelCheck({
 					eventPath,
 					outputPath,
 					enterpriseServer,
+					requirement,
 				}),
 			});
 			collectProcessResult(child).then(resolve, reject);
@@ -118,16 +137,20 @@ function createAdapterEnvironment({
 	eventPath,
 	outputPath,
 	enterpriseServer,
+	requirement,
 }: {
 	endpoint: string | undefined;
 	enterprisePlatform: string | undefined;
 	eventPath: string;
 	outputPath: string;
 	enterpriseServer: boolean;
+	requirement: "one" | "all";
 }): NodeJS.ProcessEnv {
 	const {
 		GITHUB_API_URL: _githubApiURL,
 		INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: _enterpriseEndpoint,
+		INPUT_ONE_OF: _inputOneOf,
+		INPUT_ALL_OF: _inputAllOf,
 		...environment
 	} = process.env;
 
@@ -144,8 +167,18 @@ function createAdapterEnvironment({
 						: (endpoint ?? "https://api.github.com/graphql"),
 				}
 			: {}),
-		INPUT_ONE_OF: "major,minor,patch",
+		...createRequirementEnvironment(requirement),
 	};
+}
+
+function createRequirementEnvironment(
+	requirement: "one" | "all",
+): Pick<NodeJS.ProcessEnv, "INPUT_ONE_OF" | "INPUT_ALL_OF"> {
+	if (requirement === "all") {
+		return { INPUT_ALL_OF: "major,minor,patch" };
+	}
+
+	return { INPUT_ONE_OF: "major,minor,patch" };
 }
 
 function collectProcessResult(child: ReturnType<typeof spawn>): Promise<{
