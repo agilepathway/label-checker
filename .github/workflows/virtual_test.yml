@@ -39,6 +39,6 @@ jobs:
           go test ./... -v
           go test ./... -enterprise-cloud -v
           go test ./... -enterprise-server -v
-          node --test test/need_one_got_one.test.ts
-          TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/need_one_got_one.test.ts
-          TEST_GITHUB_PLATFORM=enterprise-server node --test test/need_one_got_one.test.ts
+          node --test test/check_labels.test.ts
+          TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/check_labels.test.ts
+          TEST_GITHUB_PLATFORM=enterprise-server node --test test/check_labels.test.ts
