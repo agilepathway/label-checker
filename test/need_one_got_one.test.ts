@@ -8,7 +8,7 @@ import { test } from "node:test";
 
 test("executes the Go label checker for Need one, got one", async () => {
 	const integration = process.env.TEST_MODE === "integration";
-	const enterpriseCloud = process.env.TEST_GITHUB_PLATFORM === "enterprise-cloud";
+	const enterprisePlatform = process.env.TEST_GITHUB_PLATFORM;
 	console.log(`Running in ${integration ? "integration" : "virtual"} mode`);
 
 	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
@@ -57,7 +57,7 @@ test("executes the Go label checker for Need one, got one", async () => {
 					GITHUB_EVENT_PATH: eventPath,
 					GITHUB_OUTPUT: outputPath,
 					...(endpoint ? { GITHUB_API_URL: endpoint } : {}),
-					...(enterpriseCloud
+					...(enterprisePlatform
 						? {
 								INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL:
 									endpoint ?? "https://api.github.com/graphql",
