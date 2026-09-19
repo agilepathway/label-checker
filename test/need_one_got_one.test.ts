@@ -31,7 +31,7 @@ test("executes the Go label checker for Need one, got none", async () => {
 		result.stderr,
 		"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
 	);
-	assert.notEqual(result.output, "label_check=success");
+	assert.equal(result.output, "label_check=failure");
 });
 
 async function runLabelCheck({
