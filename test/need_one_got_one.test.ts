@@ -52,6 +52,8 @@ test("executes the Go label checker for Need one, got one", async () => {
 					GITHUB_EVENT_PATH: eventPath,
 					GITHUB_OUTPUT: outputPath,
 					...(endpoint ? { GITHUB_API_URL: endpoint } : {}),
+					INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL:
+						endpoint ?? "https://api.github.com/graphql",
 					INPUT_ONE_OF: "major,minor,patch",
 				},
 			});
