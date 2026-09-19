@@ -33,3 +33,4 @@ jobs:
           go test ./... -integration -v
           go test ./... -integration -enterprise-cloud -v
           npm run test:integration
+          TEST_GITHUB_PLATFORM=enterprise-cloud npm run test:integration

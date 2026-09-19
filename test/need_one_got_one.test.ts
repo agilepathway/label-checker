@@ -8,6 +8,7 @@ import { test } from "node:test";
 
 test("executes the Go label checker for Need one, got one", async () => {
 	const integration = process.env.TEST_MODE === "integration";
+	const enterpriseCloud = process.env.TEST_GITHUB_PLATFORM === "enterprise-cloud";
 	console.log(`Running in ${integration ? "integration" : "virtual"} mode`);
 
 	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
@@ -44,7 +45,11 @@ test("executes the Go label checker for Need one, got one", async () => {
 			stdout: string;
 			stderr: string;
 		}>((resolve, reject) => {
-			const { GITHUB_API_URL: _githubApiURL, ...environment } = process.env;
+			const {
+				GITHUB_API_URL: _githubApiURL,
+				INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: _enterpriseEndpoint,
+				...environment
+			} = process.env;
 			const child = spawn(adapter, {
 				env: {
 					...environment,
@@ -52,8 +57,12 @@ test("executes the Go label checker for Need one, got one", async () => {
 					GITHUB_EVENT_PATH: eventPath,
 					GITHUB_OUTPUT: outputPath,
 					...(endpoint ? { GITHUB_API_URL: endpoint } : {}),
-					INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL:
-						endpoint ?? "https://api.github.com/graphql",
+					...(enterpriseCloud
+						? {
+								INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL:
+									endpoint ?? "https://api.github.com/graphql",
+							}
+						: {}),
 					INPUT_ONE_OF: "major,minor,patch",
 				},
 			});
