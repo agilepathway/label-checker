@@ -40,3 +40,4 @@ jobs:
           go test ./... -enterprise-cloud -v
           go test ./... -enterprise-server -v
           node --test test/need_one_got_one.test.ts
+          TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/need_one_got_one.test.ts
