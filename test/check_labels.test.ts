@@ -8,240 +8,566 @@ import { test } from "node:test";
 
 type Requirement = "none" | "one" | "all" | "any";
 type Requirements = Partial<Record<Requirement, string>>;
-
-const standardLabels = ["major", "minor", "patch"];
-const standardRows = [
-	[1, []],
-	[2, ["minor"]],
-	[3, ["minor", "patch"]],
-	[4, standardLabels],
-] as const;
-
-for (const requirement of ["none", "one", "all", "any"] as const) {
-	for (const [pullRequestNumber, labels] of standardRows) {
-		test(`executes Go label checker for ${requirement}, got ${labels.length}`, async () => {
-			await assertScenario({
-				pullRequestNumber,
-				labels,
-				requirements: { [requirement]: standardLabels.join(",") },
-			});
-		});
-	}
-}
-
-for (const requirements of [
-	{ none: standardLabels, one: standardLabels },
-	{ none: standardLabels, one: standardLabels, all: standardLabels },
-	{
-		none: standardLabels,
-		one: standardLabels,
-		all: standardLabels,
-		any: standardLabels,
-	},
-] satisfies Requirements[]) {
-	for (const [pullRequestNumber, labels] of standardRows) {
-		test(`executes Go label checker for ${Object.keys(requirements).join(", ")}, got ${labels.length}`, async () => {
-			await assertScenario({
-				pullRequestNumber,
-				labels,
-				requirements: toRequirements(requirements),
-			});
-		});
-	}
-}
-
-const prefixRows = [
-	[1, []],
-	[5, ["type:fix"]],
-	[6, ["type:fix", "type:feature"]],
-	[7, ["type:fix", "type:feature", "type:documentation"]],
-] as const;
-
-for (const requirement of ["none", "one", "any"] as const) {
-	for (const [pullRequestNumber, labels] of prefixRows) {
-		test(`executes Go prefix label checker for ${requirement}, got ${labels.length}`, async () => {
-			await assertScenario({
-				pullRequestNumber,
-				labels,
-				requirements: { [requirement]: "type:" },
-				prefixMode: true,
-			});
-		});
-	}
-}
-
-for (const [pullRequestNumber, labels] of prefixRows) {
-	test(`rejects Go prefix all-of check with ${labels.length} labels`, async () => {
-		await assertScenario({
-			pullRequestNumber,
-			labels,
-			requirements: { all: "type:" },
-			prefixMode: true,
-			expectedError:
-				"The label checker does not support prefix checking with `all_of`, as that is not a logical combination.",
-		});
-	});
-}
-
-for (const requirement of ["none", "one", "any", "all"] as const) {
-	test(`rejects multiple prefixes for ${requirement}`, async () => {
-		await assertScenario({
-			pullRequestNumber: 1,
-			labels: [],
-			requirements: { [requirement]: "type:,visibility/" },
-			prefixMode: true,
-			expectedError:
-				"Currently the label checker only supports checking with one prefix, not multiple.",
-		});
-	});
-}
-
-async function assertScenario({
-	pullRequestNumber,
-	labels,
-	requirements,
-	prefixMode = false,
-	expectedError,
-}: {
+type Scenario = {
+	name: string;
 	pullRequestNumber: number;
-	labels: readonly string[];
+	labels: string[];
 	requirements: Requirements;
 	prefixMode?: boolean;
-	expectedError?: string;
-}): Promise<void> {
-	const result = await runLabelCheck({
-		pullRequestNumber,
-		labels: [...labels],
-		requirements,
-		prefixMode,
+	status: number;
+	stdout: string;
+	stderr: string;
+	output: string;
+};
+
+const scenarios: Scenario[] = [
+	{
+		name: "none, got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { none: "major,minor,patch" },
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "none, got 1",
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirements: { none: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "none, got 2",
+		pullRequestNumber: 3,
+		labels: ["minor", "patch"],
+		requirements: { none: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "none, got 3",
+		pullRequestNumber: 4,
+		labels: ["major", "minor", "patch"],
+		requirements: { none: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "one, got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { one: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "one, got 1",
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirements: { one: "major,minor,patch" },
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "one, got 2",
+		pullRequestNumber: 3,
+		labels: ["minor", "patch"],
+		requirements: { one: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "one, got 3",
+		pullRequestNumber: 4,
+		labels: ["major", "minor", "patch"],
+		requirements: { one: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "all, got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { all: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "all, got 1",
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirements: { all: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "all, got 2",
+		pullRequestNumber: 3,
+		labels: ["minor", "patch"],
+		requirements: { all: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "all, got 3",
+		pullRequestNumber: 4,
+		labels: ["major", "minor", "patch"],
+		requirements: { all: "major,minor,patch" },
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "any, got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { any: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "any, got 1",
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirements: { any: "major,minor,patch" },
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "any, got 2",
+		pullRequestNumber: 3,
+		labels: ["minor", "patch"],
+		requirements: { any: "major,minor,patch" },
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "any, got 3",
+		pullRequestNumber: 4,
+		labels: ["major", "minor", "patch"],
+		requirements: { any: "major,minor,patch" },
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "[none, one], got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { none: "major,minor,patch", one: "major,minor,patch" },
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one], got 1",
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirements: { none: "major,minor,patch", one: "major,minor,patch" },
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		stderr:
+			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one], got 2",
+		pullRequestNumber: 3,
+		labels: ["minor", "patch"],
+		requirements: { none: "major,minor,patch", one: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one], got 3",
+		pullRequestNumber: 4,
+		labels: ["major", "minor", "patch"],
+		requirements: { none: "major,minor,patch", one: "major,minor,patch" },
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all], got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+		},
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all], got 1",
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+		},
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		stderr:
+			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all], got 2",
+		pullRequestNumber: 3,
+		labels: ["minor", "patch"],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+		},
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all], got 3",
+		pullRequestNumber: 4,
+		labels: ["major", "minor", "patch"],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+		},
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all, any], got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+			any: "major,minor,patch",
+		},
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all, any], got 1",
+		pullRequestNumber: 2,
+		labels: ["minor"],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+			any: "major,minor,patch",
+		},
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		stderr:
+			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all, any], got 2",
+		pullRequestNumber: 3,
+		labels: ["minor", "patch"],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+			any: "major,minor,patch",
+		},
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "[none, one, all, any], got 3",
+		pullRequestNumber: 4,
+		labels: ["major", "minor", "patch"],
+		requirements: {
+			none: "major,minor,patch",
+			one: "major,minor,patch",
+			all: "major,minor,patch",
+			any: "major,minor,patch",
+		},
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix none, got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { none: "type:" },
+		prefixMode: true,
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "prefix none, got 1",
+		pullRequestNumber: 5,
+		labels: ["type:fix"],
+		requirements: { none: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix none, got 2",
+		pullRequestNumber: 6,
+		labels: ["type:fix", "type:feature"],
+		requirements: { none: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix none, got 3",
+		pullRequestNumber: 7,
+		labels: ["type:fix", "type:feature", "type:documentation"],
+		requirements: { none: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix one, got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { one: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix one, got 1",
+		pullRequestNumber: 5,
+		labels: ["type:fix"],
+		requirements: { one: "type:" },
+		prefixMode: true,
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "prefix one, got 2",
+		pullRequestNumber: 6,
+		labels: ["type:fix", "type:feature"],
+		requirements: { one: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix one, got 3",
+		pullRequestNumber: 7,
+		labels: ["type:fix", "type:feature", "type:documentation"],
+		requirements: { one: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix any, got 0",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { any: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		name: "prefix any, got 1",
+		pullRequestNumber: 5,
+		labels: ["type:fix"],
+		requirements: { any: "type:" },
+		prefixMode: true,
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "prefix any, got 2",
+		pullRequestNumber: 6,
+		labels: ["type:fix", "type:feature"],
+		requirements: { any: "type:" },
+		prefixMode: true,
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "prefix any, got 3",
+		pullRequestNumber: 7,
+		labels: ["type:fix", "type:feature", "type:documentation"],
+		requirements: { any: "type:" },
+		prefixMode: true,
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		name: "prefix [none, one], got none",
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { none: "type:", one: "type:" },
+		prefixMode: true,
+		status: 1,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
+		stderr:
+			"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
+		output: "label_check=failure",
+	},
+];
+
+for (const scenario of scenarios) {
+	test(`executes Go label checker for ${scenario.name}`, async () => {
+		const result = await runLabelCheck({
+			pullRequestNumber: scenario.pullRequestNumber,
+			labels: scenario.labels,
+			requirements: scenario.requirements,
+			prefixMode: scenario.prefixMode,
+		});
+
+		assert.equal(result.status, scenario.status);
+		assert.equal(result.stdout, scenario.stdout);
+		assert.equal(result.stderr, scenario.stderr);
+		assert.equal(result.output, scenario.output);
 	});
-	const messages = expectedError
-		? { stdout: "", stderr: `::error:: ${expectedError}\n`, success: false }
-		: expectedMessages(requirements, labels, prefixMode);
-
-	assert.equal(result.status === 0, messages.success);
-	assert.equal(result.stdout, `Checking GitHub labels ...\n${messages.stdout}`);
-	assert.equal(result.stderr, messages.stderr);
-	assert.equal(
-		result.output,
-		messages.success ? "label_check=success" : "label_check=failure",
-	);
 }
 
-// Keep the expected message ordering aligned with Action.CheckLabels.
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: matrix expectation helper
-function expectedMessages(
-	requirements: Requirements,
-	labels: readonly string[],
-	prefixMode: boolean,
-): { stdout: string; stderr: string; success: boolean } {
-	const stdout: string[] = [];
-	const stderr: string[] = [];
+for (const requirement of ["all", "none", "one", "any"] as const) {
+	test(`rejects prefix ${requirement} configuration`, async () => {
+		const result = await runLabelCheck({
+			pullRequestNumber: 1,
+			labels: [],
+			requirements: {
+				[requirement]: requirement === "all" ? "type:" : "type:,visibility/",
+			},
+			prefixMode: true,
+		});
 
-	for (const requirement of ["one", "none", "all", "any"] as const) {
-		const expected = expectedMessageFor(
-			requirement,
-			requirements[requirement],
-			labels,
-			prefixMode,
+		assert.equal(result.status, 1);
+		assert.equal(result.stdout, "Checking GitHub labels ...\n");
+		assert.equal(
+			result.stderr,
+			`::error:: ${requirement === "all" ? "The label checker does not support prefix checking with `all_of`, as that is not a logical combination." : "Currently the label checker only supports checking with one prefix, not multiple."}\n`,
 		);
-		if (expected) {
-			(expected.passed ? stdout : stderr).push(expected.message);
-		}
-	}
-
-	return {
-		stdout: stdout.length > 0 ? `${stdout.join("\n")}\n` : "",
-		stderr: stderr.length > 0 ? `::error:: ${stderr.join("\n")}\n` : "",
-		success: stderr.length === 0,
-	};
-}
-
-function expectedMessageFor(
-	requirement: Requirement,
-	configuredLabels: string | undefined,
-	labels: readonly string[],
-	prefixMode: boolean,
-): { message: string; passed: boolean } | undefined {
-	if (!configuredLabels) {
-		return undefined;
-	}
-
-	const required = configuredLabels.split(",");
-	const matchingLabels = matchingLabelsFor(required, labels, prefixMode);
-	const passed = requirementPassed(
-		requirement,
-		matchingLabels.length,
-		required.length,
-	);
-
-	return {
-		message: formatMessage(
-			requirement,
-			required,
-			matchingLabels,
-			prefixMode,
-			passed,
-		),
-		passed,
-	};
-}
-
-function toRequirements(
-	requirements: Partial<Record<Requirement, readonly string[]>>,
-): Requirements {
-	return {
-		...(requirements.none ? { none: requirements.none.join(",") } : {}),
-		...(requirements.one ? { one: requirements.one.join(",") } : {}),
-		...(requirements.all ? { all: requirements.all.join(",") } : {}),
-		...(requirements.any ? { any: requirements.any.join(",") } : {}),
-	};
-}
-
-function matchingLabelsFor(
-	required: readonly string[],
-	labels: readonly string[],
-	prefixMode: boolean,
-): readonly string[] {
-	if (prefixMode) {
-		return labels.filter((label) => label.startsWith(required[0] ?? ""));
-	}
-
-	return labels.filter((label) => required.includes(label));
-}
-
-function requirementPassed(
-	requirement: Requirement,
-	matchingCount: number,
-	requiredCount: number,
-): boolean {
-	switch (requirement) {
-		case "none":
-			return matchingCount === 0;
-		case "one":
-			return matchingCount === 1;
-		case "all":
-			return matchingCount === requiredCount;
-		case "any":
-			return matchingCount > 0;
-	}
-}
-
-function formatMessage(
-	requirement: Requirement,
-	required: readonly string[],
-	matchingLabels: readonly string[],
-	prefixMode: boolean,
-	passed: boolean,
-): string {
-	const requiredText = prefixMode
-		? `prefixed with '${required[0]}'`
-		: `of '${required.join("', '")}'`;
-	const foundText =
-		matchingLabels.length === 0 ? "." : `: '${matchingLabels.join("', '")}'`;
-	const conjunction = passed ? "and" : "but";
-
-	return `Label check ${passed ? "successful" : "failed"}: required ${requirement === "one" ? "1" : requirement} ${requiredText}, ${conjunction} found ${matchingLabels.length}${foundText}`;
+		assert.equal(result.output, "label_check=failure");
+	});
 }
 
 async function runLabelCheck({
