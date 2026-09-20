@@ -108,6 +108,24 @@ works properly on [GitHub Enterprise Server](https://docs.github.com/en/enterpri
 
 The tests are [table driven](https://dave.cheney.net/2019/05/07/prefer-table-driven-tests), which is an important concept to know when amending them.
 
+During the Go-to-TypeScript migration spike, the existing Go behaviour scenarios
+can be run against the TypeScript implementation by selecting the implementation
+with the same `TEST_IMPLEMENTATION` environment variable used by the
+TypeScript harness:
+
+`TEST_IMPLEMENTATION=typescript go test ./... -v`
+
+The selector is migration-only test scaffolding and should be removed with the
+bridge once the Go implementation is no longer needed. The default
+`go test ./... -v` command continues to exercise Go directly.
+
+This spike found that the bridge is small: the Go tests spawn the existing
+TypeScript entry point and provide a test-only GraphQL endpoint for the
+scenario fixtures because Node's built-in `fetch` does not consume the
+`HTTPS_PROXY` environment variable used by the Go virtual tests. The standard,
+Enterprise Cloud, and Enterprise Server virtual suites, plus the standard
+integration suite, passed against TypeScript without behavioural differences.
+
 The tests also have an integration mode which makes calls to real external services instead of using Hoverfly to virtualise the service calls.  You do not need to run the tests in integration mode when contributing (they will not pass unless you are a [maintainer](.github/CODEOWNERS) of the project who has the designated GitHub permissions).
 
 If you are a maintainer, and want to run the TypeScript integration test
