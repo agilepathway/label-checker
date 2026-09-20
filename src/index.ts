@@ -19,7 +19,6 @@ type GraphQLResponse = {
 	errors?: unknown;
 };
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The action coordinates its observable steps.
 export async function main(): Promise<void> {
 	process.stdout.write("Checking GitHub labels ...\n");
 
@@ -41,6 +40,10 @@ export async function main(): Promise<void> {
 	] as const;
 	const { success, failure } = runChecks(checks, labels, prefixMode);
 
+	reportResults(success, failure);
+}
+
+function reportResults(success: string, failure: string): void {
 	if (success) process.stdout.write(`${success.trimEnd()}\n`);
 	writeOutput(failure ? "failure" : "success");
 	if (failure) {
@@ -60,7 +63,6 @@ function readRequirements(name: string): string[] {
 	return value?.trim() ? value.split(",") : [];
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: This preserves the required check ordering.
 function runChecks(
 	checks: readonly (readonly [Requirement, string[]])[],
 	labels: string[],
@@ -70,54 +72,82 @@ function runChecks(
 	let failure = "";
 	for (const [kind, specified] of checks) {
 		if (specified.length === 0) continue;
-		const result = checkLabels(kind, specified, labels, prefixMode);
-		if (result.error) failure += `${result.error}\n`;
-		else if (result.valid) success += `${result.message}\n`;
-		else failure += `${result.message}\n`;
+		const result = formatCheckResult(
+			checkLabels(kind, specified, labels, prefixMode),
+		);
+		success += result.success;
+		failure += result.failure;
 	}
 	return { success, failure };
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The four contract predicates are intentionally explicit.
+function formatCheckResult(result: {
+	valid: boolean;
+	message: string;
+	error?: string;
+}): { success: string; failure: string } {
+	if (result.error) return { success: "", failure: `${result.error}\n` };
+	if (result.valid) return { success: `${result.message}\n`, failure: "" };
+	return { success: "", failure: `${result.message}\n` };
+}
+
 function checkLabels(
 	kind: Requirement,
 	specified: string[],
 	labels: string[],
 	prefixMode: boolean,
 ): { valid: boolean; message: string; error?: string } {
-	if (prefixMode && specified.length > 1) {
-		return {
-			valid: false,
-			message: "",
-			error:
-				"Currently the label checker only supports checking with one prefix, not multiple.",
-		};
-	}
-	if (prefixMode && kind === "all") {
-		return {
-			valid: false,
-			message: "",
-			error:
-				"The label checker does not support prefix checking with `all_of`, as that is not a logical combination.",
-		};
+	const checkError = getCheckError(kind, specified, prefixMode);
+	if (checkError.error) {
+		return { valid: false, message: "", error: checkError.error };
 	}
 	const found = labels.filter((label) =>
 		prefixMode
 			? specified.some((prefix) => label.startsWith(prefix))
 			: specified.includes(label),
 	);
-	const valid =
-		kind === "any"
-			? found.length > 0
-			: kind === "none"
-				? found.length === 0
-				: kind === "one"
-					? found.length === 1
-					: found.length === specified.length;
+	const valid = isValidRequirement(kind, found.length, specified.length);
 	return {
 		valid,
 		message: formatMessage(kind, specified, found, prefixMode, valid),
 	};
+}
+
+function getCheckError(
+	kind: Requirement,
+	specified: string[],
+	prefixMode: boolean,
+): { error?: string } {
+	if (prefixMode && specified.length > 1) {
+		return {
+			error:
+				"Currently the label checker only supports checking with one prefix, not multiple.",
+		};
+	}
+	if (prefixMode && kind === "all") {
+		return {
+			error:
+				"The label checker does not support prefix checking with `all_of`, as that is not a logical combination.",
+		};
+	}
+	return {};
+}
+
+function isValidRequirement(
+	kind: Requirement,
+	foundCount: number,
+	specifiedCount: number,
+): boolean {
+	const validators: Record<
+		Requirement,
+		(found: number, specified: number) => boolean
+	> = {
+		any: (found: number) => found > 0,
+		none: (found: number) => found === 0,
+		one: (found: number) => found === 1,
+		all: (found: number, specified: number) => found === specified,
+	};
+	return validators[kind](foundCount, specifiedCount);
 }
 
 function formatMessage(
