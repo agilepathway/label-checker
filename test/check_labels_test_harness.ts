@@ -124,7 +124,6 @@ function getAdapter(): {
 	return { command: goAdapterPath, args: [], implementation: "go" };
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The environment mirrors both adapter modes and platforms.
 function createAdapterEnvironment({
 	implementation,
 	endpoint,
@@ -160,19 +159,47 @@ function createAdapterEnvironment({
 		GITHUB_REPOSITORY: "agilepathway/test-label-checker-consumer",
 		GITHUB_EVENT_PATH: eventPath,
 		GITHUB_OUTPUT: outputPath,
-		...(endpoint ? { GITHUB_API_URL: endpoint } : {}),
-		...(enterprisePlatform
-			? {
-					INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: enterpriseServer
-						? implementation === "typescript"
-							? `${endpoint}/api/graphql`
-							: "https://example.com/api/graphql"
-						: (endpoint ?? "https://api.github.com/graphql"),
-				}
-			: {}),
+		...createEndpointEnvironment(
+			implementation,
+			endpoint,
+			enterprisePlatform,
+			enterpriseServer,
+		),
 		...createRequirementEnvironment(requirements),
 		...createPrefixModeEnvironment(prefixMode),
 	};
+}
+
+function createEndpointEnvironment(
+	implementation: "go" | "typescript",
+	endpoint: string | undefined,
+	enterprisePlatform: string | undefined,
+	enterpriseServer: boolean,
+): Pick<
+	NodeJS.ProcessEnv,
+	"GITHUB_API_URL" | "INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL"
+> {
+	const apiEnvironment = endpoint ? { GITHUB_API_URL: endpoint } : {};
+	if (!enterprisePlatform) return apiEnvironment;
+
+	return {
+		...apiEnvironment,
+		INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: getEnterpriseEndpoint(
+			implementation,
+			endpoint,
+			enterpriseServer,
+		),
+	};
+}
+
+function getEnterpriseEndpoint(
+	implementation: "go" | "typescript",
+	endpoint: string | undefined,
+	enterpriseServer: boolean,
+): string {
+	if (!enterpriseServer) return endpoint ?? "https://api.github.com/graphql";
+	if (implementation === "typescript") return `${endpoint}/api/graphql`;
+	return "https://example.com/api/graphql";
 }
 
 function createPrefixModeEnvironment(
