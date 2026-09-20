@@ -39,6 +39,9 @@ jobs:
           go test ./... -v
           go test ./... -enterprise-cloud -v
           go test ./... -enterprise-server -v
+          TEST_IMPLEMENTATION=typescript go test ./... -v
+          TEST_IMPLEMENTATION=typescript go test ./... -enterprise-cloud -v
+          TEST_IMPLEMENTATION=typescript go test ./... -enterprise-server -v
           node --test test/check_labels.test.ts
           TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/check_labels.test.ts
           TEST_GITHUB_PLATFORM=enterprise-server node --test test/check_labels.test.ts

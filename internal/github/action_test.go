@@ -2,9 +2,13 @@ package github
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -160,7 +164,7 @@ func TestLabelChecks(t *testing.T) {
 			setPrefixMode(tc.prefixMode)
 			tc.specifyChecks()
 
-			exitCode, stdout, stderr := checkLabels()
+			exitCode, stdout, stderr := checkLabels(t)
 
 			if (len(tc.expectedStderr) > 0) && (exitCode == 0) {
 				t.Fatalf("got exit code %v, err: %s", exitCode, stderr)
@@ -266,12 +270,99 @@ func stopHoverfly() {
 	execHoverCtl("stop")
 }
 
-func checkLabels() (int, *bytes.Buffer, *bytes.Buffer) {
+func checkLabels(t *testing.T) (int, *bytes.Buffer, *bytes.Buffer) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
+
+	if os.Getenv("TEST_IMPLEMENTATION") == "typescript" {
+		return checkLabelsWithTypeScript(t, stdout, stderr)
+	}
+
 	a := Action{}
 
 	return a.CheckLabels(stdout, stderr), stdout, stderr
+}
+
+func checkLabelsWithTypeScript(
+	t *testing.T,
+	stdout, stderr *bytes.Buffer,
+) (int, *bytes.Buffer, *bytes.Buffer) {
+	sourcePath, err := filepath.Abs(filepath.Join("..", "..", "src", "index.ts"))
+	if err != nil {
+		t.Fatalf("failed to resolve TypeScript implementation path: %v", err)
+	}
+
+	command := exec.Command("node", "--experimental-strip-types", sourcePath)
+	command.Env = os.Environ()
+	if !*integration {
+		server := httptest.NewServer(http.HandlerFunc(serveTypeScriptLabels))
+		defer server.Close()
+		command.Env = append(command.Env,
+			"GITHUB_API_URL="+server.URL,
+			"INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL="+server.URL,
+		)
+	}
+	command.Stdout = stdout
+	command.Stderr = stderr
+	err = command.Run()
+	if err == nil {
+		return 0, stdout, stderr
+	}
+
+	var exitError *exec.ExitError
+	if errors.As(err, &exitError) {
+		return exitError.ExitCode(), stdout, stderr
+	}
+
+	t.Fatalf("failed to execute TypeScript implementation: %v", err)
+	return 1, stdout, stderr
+}
+
+func serveTypeScriptLabels(writer http.ResponseWriter, request *http.Request) {
+	var body struct {
+		Variables struct {
+			PullRequestNumber int `json:"pullRequestNumber"`
+		} `json:"variables"`
+	}
+	if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	labels := map[int][]string{
+		NoLabelsPR:          {},
+		OneLabelPR:          {"minor"},
+		TwoLabelsPR:         {"minor", "patch"},
+		ThreeLabelsPR:       {"major", "minor", "patch"},
+		PrefixOneLabelPR:    {"type:fix"},
+		PrefixTwoLabelsPR:   {"type:fix", "type:feature"},
+		PrefixThreeLabelsPR: {"type:fix", "type:feature", "type:documentation"},
+	}[body.Variables.PullRequestNumber]
+
+	response := struct {
+		Data struct {
+			Repository struct {
+				PullRequest struct {
+					Labels struct {
+						Nodes []struct {
+							Name string `json:"name"`
+						} `json:"nodes"`
+					} `json:"labels"`
+				} `json:"pullRequest"`
+			} `json:"repository"`
+		} `json:"data"`
+	}{}
+	for _, label := range labels {
+		response.Data.Repository.PullRequest.Labels.Nodes = append(
+			response.Data.Repository.PullRequest.Labels.Nodes,
+			struct {
+				Name string `json:"name"`
+			}{Name: label},
+		)
+	}
+
+	writer.Header().Set("content-type", "application/json")
+	_ = json.NewEncoder(writer).Encode(response)
 }
 
 func setPullRequestNumber(prNumber int) {
