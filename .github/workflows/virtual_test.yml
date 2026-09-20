@@ -39,9 +39,6 @@ jobs:
           go test ./... -v
           go test ./... -enterprise-cloud -v
           go test ./... -enterprise-server -v
-          TEST_IMPLEMENTATION=go go test ./... -v
-          TEST_IMPLEMENTATION=go go test ./... -enterprise-cloud -v
-          TEST_IMPLEMENTATION=go go test ./... -enterprise-server -v
           TEST_IMPLEMENTATION=typescript go test ./... -v
           TEST_IMPLEMENTATION=typescript go test ./... -enterprise-cloud -v
           TEST_IMPLEMENTATION=typescript go test ./... -enterprise-server -v
