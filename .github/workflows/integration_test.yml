@@ -13,10 +13,6 @@ jobs:
     # in the integration tests
     if: github.repository == 'agilepathway/label-checker'
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.23.4'
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -30,9 +26,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          go test ./... -integration -v
-          go test ./... -integration -enterprise-cloud -v
           npm run test:integration
           TEST_GITHUB_PLATFORM=enterprise-cloud npm run test:integration
-          TEST_IMPLEMENTATION=go npm run test:integration
-          TEST_IMPLEMENTATION=go TEST_GITHUB_PLATFORM=enterprise-cloud npm run test:integration
