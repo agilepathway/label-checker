@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -7,8 +7,6 @@ import { join } from "node:path";
 
 export type Requirement = "none" | "one" | "all" | "any";
 export type Requirements = Partial<Record<Requirement, string>>;
-
-let goAdapterPath: string | undefined;
 
 export async function runLabelCheck({
 	pullRequestNumber,
@@ -72,19 +70,24 @@ export async function runLabelCheck({
 			stdout: string;
 			stderr: string;
 		}>((resolve, reject) => {
-			const adapter = getAdapter();
-			const child = spawn(adapter.command, adapter.args, {
-				env: createAdapterEnvironment({
-					implementation: adapter.implementation,
-					endpoint,
-					enterprisePlatform,
-					eventPath,
-					outputPath,
-					enterpriseServer,
-					requirements,
-					prefixMode,
-				}),
-			});
+			const child = spawn(
+				process.execPath,
+				[
+					"--experimental-strip-types",
+					new URL("../src/index.ts", import.meta.url).pathname,
+				],
+				{
+					env: createAdapterEnvironment({
+						endpoint,
+						enterprisePlatform,
+						eventPath,
+						outputPath,
+						enterpriseServer,
+						requirements,
+						prefixMode,
+					}),
+				},
+			);
 			collectProcessResult(child).then(resolve, reject);
 		});
 
@@ -94,38 +97,7 @@ export async function runLabelCheck({
 	}
 }
 
-function getAdapter(): {
-	command: string;
-	args: string[];
-	implementation: "go" | "typescript";
-} {
-	if (process.env.TEST_IMPLEMENTATION !== "go") {
-		return {
-			command: process.execPath,
-			args: [
-				"--experimental-strip-types",
-				new URL("../src/index.ts", import.meta.url).pathname,
-			],
-			implementation: "typescript",
-		};
-	}
-
-	if (goAdapterPath) {
-		return { command: goAdapterPath, args: [], implementation: "go" };
-	}
-	const directory = mkdtempSync(join(tmpdir(), "label-checker-"));
-	goAdapterPath = join(directory, "go-adapter");
-	execFileSync("go", [
-		"build",
-		"-o",
-		goAdapterPath,
-		"./test/fixtures/go-adapter",
-	]);
-	return { command: goAdapterPath, args: [], implementation: "go" };
-}
-
 function createAdapterEnvironment({
-	implementation,
 	endpoint,
 	enterprisePlatform,
 	eventPath,
@@ -134,7 +106,6 @@ function createAdapterEnvironment({
 	requirements,
 	prefixMode,
 }: {
-	implementation: "go" | "typescript";
 	endpoint: string | undefined;
 	enterprisePlatform: string | undefined;
 	eventPath: string;
@@ -160,7 +131,6 @@ function createAdapterEnvironment({
 		GITHUB_EVENT_PATH: eventPath,
 		GITHUB_OUTPUT: outputPath,
 		...createEndpointEnvironment(
-			implementation,
 			endpoint,
 			enterprisePlatform,
 			enterpriseServer,
@@ -171,7 +141,6 @@ function createAdapterEnvironment({
 }
 
 function createEndpointEnvironment(
-	implementation: "go" | "typescript",
 	endpoint: string | undefined,
 	enterprisePlatform: string | undefined,
 	enterpriseServer: boolean,
@@ -185,7 +154,6 @@ function createEndpointEnvironment(
 	return {
 		...apiEnvironment,
 		INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL: getEnterpriseEndpoint(
-			implementation,
 			endpoint,
 			enterpriseServer,
 		),
@@ -193,13 +161,11 @@ function createEndpointEnvironment(
 }
 
 function getEnterpriseEndpoint(
-	implementation: "go" | "typescript",
 	endpoint: string | undefined,
 	enterpriseServer: boolean,
 ): string {
 	if (!enterpriseServer) return endpoint ?? "https://api.github.com/graphql";
-	if (implementation === "typescript") return `${endpoint}/api/graphql`;
-	return "https://example.com/api/graphql";
+	return `${endpoint}/api/graphql`;
 }
 
 function createPrefixModeEnvironment(

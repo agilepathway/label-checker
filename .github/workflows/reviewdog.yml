@@ -11,29 +11,6 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  golangci-lint:
-    name: runner / golangci-lint
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-golangci-lint@v2
-        with:
-          github_token: ${{ secrets.github_token }}
-          level: "error"
-          reporter: github-check
-
-  hadolint:
-    name: runner / hadolint
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: hadolint
-        uses: reviewdog/action-hadolint@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-check
-
   yamllint:
     name: runner / yamllint
     runs-on: ubuntu-22.04
@@ -68,7 +45,6 @@ jobs:
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
-          exclude: "./go.sum"
 
   languagetool:
     name: runner / languagetool

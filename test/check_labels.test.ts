@@ -531,7 +531,7 @@ const scenarios: Scenario[] = [
 ];
 
 for (const scenario of scenarios) {
-	test(`executes Go label checker for ${scenario.name}`, async () => {
+	test(`checks labels for ${scenario.name}`, async () => {
 		const result = await runLabelCheck({
 			pullRequestNumber: scenario.pullRequestNumber,
 			labels: scenario.labels,
