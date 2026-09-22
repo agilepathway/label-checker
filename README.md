@@ -15,7 +15,7 @@
 ## ⓘ Version 2 migration
 
 - Version 2 of Label Checker is now implemented as a TypeScript/Node 24 GitHub Action.
-- Version 2 maintains the same inputs and behaviour, so migrating is simply a matter of changing your `uses` reference to a `v2.x` release (or SHA).
+- Version 2 maintains the same inputs and behaviour, so migrating is simply a matter of changing your `uses` reference to a `v2.x` release (or SHA). Use `agilepathway/label-checker` instead of the now-obsolete `docker://agilepathway/pull-request-label-checker`.
 - The previous Docker-based **Version 1 releases are no longer supported and may stop working at any time, so we recommend upgrading as soon as possible.**
 
 ---
