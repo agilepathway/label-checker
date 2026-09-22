@@ -22,14 +22,6 @@ jobs:
           node-version: 24.21.0
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install Hoverfly
-        # do not specify a specific semver version or we will have an infinite circular dependency loop,
-        # between the hoverfly-github-action and this label-checker
-        uses: agilepathway/hoverfly-github-action@main
-        with:
-          runner_github_workspace_path: ${{ github.workspace }}
-      - name: Enable https calls to be simulated by Hoverfly
-        run: install-and-trust-hoverfly-default-cert.sh
       - name: Tests
         run: |
           node --test test/check_labels.test.ts
