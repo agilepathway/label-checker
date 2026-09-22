@@ -1,30 +1,32 @@
 # Label Checker
 
-[![tests](https://github.com/agilepathway/label-checker/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions?query=workflow%3ATests+event%3Apush+branch%3Amaster)
-[![reviewdog](https://github.com/agilepathway/label-checker/workflows/reviewdog/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions?query=workflow%3Areviewdog+event%3Apush+branch%3Amaster)
-[![docker](https://github.com/agilepathway/label-checker/workflows/Docker/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions?query=workflow%3ADocker+event%3Apush+branch%3Amaster)
-[![Docker image size](https://img.shields.io/docker/image-size/agilepathway/pull-request-label-checker?sort=date)](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
+[![tests](https://github.com/agilepathway/label-checker/actions/workflows/integration_test.yml/badge.svg?branch=master&event=push)](https://github.com/agilepathway/label-checker/actions/workflows/integration_test.yml?query=branch%3Amaster+event%3Apush)
 [![Releases](https://img.shields.io/github/release/agilepathway/label-checker/all.svg?logo=github
 )](https://github.com/agilepathway/label-checker/releases)
-
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?maxAge=43200)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/agilepathway/label-checker)](https://goreportcard.com/report/github.com/agilepathway/label-checker)
-[![Go version](https://img.shields.io/github/go-mod/go-version/agilepathway/label-checker)](https://golang.org/)
-
 
 ---
 
  **[GitHub Action](https://github.com/features/actions) to check pull requests (PRs) for the presence or absence of specified labels**
 
 ---
+---
 
+## ⓘ Version 2 migration
 
-## Why another label checker?
+- Version 2 of Label Checker is now implemented as a TypeScript/Node 24 GitHub Action.
+- Version 2 maintains the same inputs and behaviour, so migrating is simply a matter of changing your `uses` reference to a `v2.x` release (or SHA). Use `agilepathway/label-checker` instead of the now-obsolete `docker://agilepathway/pull-request-label-checker`.
+- The previous Docker-based **Version 1 releases are no longer supported and may stop working at any time, so we recommend upgrading as soon as possible.**
 
-- We couldn't find another label checker that had all [our 4 check types](#checks) (`one_of`, `none_of`, `all_of`, `any_of`)
+---
+---
 
-- **Speed**: the [Docker image](https://hub.docker.com/repository/docker/agilepathway/pull-request-label-checker)
-  used for the checks is only 2.7 MB, so the checks are blazingly fast (c. 3 seconds)
+## Why use this label checker?
+
+- We built this label checker back in 2020 because there wasn't (isn't?) another label checker that had all [our 4 check types](#checks) (`one_of`, `none_of`, `all_of`, `any_of`)
+  - the popularity of our label checker since then has shown that offering these 4 check types is very useful to many people
+- Stable API: the 4 check types are well established now over several years, so the "product" is stable
+- Clean, minimal TypeScript implementation, very well tested, with zero runtime dependencies - good from a security and ease of use / maintenance perspective
 
 - [Prefix mode](#match-labels-based-on-prefix): check for the presence or absence of labels beginning with a certain prefix
 
@@ -33,10 +35,10 @@
 
 Using this action is as simple as:
 
-1. **create a `.github\workflows` directory** in your repository
+1. **create a `.github/workflows` directory** in your repository
 2. **create a 
    [YAML](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#about-yaml-syntax-for-workflows) 
-   file** in the `.github\workflows` directory (file name can be anything you like, 
+   file** in the `.github/workflows` directory (file name can be anything you like, 
    with either a `.yml` or `.yaml` file extension), with this example content:
  
    ```
@@ -57,7 +59,7 @@ Using this action is as simple as:
        name: Check labels
        runs-on: ubuntu-latest
        steps:
-         - uses: docker://agilepathway/pull-request-label-checker:latest
+         - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
            with:
              one_of: major,minor,patch
              repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -114,7 +116,7 @@ You can have as many of the checks configured in the same YAML file as you like.
       name: Check for semantic version label
       runs-on: ubuntu-latest
       steps:
-        - uses: docker://agilepathway/pull-request-label-checker:latest
+        - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
           with:
             one_of: major,minor,patch
             repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -123,7 +125,7 @@ You can have as many of the checks configured in the same YAML file as you like.
       name: Check for pull request type label
       runs-on: ubuntu-latest
       steps:
-        - uses: docker://agilepathway/pull-request-label-checker:latest
+        - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
           with:
             one_of: bug,enhancement
             repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -145,7 +147,7 @@ Example:
   ```
   steps:
     - id: prefix_label_check
-      uses: docker://agilepathway/pull-request-label-checker:latest
+      uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
       with:
         prefix_mode: true
         one_of: "type:"
@@ -179,7 +181,7 @@ Example:
   ```
   steps:
     - id: preview_label_check
-      uses: docker://agilepathway/pull-request-label-checker:latest
+      uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
       with:
         all_of: preview
         repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -206,7 +208,7 @@ specify the GitHub Enterprise GraphQL URL in an input, e.g. for
        name: Check labels
        runs-on: ubuntu-latest
        steps:
-         - uses: docker://agilepathway/pull-request-label-checker:latest
+         - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
            with:
              github_enterprise_graphql_url: https://api.github.com/graphql
              one_of: major,minor,patch # just an example
@@ -223,7 +225,7 @@ specify the GitHub Enterprise GraphQL URL in an input, e.g. for
        name: Check labels
        runs-on: ubuntu-latest
        steps:
-         - uses: docker://agilepathway/pull-request-label-checker:latest
+         - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
            with:
              github_enterprise_graphql_url: https://<hostname>/api/graphql
              one_of: major,minor,patch # just an example
