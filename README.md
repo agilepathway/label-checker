@@ -59,7 +59,7 @@ Using this action is as simple as:
        name: Check labels
        runs-on: ubuntu-latest
        steps:
-         - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
+         - uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
            with:
              one_of: major,minor,patch
              repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -116,7 +116,7 @@ You can have as many of the checks configured in the same YAML file as you like.
       name: Check for semantic version label
       runs-on: ubuntu-latest
       steps:
-        - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
+        - uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
           with:
             one_of: major,minor,patch
             repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -125,7 +125,7 @@ You can have as many of the checks configured in the same YAML file as you like.
       name: Check for pull request type label
       runs-on: ubuntu-latest
       steps:
-        - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
+        - uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
           with:
             one_of: bug,enhancement
             repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -147,7 +147,7 @@ Example:
   ```
   steps:
     - id: prefix_label_check
-      uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
+      uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
       with:
         prefix_mode: true
         one_of: "type:"
@@ -181,7 +181,7 @@ Example:
   ```
   steps:
     - id: preview_label_check
-      uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
+      uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
       with:
         all_of: preview
         repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -208,7 +208,7 @@ specify the GitHub Enterprise GraphQL URL in an input, e.g. for
        name: Check labels
        runs-on: ubuntu-latest
        steps:
-         - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
+         - uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
            with:
              github_enterprise_graphql_url: https://api.github.com/graphql
              one_of: major,minor,patch # just an example
@@ -225,7 +225,7 @@ specify the GitHub Enterprise GraphQL URL in an input, e.g. for
        name: Check labels
        runs-on: ubuntu-latest
        steps:
-         - uses: agilepathway/label-checker@v2.0.0  # Change v2.0.0 to a SHA for stronger security
+         - uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
            with:
              github_enterprise_graphql_url: https://<hostname>/api/graphql
              one_of: major,minor,patch # just an example
