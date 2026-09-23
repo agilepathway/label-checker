@@ -2,6 +2,9 @@
 project_name: label-checker
 version: 2
 dist: .goreleaser-dist
+builds:
+  - skip: true
 release:
   github:
+  draft: true
   prerelease: auto
