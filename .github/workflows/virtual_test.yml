@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 24.21.0
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Tests
         run: |
           node --test test/check_labels.test.ts
