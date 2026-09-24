@@ -1,27 +1,93 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 type Refs = Readonly<Record<string, string>>;
 
 type Example = {
-	name: string;
+	description: string;
 	version: string;
 	commit: string;
 	before: Refs;
 	after: Refs;
-	error?: string;
+	error: boolean;
 };
 
-// biome-ignore lint/security/noSecrets: Public example SHA from the specification.
-const oldCommit = "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b";
-// biome-ignore lint/security/noSecrets: Public example SHA from the specification.
-const patchCommit = "a1b2c3d4e5f67890abcdef1234567890abcdef12";
-// biome-ignore lint/security/noSecrets: Public example SHA from the specification.
-const minorCommit = "b2c3d4e5f67890abcdef1234567890abcdef123";
-// biome-ignore lint/security/noSecrets: Public example SHA from the specification.
-const majorCommit = "c3d4e5f67890abcdef1234567890abcdef1234";
-// biome-ignore lint/security/noSecrets: Public example SHA from the specification.
-const unrelatedCommit = "9e8d7c6b5a4f3210fedcba9876543210fedcba98";
+const specification = readFileSync(
+	new URL(
+		"../.github/actions/semantic-version-tagger/spec/semantic-version-tagging.md",
+		import.meta.url,
+	),
+	"utf8",
+);
+
+function parseExamples(markdown: string): Example[] {
+	const examples: Example[] = [];
+	const exampleSections = markdown.matchAll(
+		/## Example\n\n([\s\S]*?)(?=\n## (?:Rule|Example)|$)/g,
+	);
+
+	for (const [, section] of exampleSections) {
+		const versionAndCommit = parseVersionAndCommit(section);
+		if (versionAndCommit === null) {
+			throw new Error(`Could not read version and commit from:\n${section}`);
+		}
+
+		const [, version, commit] = versionAndCommit;
+		const rows = parseRows(section);
+		if (rows.length === 0) {
+			throw new Error(`Could not read tag table from:\n${section}`);
+		}
+
+		const before = buildRefs(rows, 1);
+		const after = buildRefs(rows, 2);
+		const error = rows.some(([, , , result]) => result === "**Error**");
+
+		examples.push({
+			description: section.slice(0, section.indexOf("\n\n")).trim(),
+			version,
+			commit,
+			before,
+			after,
+			error,
+		});
+	}
+
+	return examples;
+}
+
+function parseVersionAndCommit(section: string): RegExpExecArray | null {
+	return /(?:new )?`(v\d+\.\d+\.\d+)` version[\s\S]*?`([0-9a-f]+)`/i.exec(
+		section,
+	);
+}
+
+function parseRows(section: string): string[][] {
+	return section
+		.split("\n")
+		.filter((line) => line.startsWith("| `"))
+		.map((line) =>
+			line
+				.split("|")
+				.slice(1, -1)
+				.map((cell) => cell.trim().replaceAll("`", "")),
+		);
+}
+
+function buildRefs(
+	rows: string[][],
+	valueIndex: number,
+): Record<string, string> {
+	const refs: Record<string, string> = {};
+	for (const row of rows) {
+		const tag = row[0];
+		const value = row[valueIndex];
+		if (value !== "—") {
+			refs[tag] = value;
+		}
+	}
+	return refs;
+}
 
 function applyVersion(version: string, commit: string, refs: Refs): Refs {
 	const match = /^v(\d+)\.(\d+)\.(\d+)$/.exec(version);
@@ -43,156 +109,13 @@ function applyVersion(version: string, commit: string, refs: Refs): Refs {
 	};
 }
 
-const examples: Example[] = [
-	{
-		name: "patch release moves patch aliases and latest",
-		version: "v2.0.1",
-		commit: patchCommit,
-		before: {
-			v2: oldCommit,
-			"v2.0": oldCommit,
-			"v2.0.0": oldCommit,
-			latest: oldCommit,
-		},
-		after: {
-			v2: patchCommit,
-			"v2.0": patchCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			latest: patchCommit,
-		},
-	},
-	{
-		name: "minor release creates the minor and patch tags",
-		version: "v2.1.0",
-		commit: minorCommit,
-		before: {
-			v2: patchCommit,
-			"v2.0": patchCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			latest: patchCommit,
-		},
-		after: {
-			v2: minorCommit,
-			"v2.0": patchCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			"v2.1": minorCommit,
-			"v2.1.0": minorCommit,
-			latest: minorCommit,
-		},
-	},
-	{
-		name: "major release creates the major, minor, and patch tags",
-		version: "v3.0.0",
-		commit: majorCommit,
-		before: {
-			v2: minorCommit,
-			"v2.0": patchCommit,
-			"v2.1": minorCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			"v2.1.0": minorCommit,
-			latest: minorCommit,
-		},
-		after: {
-			v2: minorCommit,
-			"v2.0": patchCommit,
-			"v2.1": minorCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			"v2.1.0": minorCommit,
-			v3: majorCommit,
-			"v3.0": majorCommit,
-			"v3.0.0": majorCommit,
-			latest: majorCommit,
-		},
-	},
-	{
-		name: "patch release creates missing aliases",
-		version: "v2.0.1",
-		commit: patchCommit,
-		before: { "v2.0.0": oldCommit },
-		after: {
-			v2: patchCommit,
-			"v2.0": patchCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			latest: patchCommit,
-		},
-	},
-	{
-		name: "first semantic version creates every supported tag",
-		version: "v0.0.1",
-		commit: patchCommit,
-		before: {},
-		after: {
-			v0: patchCommit,
-			"v0.0": patchCommit,
-			"v0.0.1": patchCommit,
-			latest: patchCommit,
-		},
-	},
-	{
-		name: "first latest tag is created",
-		version: "v2.0.1",
-		commit: patchCommit,
-		before: {
-			v2: oldCommit,
-			"v2.0": oldCommit,
-			"v2.0.0": oldCommit,
-		},
-		after: {
-			v2: patchCommit,
-			"v2.0": patchCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			latest: patchCommit,
-		},
-	},
-	{
-		name: "existing version tag is rejected",
-		version: "v2.0.1",
-		commit: patchCommit,
-		before: {
-			"v2.0.1": oldCommit,
-		},
-		after: {
-			"v2.0.1": oldCommit,
-		},
-		error: "Version tag already exists: v2.0.1",
-	},
-	{
-		name: "in-scope aliases move from unrelated commits",
-		version: "v2.0.1",
-		commit: patchCommit,
-		before: {
-			"v1.0.0": unrelatedCommit,
-			v2: unrelatedCommit,
-			"v2.0": oldCommit,
-			"v2.0.0": oldCommit,
-			latest: oldCommit,
-		},
-		after: {
-			"v1.0.0": unrelatedCommit,
-			v2: patchCommit,
-			"v2.0": patchCommit,
-			"v2.0.0": oldCommit,
-			"v2.0.1": patchCommit,
-			latest: patchCommit,
-		},
-	},
-];
-
-for (const example of examples) {
-	test(`translates Markdown example: ${example.name}`, () => {
+for (const example of parseExamples(specification)) {
+	test(`executes Markdown example: ${example.description}`, () => {
 		const before = { ...example.before };
 
-		if (example.error !== undefined) {
-			assert.throws(
-				() => applyVersion(example.version, example.commit, before),
-				new Error(example.error),
+		if (example.error) {
+			assert.throws(() =>
+				applyVersion(example.version, example.commit, before),
 			);
 			assert.deepEqual(before, example.before);
 			return;
