@@ -9,7 +9,7 @@
   },
   "scripts": {
     "format": "biome format --write src",
-    "check": "biome check src test --enforce-assist=false",
+    "check": "biome check src test .github/actions/semantic-version-tagger/src --enforce-assist=false",
     "test": "node --test",
     "test:integration": "INPUT_REPO_TOKEN=\"${GITHUB_TOKEN:-${GH_TOKEN:?GITHUB_TOKEN or GH_TOKEN must be set}}\" TEST_MODE=integration node --test test/check_labels.test.ts",
     "typecheck": "tsc --noEmit"
