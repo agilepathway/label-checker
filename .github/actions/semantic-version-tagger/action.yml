@@ -1,3 +1,4 @@
+---
 name: Semantic version tagger
 description: Creates and updates semantic version Git refs
 author: John Boyes
