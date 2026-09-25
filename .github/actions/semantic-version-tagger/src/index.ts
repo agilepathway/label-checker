@@ -7,7 +7,7 @@ type TagParts = {
 const semanticVersionPattern = /^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
 async function main(): Promise<void> {
-	const semanticVersion = requiredEnvironment("INPUT_SEMANTIC_VERSION");
+	const semanticVersion = requiredEnvironment("INPUT_SEMANTIC-VERSION");
 	const commit = requiredEnvironment("INPUT_COMMIT");
 	const tags = parseSemanticVersion(semanticVersion);
 	const repository = requiredEnvironment("GITHUB_REPOSITORY");
