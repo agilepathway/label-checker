@@ -1,13 +1,13 @@
 ---
 name: Semantic version tagger
-description: Creates and updates semantic version Git refs
+description: Creates and updates semantic version tags
 author: John Boyes
 inputs:
   semantic-version:
     description: Semantic version tag to create, for example v2.1.0
     required: true
   commit:
-    description: Commit SHA to which the resulting refs should point
+    description: Commit SHA to which the resulting tags should point
     required: true
 runs:
   using: node24
