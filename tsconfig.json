@@ -17,8 +17,6 @@
   },
   "include": [
     "src",
-    ".github/actions/semantic-version-tagger/src",
-    ".github/actions/semantic-version-tagger/spec_impl",
-    ".github/actions/semantic-version-tagger/spec_test_support"
+    ".github/actions/semantic-version-tagger"
   ]
 }
