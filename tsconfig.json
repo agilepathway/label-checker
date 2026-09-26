@@ -15,5 +15,8 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", ".github/actions/semantic-version-tagger/src"]
+  "include": [
+    "src",
+    ".github/actions/semantic-version-tagger"
+  ]
 }
