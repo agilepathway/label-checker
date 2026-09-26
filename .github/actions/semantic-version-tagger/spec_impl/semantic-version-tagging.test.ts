@@ -63,23 +63,21 @@ function assertAfterState(
 	example: string,
 	state: ReadonlyMap<string, string>,
 ): void {
+	const expectedState = new Map<string, string>();
 	for (const row of tableRows(example)) {
-		if (row.after === "—") {
-			assert.equal(state.has(row.tag), false, `Unexpected tag ${row.tag}`);
-		} else {
-			assert.equal(
-				state.get(row.tag),
-				row.after,
-				`Unexpected tag state for ${row.tag}`,
-			);
-		}
+		if (row.after !== "—") expectedState.set(row.tag, row.after);
 	}
+	assert.deepEqual(
+		[...state.entries()].sort(),
+		[...expectedState.entries()].sort(),
+		"The final tag state must match the complete Markdown After state.",
+	);
 }
 
 function tableRows(
 	example: string,
 ): Array<{ after: string; before: string; tag: string }> {
-	return [
+	const rows = [
 		...example.matchAll(
 			/\| `(?<tag>[^`]+)` \| (?<before>[^|]+) \| (?<after>[^|]+) \|/g,
 		),
@@ -90,6 +88,11 @@ function tableRows(
 		assert.ok(tag && before && after);
 		return { after, before, tag };
 	});
+	assert.ok(
+		rows.length > 0,
+		"The Example tag table must contain at least one row.",
+	);
+	return rows;
 }
 
 async function runAction(input: {
