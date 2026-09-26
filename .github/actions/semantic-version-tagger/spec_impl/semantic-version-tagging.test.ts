@@ -77,21 +77,36 @@ function assertAfterState(
 function tableRows(
 	example: string,
 ): Array<{ after: string; before: string; tag: string }> {
-	const rows = [
-		...example.matchAll(
-			/\| `(?<tag>[^`]+)` \| (?<before>[^|]+) \| (?<after>[^|]+) \|/g,
-		),
-	].map((row) => {
-		const tag = row.groups?.tag;
-		const before = row.groups?.before?.trim().replaceAll("`", "");
-		const after = row.groups?.after?.trim().replaceAll("`", "");
+	const lines = example.split("\n");
+	const headerIndex = lines.findIndex(
+		(line) => line.trim() === "| Tag | Before | After |",
+	);
+	assert.notEqual(headerIndex, -1, "The Example tag table header is missing.");
+	const separatorIndex = headerIndex + 1;
+	assert.match(
+		lines[separatorIndex] ?? "",
+		/^\|---+\|---+\|---+\|$/,
+		"The Example tag table separator is missing or malformed.",
+	);
+	const dataLines = lines
+		.slice(separatorIndex + 1)
+		.filter((line) => line.trim());
+	assert.ok(
+		dataLines.length > 0,
+		"The Example tag table must contain at least one row.",
+	);
+
+	const rows = dataLines.map((line) => {
+		const match = line.match(
+			/^\| `(?<tag>[^`]+)` \| (?<before>[^|]+) \| (?<after>[^|]+) \|$/,
+		);
+		assert.ok(match?.groups, `Malformed Example tag row: ${line}`);
+		const tag = match.groups.tag;
+		const before = match.groups.before.trim().replaceAll("`", "");
+		const after = match.groups.after.trim().replaceAll("`", "");
 		assert.ok(tag && before && after);
 		return { after, before, tag };
 	});
-	assert.ok(
-		rows.length > 0,
-		"The Example tag table must contain at least one row.",
-	);
 	return rows;
 }
 
