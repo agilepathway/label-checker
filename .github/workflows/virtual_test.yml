@@ -24,7 +24,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Tests
         run: |
-          node --test test/semantic_version_tagger.test.ts
           node --test test/check_labels.test.ts
           TEST_GITHUB_PLATFORM=enterprise-cloud node --test test/check_labels.test.ts
           TEST_GITHUB_PLATFORM=enterprise-server node --test test/check_labels.test.ts

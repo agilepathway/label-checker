@@ -14,7 +14,7 @@ Enterprise Server is intentionally virtual-only; do not attempt Enterprise
 Server integration tests.
 
 The semantic-version tagger example runs against a local fake GitHub API:
-`node --test test/semantic_version_tagger.test.ts`.
+`npm run test:semantic-version-tagger`.
 
 ## Biome validation
 
