@@ -116,6 +116,10 @@ export class FakeGitHubApi {
 			return;
 		}
 		const tag = body.ref.slice("refs/tags/".length);
+		if (this.tags.has(tag)) {
+			response.writeHead(422).end("Reference already exists");
+			return;
+		}
 		this.tags.set(tag, body.sha);
 		response.writeHead(201).end();
 	}
@@ -130,7 +134,12 @@ export class FakeGitHubApi {
 			response.writeHead(400).end("Invalid ref payload");
 			return;
 		}
-		this.tags.set(decodeURIComponent(encodedTag), body.sha);
+		const tag = decodeURIComponent(encodedTag);
+		if (!this.tags.has(tag)) {
+			response.writeHead(404).end("Reference does not exist");
+			return;
+		}
+		this.tags.set(tag, body.sha);
 		response.writeHead(200).end();
 	}
 }
