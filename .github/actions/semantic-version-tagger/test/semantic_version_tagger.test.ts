@@ -92,6 +92,68 @@ const minorExample = {
 	],
 } as const;
 
+const majorRule =
+	"Given a new major-level semantic version to be applied to a given new commit, a new major, minor and patch-level tag are created for that commit, and the latest tag is moved to point to the new commit too.";
+
+const majorExample = {
+	description:
+		"A new `v3.0.0` version and a new commit SHA `c3d4e5f67890abcdef1234567890abcdef1234`",
+	semanticVersion: "v3.0.0",
+	commit: "c3d4e5f67890abcdef1234567890abcdef1234",
+	tags: [
+		{
+			tag: "v2",
+			before: "b2c3d4e5f67890abcdef1234567890abcdef123",
+			after: "b2c3d4e5f67890abcdef1234567890abcdef123",
+		},
+		{
+			tag: "v2.0",
+			before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+			after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+		},
+		{
+			tag: "v2.1",
+			before: "b2c3d4e5f67890abcdef1234567890abcdef123",
+			after: "b2c3d4e5f67890abcdef1234567890abcdef123",
+		},
+		{
+			tag: "v2.0.0",
+			before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+			after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+		},
+		{
+			tag: "v2.0.1",
+			before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+			after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+		},
+		{
+			tag: "v2.1.0",
+			before: "b2c3d4e5f67890abcdef1234567890abcdef123",
+			after: "b2c3d4e5f67890abcdef1234567890abcdef123",
+		},
+		{
+			tag: "v3",
+			before: null,
+			after: "c3d4e5f67890abcdef1234567890abcdef1234",
+		},
+		{
+			tag: "v3.0",
+			before: null,
+			after: "c3d4e5f67890abcdef1234567890abcdef1234",
+		},
+		{
+			tag: "v3.0.0",
+			before: null,
+			after: "c3d4e5f67890abcdef1234567890abcdef1234",
+		},
+		{
+			tag: "latest",
+			before: "b2c3d4e5f67890abcdef1234567890abcdef123",
+			after: "c3d4e5f67890abcdef1234567890abcdef1234",
+		},
+	],
+} as const;
+
 test(`${rule} ${example.description}`, async () => {
 	const fakeGitHubApi = new FakeGitHubApi(
 		new Map(
@@ -139,6 +201,34 @@ test(`${minorRule} ${minorExample.description}`, async () => {
 			Object.fromEntries(fakeGitHubApi.tagState()),
 			Object.fromEntries(
 				minorExample.tags.map(({ tag, after }) => [tag, after]),
+			),
+		);
+	} finally {
+		await fakeGitHubApi.stop();
+	}
+});
+
+test(`${majorRule} ${majorExample.description}`, async () => {
+	const fakeGitHubApi = new FakeGitHubApi(
+		new Map(
+			majorExample.tags.flatMap(({ tag, before }) =>
+				before === null ? [] : [[tag, before]],
+			),
+		),
+	);
+	const apiUrl = await fakeGitHubApi.start();
+	try {
+		const result = await runAction(
+			apiUrl,
+			majorExample.semanticVersion,
+			majorExample.commit,
+		);
+
+		assert.equal(result.status, 0, result.stderr);
+		assert.deepEqual(
+			Object.fromEntries(fakeGitHubApi.tagState()),
+			Object.fromEntries(
+				majorExample.tags.map(({ tag, after }) => [tag, after]),
 			),
 		);
 	} finally {
