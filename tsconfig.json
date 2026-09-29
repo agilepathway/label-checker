@@ -18,6 +18,6 @@
   "include": [
     "src",
     ".github/actions/semantic-version-tagger/src",
-    "test/semantic_version_tagger.test.ts"
+    ".github/actions/semantic-version-tagger/test"
   ]
 }

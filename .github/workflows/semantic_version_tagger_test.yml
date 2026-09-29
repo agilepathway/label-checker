@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   semantic-version-tagger:
-    name: Executable example
+    name: Action tests
     runs-on: ubuntu-22.04
     steps:
       - name: Check out code

@@ -76,12 +76,7 @@ function runAction(apiUrl: string): Promise<{
 			process.execPath,
 			[
 				"--experimental-strip-types",
-				fileURLToPath(
-					new URL(
-						"../.github/actions/semantic-version-tagger/src/index.ts",
-						import.meta.url,
-					),
-				),
+				fileURLToPath(new URL("../src/index.ts", import.meta.url)),
 			],
 			{
 				env: {

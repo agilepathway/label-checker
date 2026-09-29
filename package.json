@@ -9,9 +9,9 @@
   },
   "scripts": {
     "format": "biome format --write src",
-    "check": "biome check src test .github/actions/semantic-version-tagger/src --enforce-assist=false",
+    "check": "biome check src test .github/actions/semantic-version-tagger/src .github/actions/semantic-version-tagger/test --enforce-assist=false",
     "test": "node --test",
-    "test:semantic-version-tagger": "node --test test/semantic_version_tagger.test.ts",
+    "test:semantic-version-tagger": "node --test .github/actions/semantic-version-tagger/test/*.test.ts",
     "test:integration": "INPUT_REPO_TOKEN=\"${GITHUB_TOKEN:-${GH_TOKEN:?GITHUB_TOKEN or GH_TOKEN must be set}}\" TEST_MODE=integration node --test test/check_labels.test.ts",
     "typecheck": "tsc --noEmit"
   },
