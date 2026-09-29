@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
@@ -75,10 +76,12 @@ function runAction(apiUrl: string): Promise<{
 			process.execPath,
 			[
 				"--experimental-strip-types",
-				new URL(
-					"../.github/actions/semantic-version-tagger/src/index.ts",
-					import.meta.url,
-				).pathname,
+				fileURLToPath(
+					new URL(
+						"../.github/actions/semantic-version-tagger/src/index.ts",
+						import.meta.url,
+					),
+				),
 			],
 			{
 				env: {

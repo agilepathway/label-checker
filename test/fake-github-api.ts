@@ -130,7 +130,7 @@ export class FakeGitHubApi {
 		response: ServerResponse,
 	): Promise<void> {
 		const body = await readRefBody(request);
-		if (!body) {
+		if (body?.force !== true) {
 			response.writeHead(400).end("Invalid ref payload");
 			return;
 		}
@@ -146,28 +146,22 @@ export class FakeGitHubApi {
 
 async function readRefBody(
 	request: IncomingMessage,
-): Promise<{ ref?: string; sha: string } | undefined> {
+): Promise<{ force?: boolean; ref?: string; sha: string } | undefined> {
 	let body = "";
 	for await (const chunk of request) body += chunk;
 	const parsed: unknown = JSON.parse(body);
-	if (!isRecord(parsed)) return undefined;
-	const sha = getStringProperty(parsed, "sha");
-	if (sha === undefined) return undefined;
-	const ref = getStringProperty(parsed, "ref");
-	return {
-		...(ref === undefined ? {} : { ref }),
-		sha,
-	};
+	return isRefBody(parsed) ? parsed : undefined;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
-
-function getStringProperty(
-	value: Record<string, unknown>,
-	property: string,
-): string | undefined {
-	const propertyValue = value[property];
-	return typeof propertyValue === "string" ? propertyValue : undefined;
+function isRefBody(
+	value: unknown,
+): value is { force?: boolean; ref?: string; sha: string } {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"sha" in value &&
+		typeof value.sha === "string" &&
+		(!("ref" in value) || typeof value.ref === "string") &&
+		(!("force" in value) || typeof value.force === "boolean")
+	);
 }
