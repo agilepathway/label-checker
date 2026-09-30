@@ -8,8 +8,8 @@ import { FakeGitHubApi } from "./fake-github-api.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
 
-test("patch-level semantic version", async () => {
-	const specification = {
+export const patchLevelSemanticVersionTest = {
+	specification: {
 		rule: "Given a new patch-level semantic version to be applied to a given new commit, a new patch tag is created for that commit and the major, minor and latest tags are moved to point to the new commit too.",
 		example: {
 			description:
@@ -44,38 +44,44 @@ test("patch-level semantic version", async () => {
 				},
 			],
 		},
-	};
+	},
 
-	const fakeGitHubApi = new FakeGitHubApi(
-		new Map(
-			specification.example.table.flatMap(({ tag, before }) =>
-				before === null ? [] : [[tag, before]],
-			),
-		),
-	);
+	run: async (): Promise<void> => {
+		const { specification } = patchLevelSemanticVersionTest;
 
-	const apiUrl = await fakeGitHubApi.start();
-	try {
-		const result = await runAction(
-			apiUrl,
-			specification.example.semanticVersion,
-			specification.example.commit,
-		);
-
-		assert.equal(result.status, 0, result.stderr);
-		assert.deepEqual(
-			Object.fromEntries(fakeGitHubApi.tagState()),
-			Object.fromEntries(
-				specification.example.table.map(({ tag, after }) => [tag, after]),
+		const fakeGitHubApi = new FakeGitHubApi(
+			new Map(
+				specification.example.table.flatMap(({ tag, before }) =>
+					before === null ? [] : [[tag, before]],
+				),
 			),
 		);
-	} finally {
-		await fakeGitHubApi.stop();
-	}
-});
 
-test("minor-level semantic version", async () => {
-	const specification = {
+		const apiUrl = await fakeGitHubApi.start();
+		try {
+			const result = await runAction(
+				apiUrl,
+				specification.example.semanticVersion,
+				specification.example.commit,
+			);
+
+			assert.equal(result.status, 0, result.stderr);
+			assert.deepEqual(
+				Object.fromEntries(fakeGitHubApi.tagState()),
+				Object.fromEntries(
+					specification.example.table.map(({ tag, after }) => [tag, after]),
+				),
+			);
+		} finally {
+			await fakeGitHubApi.stop();
+		}
+	},
+};
+
+test("patch-level semantic version", patchLevelSemanticVersionTest.run);
+
+export const minorLevelSemanticVersionTest = {
+	specification: {
 		rule: "Given a new minor-level semantic version to be applied to a given new commit, a new minor and patch-level tag are created for that commit, and the major and latest tags are moved to point to the new commit too.",
 		example: {
 			description:
@@ -120,38 +126,44 @@ test("minor-level semantic version", async () => {
 				},
 			],
 		},
-	};
+	},
 
-	const fakeGitHubApi = new FakeGitHubApi(
-		new Map(
-			specification.example.table.flatMap(({ tag, before }) =>
-				before === null ? [] : [[tag, before]],
-			),
-		),
-	);
+	run: async (): Promise<void> => {
+		const { specification } = minorLevelSemanticVersionTest;
 
-	const apiUrl = await fakeGitHubApi.start();
-	try {
-		const result = await runAction(
-			apiUrl,
-			specification.example.semanticVersion,
-			specification.example.commit,
-		);
-
-		assert.equal(result.status, 0, result.stderr);
-		assert.deepEqual(
-			Object.fromEntries(fakeGitHubApi.tagState()),
-			Object.fromEntries(
-				specification.example.table.map(({ tag, after }) => [tag, after]),
+		const fakeGitHubApi = new FakeGitHubApi(
+			new Map(
+				specification.example.table.flatMap(({ tag, before }) =>
+					before === null ? [] : [[tag, before]],
+				),
 			),
 		);
-	} finally {
-		await fakeGitHubApi.stop();
-	}
-});
 
-test("major-level semantic version", async () => {
-	const specification = {
+		const apiUrl = await fakeGitHubApi.start();
+		try {
+			const result = await runAction(
+				apiUrl,
+				specification.example.semanticVersion,
+				specification.example.commit,
+			);
+
+			assert.equal(result.status, 0, result.stderr);
+			assert.deepEqual(
+				Object.fromEntries(fakeGitHubApi.tagState()),
+				Object.fromEntries(
+					specification.example.table.map(({ tag, after }) => [tag, after]),
+				),
+			);
+		} finally {
+			await fakeGitHubApi.stop();
+		}
+	},
+};
+
+test("minor-level semantic version", minorLevelSemanticVersionTest.run);
+
+export const majorLevelSemanticVersionTest = {
+	specification: {
 		rule: "Given a new major-level semantic version to be applied to a given new commit, a new major, minor and patch-level tag are created for that commit, and the latest tag is moved to point to the new commit too.",
 		example: {
 			description:
@@ -211,35 +223,41 @@ test("major-level semantic version", async () => {
 				},
 			],
 		},
-	};
+	},
 
-	const fakeGitHubApi = new FakeGitHubApi(
-		new Map(
-			specification.example.table.flatMap(({ tag, before }) =>
-				before === null ? [] : [[tag, before]],
-			),
-		),
-	);
+	run: async (): Promise<void> => {
+		const { specification } = majorLevelSemanticVersionTest;
 
-	const apiUrl = await fakeGitHubApi.start();
-	try {
-		const result = await runAction(
-			apiUrl,
-			specification.example.semanticVersion,
-			specification.example.commit,
-		);
-
-		assert.equal(result.status, 0, result.stderr);
-		assert.deepEqual(
-			Object.fromEntries(fakeGitHubApi.tagState()),
-			Object.fromEntries(
-				specification.example.table.map(({ tag, after }) => [tag, after]),
+		const fakeGitHubApi = new FakeGitHubApi(
+			new Map(
+				specification.example.table.flatMap(({ tag, before }) =>
+					before === null ? [] : [[tag, before]],
+				),
 			),
 		);
-	} finally {
-		await fakeGitHubApi.stop();
-	}
-});
+
+		const apiUrl = await fakeGitHubApi.start();
+		try {
+			const result = await runAction(
+				apiUrl,
+				specification.example.semanticVersion,
+				specification.example.commit,
+			);
+
+			assert.equal(result.status, 0, result.stderr);
+			assert.deepEqual(
+				Object.fromEntries(fakeGitHubApi.tagState()),
+				Object.fromEntries(
+					specification.example.table.map(({ tag, after }) => [tag, after]),
+				),
+			);
+		} finally {
+			await fakeGitHubApi.stop();
+		}
+	},
+};
+
+test("major-level semantic version", majorLevelSemanticVersionTest.run);
 
 function runAction(
 	apiUrl: string,
