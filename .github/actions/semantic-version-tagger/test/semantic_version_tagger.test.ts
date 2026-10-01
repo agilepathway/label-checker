@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+	existingSemanticVersionTagRule,
 	majorLevelSemanticVersionRule,
 	minorLevelSemanticVersionRule,
 	missingSemanticVersionTagsRule,
@@ -48,6 +49,7 @@ for (const rule of [
 	minorLevelSemanticVersionRule,
 	majorLevelSemanticVersionRule,
 	missingSemanticVersionTagsRule,
+	existingSemanticVersionTagRule,
 ]) {
 	for (const example of rule.examples) {
 		test(expandDescription(example), example.run.bind(example));
