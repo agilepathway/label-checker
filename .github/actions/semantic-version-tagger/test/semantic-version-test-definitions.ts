@@ -3,18 +3,23 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+
 import { FakeGitHubApi } from "./fake-github-api.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
 
-export const patchLevelSemanticVersionTest = {
-	specification: {
-		rule: "Given a new patch-level semantic version to be applied to a given new commit, a new patch tag is created for that commit and the major, minor and latest tags are moved to point to the new commit too.",
-		example: {
+export const patchLevelSemanticVersionRule = {
+	definition:
+		"Given a new patch-level semantic version to be applied to a given new commit, a new patch tag is created for that commit, and the minor, major and latest tags are moved to point to the new commit too.",
+
+	examples: [
+		{
 			description:
 				"A new `{semanticVersion}` version and a new commit SHA `{commit}`",
+
 			semanticVersion: "v2.0.1",
 			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+
 			table: [
 				{
 					tag: "v2",
@@ -42,49 +47,51 @@ export const patchLevelSemanticVersionTest = {
 					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			],
+
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+
+					assert.equal(result.status, 0, result.stderr);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
 		},
-	},
-
-	run: async (): Promise<void> => {
-		const { specification } = patchLevelSemanticVersionTest;
-
-		const fakeGitHubApi = new FakeGitHubApi(
-			new Map(
-				specification.example.table.flatMap(({ tag, before }) =>
-					before === null ? [] : [[tag, before]],
-				),
-			),
-		);
-
-		const apiUrl = await fakeGitHubApi.start();
-		try {
-			const result = await runAction(
-				apiUrl,
-				specification.example.semanticVersion,
-				specification.example.commit,
-			);
-
-			assert.equal(result.status, 0, result.stderr);
-			assert.deepEqual(
-				Object.fromEntries(fakeGitHubApi.tagState()),
-				Object.fromEntries(
-					specification.example.table.map(({ tag, after }) => [tag, after]),
-				),
-			);
-		} finally {
-			await fakeGitHubApi.stop();
-		}
-	},
+	],
 };
 
-export const minorLevelSemanticVersionTest = {
-	specification: {
-		rule: "Given a new minor-level semantic version to be applied to a given new commit, a new minor and patch-level tag are created for that commit, and the major and latest tags are moved to point to the new commit too.",
-		example: {
+export const minorLevelSemanticVersionRule = {
+	definition:
+		"Given a new minor-level semantic version to be applied to a given new commit, a new minor and patch-level tag are created for that commit, and the major and latest tags are moved to point to the new commit too.",
+
+	examples: [
+		{
 			description:
 				"A new `{semanticVersion}` version and a new commit SHA `{commit}`",
+
 			semanticVersion: "v2.1.0",
 			commit: "b2c3d4e5f67890abcdef1234567890abcdef123",
+
 			table: [
 				{
 					tag: "v2",
@@ -122,45 +129,42 @@ export const minorLevelSemanticVersionTest = {
 					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
 				},
 			],
+
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+					assert.equal(result.status, 0, result.stderr);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
 		},
-	},
-
-	run: async (): Promise<void> => {
-		const { specification } = minorLevelSemanticVersionTest;
-
-		const fakeGitHubApi = new FakeGitHubApi(
-			new Map(
-				specification.example.table.flatMap(({ tag, before }) =>
-					before === null ? [] : [[tag, before]],
-				),
-			),
-		);
-
-		const apiUrl = await fakeGitHubApi.start();
-		try {
-			const result = await runAction(
-				apiUrl,
-				specification.example.semanticVersion,
-				specification.example.commit,
-			);
-
-			assert.equal(result.status, 0, result.stderr);
-			assert.deepEqual(
-				Object.fromEntries(fakeGitHubApi.tagState()),
-				Object.fromEntries(
-					specification.example.table.map(({ tag, after }) => [tag, after]),
-				),
-			);
-		} finally {
-			await fakeGitHubApi.stop();
-		}
-	},
+	],
 };
 
-export const majorLevelSemanticVersionTest = {
-	specification: {
-		rule: "Given a new major-level semantic version to be applied to a given new commit, a new major, minor and patch-level tag are created for that commit, and the latest tag is moved to point to the new commit too.",
-		example: {
+export const majorLevelSemanticVersionRule = {
+	definition:
+		"Given a new major-level semantic version to be applied to a given new commit, a new major, minor and patch-level tag are created for that commit, and the latest tag is moved to point to the new commit too.",
+	examples: [
+		{
 			description:
 				"A new `{semanticVersion}` version and a new commit SHA `{commit}`",
 			semanticVersion: "v3.0.0",
@@ -217,45 +221,41 @@ export const majorLevelSemanticVersionTest = {
 					after: "c3d4e5f67890abcdef1234567890abcdef1234",
 				},
 			],
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+					assert.equal(result.status, 0, result.stderr);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
 		},
-	},
-
-	run: async (): Promise<void> => {
-		const { specification } = majorLevelSemanticVersionTest;
-
-		const fakeGitHubApi = new FakeGitHubApi(
-			new Map(
-				specification.example.table.flatMap(({ tag, before }) =>
-					before === null ? [] : [[tag, before]],
-				),
-			),
-		);
-
-		const apiUrl = await fakeGitHubApi.start();
-		try {
-			const result = await runAction(
-				apiUrl,
-				specification.example.semanticVersion,
-				specification.example.commit,
-			);
-
-			assert.equal(result.status, 0, result.stderr);
-			assert.deepEqual(
-				Object.fromEntries(fakeGitHubApi.tagState()),
-				Object.fromEntries(
-					specification.example.table.map(({ tag, after }) => [tag, after]),
-				),
-			);
-		} finally {
-			await fakeGitHubApi.stop();
-		}
-	},
+	],
 };
 
-export const missingMajorMinorAndLatestTagsTest = {
-	specification: {
-		rule: "Given a new patch-level semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.",
-		example: {
+export const missingSemanticVersionTagsRule = {
+	definition:
+		"Given a new patch-level semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.",
+	examples: [
+		{
 			description:
 				"A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no major, minor and latest tags already existing",
 			semanticVersion: "v2.0.1",
@@ -287,45 +287,34 @@ export const missingMajorMinorAndLatestTagsTest = {
 					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			],
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+					assert.equal(result.status, 0, result.stderr);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
 		},
-	},
-
-	run: async (): Promise<void> => {
-		const { specification } = missingMajorMinorAndLatestTagsTest;
-
-		const fakeGitHubApi = new FakeGitHubApi(
-			new Map(
-				specification.example.table.flatMap(({ tag, before }) =>
-					before === null ? [] : [[tag, before]],
-				),
-			),
-		);
-
-		const apiUrl = await fakeGitHubApi.start();
-		try {
-			const result = await runAction(
-				apiUrl,
-				specification.example.semanticVersion,
-				specification.example.commit,
-			);
-
-			assert.equal(result.status, 0, result.stderr);
-			assert.deepEqual(
-				Object.fromEntries(fakeGitHubApi.tagState()),
-				Object.fromEntries(
-					specification.example.table.map(({ tag, after }) => [tag, after]),
-				),
-			);
-		} finally {
-			await fakeGitHubApi.stop();
-		}
-	},
-};
-
-export const firstSemanticVersionTest = {
-	specification: {
-		rule: "Given a new patch-level semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.",
-		example: {
+		{
 			description:
 				"The very first semantic `{semanticVersion}` version for the repo and a new commit SHA `{commit}`, with no previous semantic version tags existing",
 			semanticVersion: "v0.0.1",
@@ -352,45 +341,34 @@ export const firstSemanticVersionTest = {
 					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			],
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+					assert.equal(result.status, 0, result.stderr);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
 		},
-	},
-
-	run: async (): Promise<void> => {
-		const { specification } = firstSemanticVersionTest;
-
-		const fakeGitHubApi = new FakeGitHubApi(
-			new Map(
-				specification.example.table.flatMap(({ tag, before }) =>
-					before === null ? [] : [[tag, before]],
-				),
-			),
-		);
-
-		const apiUrl = await fakeGitHubApi.start();
-		try {
-			const result = await runAction(
-				apiUrl,
-				specification.example.semanticVersion,
-				specification.example.commit,
-			);
-
-			assert.equal(result.status, 0, result.stderr);
-			assert.deepEqual(
-				Object.fromEntries(fakeGitHubApi.tagState()),
-				Object.fromEntries(
-					specification.example.table.map(({ tag, after }) => [tag, after]),
-				),
-			);
-		} finally {
-			await fakeGitHubApi.stop();
-		}
-	},
-};
-
-export const adoptingLatestTagTest = {
-	specification: {
-		rule: "Given a new patch-level semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.",
-		example: {
+		{
 			description:
 				"The project adopts the `latest` tag for the first time. A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no `latest` tag already existing",
 			semanticVersion: "v2.0.1",
@@ -422,49 +400,41 @@ export const adoptingLatestTagTest = {
 					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			],
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+					assert.equal(result.status, 0, result.stderr);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
 		},
-	},
-
-	run: async (): Promise<void> => {
-		const { specification } = adoptingLatestTagTest;
-
-		const fakeGitHubApi = new FakeGitHubApi(
-			new Map(
-				specification.example.table.flatMap(({ tag, before }) =>
-					before === null ? [] : [[tag, before]],
-				),
-			),
-		);
-
-		const apiUrl = await fakeGitHubApi.start();
-		try {
-			const result = await runAction(
-				apiUrl,
-				specification.example.semanticVersion,
-				specification.example.commit,
-			);
-
-			assert.equal(result.status, 0, result.stderr);
-			assert.deepEqual(
-				Object.fromEntries(fakeGitHubApi.tagState()),
-				Object.fromEntries(
-					specification.example.table.map(({ tag, after }) => [tag, after]),
-				),
-			);
-		} finally {
-			await fakeGitHubApi.stop();
-		}
-	},
+	],
 };
 
 function runAction(
 	apiUrl: string,
 	semanticVersion: string,
 	commit: string,
-): Promise<{
-	status: number | null;
-	stderr: string;
-}> {
+): Promise<{ status: number | null; stderr: string }> {
 	return new Promise((resolve, reject) => {
 		const child = spawn(
 			process.execPath,
@@ -485,11 +455,15 @@ function runAction(
 		);
 
 		let stderr = "";
-		child.stderr.on("data", (chunk: Buffer) => {
+
+		child.stderr.on("data", (chunk) => {
 			stderr += chunk;
 		});
 
 		child.on("error", reject);
-		child.on("close", (status) => resolve({ status, stderr }));
+
+		child.on("close", (status) => {
+			resolve({ status, stderr });
+		});
 	});
 }

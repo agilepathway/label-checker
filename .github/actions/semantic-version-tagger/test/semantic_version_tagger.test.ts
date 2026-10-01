@@ -1,19 +1,18 @@
 import { test } from "node:test";
 import {
-	adoptingLatestTagTest,
-	firstSemanticVersionTest,
-	majorLevelSemanticVersionTest,
-	minorLevelSemanticVersionTest,
-	missingMajorMinorAndLatestTagsTest,
-	patchLevelSemanticVersionTest,
+	majorLevelSemanticVersionRule,
+	minorLevelSemanticVersionRule,
+	missingSemanticVersionTagsRule,
+	patchLevelSemanticVersionRule,
 } from "./semantic-version-test-definitions.ts";
 
-test("patch-level semantic version", patchLevelSemanticVersionTest.run);
-test("minor-level semantic version", minorLevelSemanticVersionTest.run);
-test("major-level semantic version", majorLevelSemanticVersionTest.run);
-test(
-	"missing major, minor, and latest tags",
-	missingMajorMinorAndLatestTagsTest.run,
-);
-test("first semantic version", firstSemanticVersionTest.run);
-test("adopting latest tag", adoptingLatestTagTest.run);
+for (const rule of [
+	patchLevelSemanticVersionRule,
+	minorLevelSemanticVersionRule,
+	majorLevelSemanticVersionRule,
+	missingSemanticVersionTagsRule,
+]) {
+	for (const example of rule.examples) {
+		test(example.description, example.run.bind(example));
+	}
+}
