@@ -33,6 +33,16 @@ test("rejects unknown Example description parameters", () => {
 	);
 });
 
+test("expands known Example description parameters", () => {
+	const example = {
+		description: "A {first} value and a {second} value",
+		first: "one",
+		second: "two",
+	};
+
+	assert.equal(expandDescription(example), "A one value and a two value");
+});
+
 for (const rule of [
 	patchLevelSemanticVersionRule,
 	minorLevelSemanticVersionRule,
