@@ -430,6 +430,55 @@ export const missingSemanticVersionTagsRule = {
 	],
 };
 
+export const existingSemanticVersionTagRule = {
+	definition: "The new version tag must not already exist.",
+	examples: [
+		{
+			description:
+				"A new `{semanticVersion}` version and a new commit SHA `{commit}`, where the `{semanticVersion}` tag already exists",
+			semanticVersion: "v2.0.1",
+			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+			table: [
+				{
+					tag: "v2.0.1",
+					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+				},
+			],
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+					assert.equal(result.status, 1);
+					assert.match(
+						result.stderr,
+						/The version tag v2\.0\.1 already exists\./,
+					);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
+		},
+	],
+};
+
 function runAction(
 	apiUrl: string,
 	semanticVersion: string,
