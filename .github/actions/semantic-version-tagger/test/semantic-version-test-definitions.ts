@@ -10,7 +10,7 @@ const repository = "agilepathway/semantic-version-tagger-spec";
 
 export const patchLevelSemanticVersionRule = {
 	definition:
-		"Given a new patch-level semantic version to be applied to a given new commit, a new patch tag is created for that commit, and the minor, major and latest tags are moved to point to the new commit too.",
+		"Given a new patch semantic version to be applied to a given new commit, a new patch tag is created for that commit and the major, minor and latest tags are moved to point to the new commit too.",
 
 	examples: [
 		{
@@ -82,7 +82,7 @@ export const patchLevelSemanticVersionRule = {
 
 export const minorLevelSemanticVersionRule = {
 	definition:
-		"Given a new minor-level semantic version to be applied to a given new commit, a new minor and patch-level tag are created for that commit, and the major and latest tags are moved to point to the new commit too.",
+		"Given a new minor semantic version to be applied to a given new commit, a new minor and patch tag are created for that commit, and the major and latest tags are moved to point to the new commit too.",
 
 	examples: [
 		{
@@ -162,7 +162,7 @@ export const minorLevelSemanticVersionRule = {
 
 export const majorLevelSemanticVersionRule = {
 	definition:
-		"Given a new major-level semantic version to be applied to a given new commit, a new major, minor and patch-level tag are created for that commit, and the latest tag is moved to point to the new commit too.",
+		"Given a new major semantic version to be applied to a given new commit, a new major, minor and patch tag are created for that commit, and the latest tag is moved to point to the new commit too.",
 	examples: [
 		{
 			description:
@@ -253,7 +253,7 @@ export const majorLevelSemanticVersionRule = {
 
 export const missingSemanticVersionTagsRule = {
 	definition:
-		"Given a new patch-level semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.",
+		"Given a new patch semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.",
 	examples: [
 		{
 			description:
