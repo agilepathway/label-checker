@@ -4,7 +4,7 @@
 
 ## Rule
 
-Given a new patch-level semantic version to be applied to a given new commit, a new patch tag is created for that commit and the major, minor and latest tags are moved to point to the new commit too.
+Given a new patch semantic version to be applied to a given new commit, a new patch tag is created for that commit and the major, minor and latest tags are moved to point to the new commit too.
 
 ## Example
 
@@ -22,7 +22,7 @@ A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abc
 
 ## Rule
 
-Given a new minor-level semantic version to be applied to a given new commit, a new minor and patch-level tag are created for that commit, and the major and latest tags are moved to point to the new commit too.
+Given a new minor semantic version to be applied to a given new commit, a new minor and patch tag are created for that commit, and the major and latest tags are moved to point to the new commit too.
 
 ## Example
 
@@ -42,7 +42,7 @@ A new `v2.1.0` version and a new commit SHA `b2c3d4e5f67890abcdef1234567890abcde
 
 ## Rule
 
-Given a new major-level semantic version to be applied to a given new commit, a new major, minor and patch-level tag are created for that commit, and the latest tag is moved to point to the new commit too.
+Given a new major semantic version to be applied to a given new commit, a new major, minor and patch tag are created for that commit, and the latest tag is moved to point to the new commit too.
 
 ## Example
 
@@ -65,11 +65,11 @@ A new `v3.0.0` version and a new commit SHA `c3d4e5f67890abcdef1234567890abcdef1
 
 ## Rule
 
-Given a new patch-level semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.
+Given a new patch semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.
 
 ## Example
 
-Project only has patch-level tags in existence before now. A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, with no major, minor and latest tags already existing.
+Project only has patch tags in existence before now. A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, with no major, minor and latest tags already existing.
 
 | Tag | Before | After |
 |---|---|---|
