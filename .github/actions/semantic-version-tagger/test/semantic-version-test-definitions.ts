@@ -479,6 +479,77 @@ export const existingSemanticVersionTagRule = {
 	],
 };
 
+export const existingAliasSemanticVersionTagRule = {
+	definition:
+		"If a tag exists and is in scope to be moved to the new commit, it is moved regardless of which commit it currently points to.",
+	examples: [
+		{
+			description:
+				"The `v2` tag currently (wrongly) points to the commit tagged `v1.0.0`. A new `{semanticVersion}` version and a new commit SHA `{commit}`",
+			semanticVersion: "v2.0.1",
+			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+			table: [
+				{
+					tag: "v1.0.0",
+					before: "9e8d7c6b5a4f3210fedcba9876543210fedcba98",
+					after: "9e8d7c6b5a4f3210fedcba9876543210fedcba98",
+				},
+				{
+					tag: "v2",
+					before: "9e8d7c6b5a4f3210fedcba9876543210fedcba98",
+					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+				},
+				{
+					tag: "v2.0",
+					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+				},
+				{
+					tag: "v2.0.0",
+					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+				},
+				{
+					tag: "v2.0.1",
+					before: null,
+					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+				},
+				{
+					tag: "latest",
+					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
+				},
+			],
+			async run(): Promise<void> {
+				const fakeGitHubApi = new FakeGitHubApi(
+					new Map(
+						this.table.flatMap(({ tag, before }) =>
+							before === null ? [] : [[tag, before]],
+						),
+					),
+				);
+				const apiUrl = await fakeGitHubApi.start();
+				try {
+					const result = await runAction(
+						apiUrl,
+						this.semanticVersion,
+						this.commit,
+					);
+					assert.equal(result.status, 0, result.stderr);
+					assert.deepEqual(
+						Object.fromEntries(fakeGitHubApi.tagState()),
+						Object.fromEntries(
+							this.table.map(({ tag, after }) => [tag, after]),
+						),
+					);
+				} finally {
+					await fakeGitHubApi.stop();
+				}
+			},
+		},
+	],
+};
+
 function runAction(
 	apiUrl: string,
 	semanticVersion: string,
