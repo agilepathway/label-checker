@@ -13,6 +13,9 @@ Before committing, run all supported TypeScript test modes:
 Enterprise Server is intentionally virtual-only; do not attempt Enterprise
 Server integration tests.
 
+The semantic-version tagger example runs against a local fake GitHub API:
+`npm run test:semantic-version-tagger`.
+
 ## Biome validation
 
 Use the project-local `@biomejs/biome` version installed from
