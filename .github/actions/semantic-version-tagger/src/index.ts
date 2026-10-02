@@ -22,10 +22,10 @@ async function main(): Promise<void> {
 		throw new Error(`The version tag ${tags.version} already exists.`);
 	}
 
-	await client.createRef(tags.version, commit);
 	for (const tag of [tags.minor, tags.major, "latest"]) {
 		await client.createOrMoveRef(tag, commit);
 	}
+	await client.createRef(tags.version, commit);
 }
 
 function requiredEnvironment(name: string): string {
