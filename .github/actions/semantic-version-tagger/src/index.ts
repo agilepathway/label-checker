@@ -22,10 +22,13 @@ async function main(): Promise<void> {
 		throw new Error(`The version tag ${tags.version} already exists.`);
 	}
 
+	console.log("Semantic-version tags:");
 	for (const tag of [tags.minor, tags.major, "latest"]) {
 		await client.createOrMoveRef(tag, commit);
+		console.log(`  ${tag} → ${commit.slice(0, 8)}...`);
 	}
 	await client.createRef(tags.version, commit);
+	console.log(`  ${tags.version} → ${commit.slice(0, 8)}...`);
 }
 
 function requiredEnvironment(name: string): string {
