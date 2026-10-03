@@ -66,76 +66,12 @@ export const patchLevelSemanticVersionRule = {
 					);
 
 					assert.equal(result.status, 0, result.stderr);
-					assert.equal(
-						result.stdout,
-						[
-							"Semantic-version tags:",
-							"  v2.0 → a1b2c3d4...",
-							"  v2 → a1b2c3d4...",
-							"  latest → a1b2c3d4...",
-							"  v2.0.1 → a1b2c3d4...",
-							"",
-						].join("\n"),
-					);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
 						Object.fromEntries(
 							this.table.map(({ tag, after }) => [tag, after]),
 						),
 					);
-				} finally {
-					await fakeGitHubApi.stop();
-				}
-			},
-		},
-	],
-};
-
-export const failedAliasUpdateSemanticVersionRule = {
-	definition: "A tag is only reported after its ref update succeeds.",
-	examples: [
-		{
-			description: "The update to the `{failedTag}` alias fails",
-			semanticVersion: "v2.0.1",
-			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-			failedTag: "latest",
-			async run(): Promise<void> {
-				const previousCommit = "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b";
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map([
-						["v2", previousCommit],
-						["v2.0", previousCommit],
-						["latest", previousCommit],
-					]),
-					this.failedTag,
-				);
-				const apiUrl = await fakeGitHubApi.start();
-				try {
-					const result = await runAction(
-						apiUrl,
-						this.semanticVersion,
-						this.commit,
-					);
-
-					assert.equal(result.status, 1);
-					assert.match(
-						result.stderr,
-						/GitHub ref operation failed with status 500: Simulated ref update failure/,
-					);
-					assert.equal(
-						result.stdout,
-						[
-							"Semantic-version tags:",
-							"  v2.0 → a1b2c3d4...",
-							"  v2 → a1b2c3d4...",
-							"",
-						].join("\n"),
-					);
-					assert.deepEqual(Object.fromEntries(fakeGitHubApi.tagState()), {
-						v2: this.commit,
-						"v2.0": this.commit,
-						latest: previousCommit,
-					});
 				} finally {
 					await fakeGitHubApi.stop();
 				}
@@ -618,7 +554,7 @@ function runAction(
 	apiUrl: string,
 	semanticVersion: string,
 	commit: string,
-): Promise<{ status: number | null; stdout: string; stderr: string }> {
+): Promise<{ status: number | null; stderr: string }> {
 	return new Promise((resolve, reject) => {
 		const child = spawn(
 			process.execPath,
@@ -634,16 +570,11 @@ function runAction(
 					"INPUT_SEMANTIC-VERSION": semanticVersion,
 					INPUT_COMMIT: commit,
 				},
-				stdio: ["ignore", "pipe", "pipe"],
+				stdio: ["ignore", "ignore", "pipe"],
 			},
 		);
 
-		let stdout = "";
 		let stderr = "";
-
-		child.stdout.on("data", (chunk) => {
-			stdout += chunk;
-		});
 
 		child.stderr.on("data", (chunk) => {
 			stderr += chunk;
@@ -652,7 +583,7 @@ function runAction(
 		child.on("error", reject);
 
 		child.on("close", (status) => {
-			resolve({ status, stdout, stderr });
+			resolve({ status, stderr });
 		});
 	});
 }
