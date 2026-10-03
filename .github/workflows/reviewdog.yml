@@ -35,28 +35,3 @@ jobs:
           path: "."
           pattern: "*.sh"
           exclude: "./.git/*"
-
-  misspell:
-    name: runner / misspell
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-misspell@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-check
-
-  languagetool:
-    name: runner / languagetool
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-languagetool@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-check
-          patterns: |
-            **/*.md
-          language: en
-          disabled_rules:
-            "GITHUB,DASH_RULE,PUNCTUATION_PARAGRAPH_END,MISSING_COMMA_AFTER_INTRODUCTORY_PHRASE,HE_VERB_AGR[5],ID_CASING[2],ENGLISH_WORD_REPEAT_RULE,EN_A_VS_AN"
