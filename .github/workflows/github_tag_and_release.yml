@@ -24,7 +24,7 @@ jobs:
         name: Tag
         uses: ./.github/actions/semantic-version-tagger
         with:
-          semantic-version: v2.0.4
+          semantic-version: v2.0.5
           commit: ${{ github.sha }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -8,9 +8,14 @@ import {
 export class FakeGitHubApi {
 	private readonly server: Server;
 	private readonly tags: Map<string, string>;
+	private readonly failedUpdateTag: string | undefined;
 
-	public constructor(initialTags: ReadonlyMap<string, string>) {
+	public constructor(
+		initialTags: ReadonlyMap<string, string>,
+		failedUpdateTag?: string,
+	) {
 		this.tags = new Map(initialTags);
+		this.failedUpdateTag = failedUpdateTag;
 		this.server = createServer((request, response) => {
 			this.handleRequest(request, response).catch((error: unknown) => {
 				response
@@ -137,6 +142,10 @@ export class FakeGitHubApi {
 		const tag = decodeURIComponent(encodedTag);
 		if (!this.tags.has(tag)) {
 			response.writeHead(404).end("Reference does not exist");
+			return;
+		}
+		if (tag === this.failedUpdateTag) {
+			response.writeHead(500).end("Simulated ref update failure");
 			return;
 		}
 		this.tags.set(tag, body.sha);

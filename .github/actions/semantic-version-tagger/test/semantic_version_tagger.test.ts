@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
 	existingAliasSemanticVersionTagRule,
 	existingSemanticVersionTagRule,
+	failedAliasUpdateSemanticVersionRule,
 	majorLevelSemanticVersionRule,
 	minorLevelSemanticVersionRule,
 	missingSemanticVersionTagsRule,
@@ -47,6 +48,7 @@ test("expands known Example description parameters", () => {
 
 for (const rule of [
 	patchLevelSemanticVersionRule,
+	failedAliasUpdateSemanticVersionRule,
 	minorLevelSemanticVersionRule,
 	majorLevelSemanticVersionRule,
 	missingSemanticVersionTagsRule,
