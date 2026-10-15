@@ -257,7 +257,7 @@ export const missingSemanticVersionTagsRule = {
 	examples: [
 		{
 			description:
-				"A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no major, minor and latest tags already existing",
+				"The project has only patch tags in existence. A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no major, minor and latest tags already existing.",
 			semanticVersion: "v2.0.1",
 			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 			table: [
@@ -316,7 +316,7 @@ export const missingSemanticVersionTagsRule = {
 		},
 		{
 			description:
-				"The very first semantic `{semanticVersion}` version for the repo and a new commit SHA `{commit}`, with no previous semantic version tags existing",
+				"The very first semantic `{semanticVersion}` version for the repo and a new commit SHA `{commit}`, with no previous semantic version tags existing.",
 			semanticVersion: "v0.0.1",
 			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 			table: [
@@ -370,7 +370,7 @@ export const missingSemanticVersionTagsRule = {
 		},
 		{
 			description:
-				"The project adopts the `latest` tag for the first time. A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no `latest` tag already existing",
+				"The project adopts the `latest` tag for the first time. A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no `latest` tag already existing.",
 			semanticVersion: "v2.0.1",
 			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 			table: [
@@ -435,7 +435,7 @@ export const existingSemanticVersionTagRule = {
 	examples: [
 		{
 			description:
-				"A new `{semanticVersion}` version and a new commit SHA `{commit}`, where the `{semanticVersion}` tag already exists",
+				"A new `{semanticVersion}` version and a new commit SHA `{commit}`, where the `{semanticVersion}` tag already exists:",
 			semanticVersion: "v2.0.1",
 			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 			table: [
@@ -490,7 +490,7 @@ export const existingAliasSemanticVersionTagRule = {
 	examples: [
 		{
 			description:
-				"The `v2` tag currently (wrongly) points to the commit tagged `v1.0.0`. A new `{semanticVersion}` version and a new commit SHA `{commit}`",
+				"The `v2` tag currently (wrongly) points to the commit tagged `v1.0.0`. A new `{semanticVersion}` version and a new commit SHA `{commit}`:",
 			semanticVersion: "v2.0.1",
 			commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 			table: [
