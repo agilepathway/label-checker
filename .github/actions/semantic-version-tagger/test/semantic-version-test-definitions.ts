@@ -461,7 +461,11 @@ export const existingSemanticVersionTagRule = {
 						this.semanticVersion,
 						this.commit,
 					);
-					assert.equal(result.status, 1);
+					assert.notEqual(result.status, null);
+					assert.equal(
+						result.status === 0 ? "Success" : "Error",
+						this.table[0].result,
+					);
 					assert.match(
 						result.stderr,
 						/The version tag v2\.0\.1 already exists\./,
