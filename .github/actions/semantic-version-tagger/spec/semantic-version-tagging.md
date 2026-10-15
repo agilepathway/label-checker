@@ -106,7 +106,7 @@ The project adopts the `latest` tag for the first time. A new `v2.0.1` version a
 
 ## Rule
 
-**The new version tag must not already exist.**
+The new version tag must not already exist.
 
 ## Example
 
