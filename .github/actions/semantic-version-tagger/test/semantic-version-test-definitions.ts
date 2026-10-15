@@ -443,6 +443,7 @@ export const existingSemanticVersionTagRule = {
 					tag: "v2.0.1",
 					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
 					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+					result: "Error",
 				},
 			],
 			async run(): Promise<void> {
