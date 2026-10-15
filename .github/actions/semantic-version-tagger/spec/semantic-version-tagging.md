@@ -69,7 +69,7 @@ Given a new patch semantic version to be applied to a given new commit, if any o
 
 ## Example
 
-Project only has patch tags in existence before now. A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, with no major, minor and latest tags already existing.
+The project has only patch tags in existence. A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, with no major, minor and latest tags already existing.
 
 | Tag | Before | After |
 |---|---|---|
