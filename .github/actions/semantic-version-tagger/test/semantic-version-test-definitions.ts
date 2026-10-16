@@ -1,4 +1,4 @@
-// biome-ignore-all lint/security/noSecrets: These commit SHAs are copied verbatim from the spec.
+// biome-ignore-all lint/security/noSecrets: These are dummy commit SHAs and pose no risk.
 
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
