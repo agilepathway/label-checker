@@ -1,9 +1,7 @@
 import { writeFile } from "node:fs/promises";
 
-import {
-	type Rule,
-	semanticVersionTaggingSpecification,
-} from "./semantic-version-test-definitions.ts";
+import { semanticVersionTaggingSpecification } from "./semantic-version-test-definitions.ts";
+import type { Rule } from "./specification.ts";
 
 type Example = Rule["examples"][number];
 

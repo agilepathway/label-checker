@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { FakeGitHubApi } from "./fake-github-api.ts";
+import type { Specification } from "./specification.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
 
@@ -553,19 +554,6 @@ export const existingAliasSemanticVersionTagRule = {
 			},
 		},
 	],
-};
-
-export type Rule =
-	| typeof patchLevelSemanticVersionRule
-	| typeof minorLevelSemanticVersionRule
-	| typeof majorLevelSemanticVersionRule
-	| typeof missingSemanticVersionTagsRule
-	| typeof existingSemanticVersionTagRule
-	| typeof existingAliasSemanticVersionTagRule;
-
-export type Specification = {
-	title: string;
-	rules: Rule[];
 };
 
 export const semanticVersionTaggingSpecification: Specification = {
