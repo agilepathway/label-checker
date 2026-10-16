@@ -1,3 +1,8 @@
+# Session start
+
+At the beginning of every Copilot coding session, run `npm ci` before making
+changes or running project checks.
+
 # Validation
 
 ## Test validation
