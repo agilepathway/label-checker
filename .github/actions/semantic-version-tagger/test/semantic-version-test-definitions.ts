@@ -1,4 +1,4 @@
-// biome-ignore-all lint/security/noSecrets: These commit SHAs are copied verbatim from the spec.
+// biome-ignore-all lint/security/noSecrets: These are dummy commit SHAs and pose no risk.
 
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -552,6 +552,31 @@ export const existingAliasSemanticVersionTagRule = {
 				}
 			},
 		},
+	],
+};
+
+export type Rule =
+	| typeof patchLevelSemanticVersionRule
+	| typeof minorLevelSemanticVersionRule
+	| typeof majorLevelSemanticVersionRule
+	| typeof missingSemanticVersionTagsRule
+	| typeof existingSemanticVersionTagRule
+	| typeof existingAliasSemanticVersionTagRule;
+
+export type Specification = {
+	title: string;
+	rules: Rule[];
+};
+
+export const semanticVersionTaggingSpecification: Specification = {
+	title: "Semantic Version Tagging",
+	rules: [
+		patchLevelSemanticVersionRule,
+		minorLevelSemanticVersionRule,
+		majorLevelSemanticVersionRule,
+		missingSemanticVersionTagsRule,
+		existingSemanticVersionTagRule,
+		existingAliasSemanticVersionTagRule,
 	],
 };
 

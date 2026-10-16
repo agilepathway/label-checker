@@ -5,14 +5,7 @@ import { spawn } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { FakeGitHubApi } from "./fake-github-api.ts";
-import {
-	existingAliasSemanticVersionTagRule,
-	existingSemanticVersionTagRule,
-	majorLevelSemanticVersionRule,
-	minorLevelSemanticVersionRule,
-	missingSemanticVersionTagsRule,
-	patchLevelSemanticVersionRule,
-} from "./semantic-version-test-definitions.ts";
+import { semanticVersionTaggingSpecification } from "./semantic-version-test-definitions.ts";
 
 function expandDescription<T extends { description: string }>(
 	example: T,
@@ -81,14 +74,7 @@ test("prints updated tags with short commit SHAs", async () => {
 	}
 });
 
-for (const rule of [
-	patchLevelSemanticVersionRule,
-	minorLevelSemanticVersionRule,
-	majorLevelSemanticVersionRule,
-	missingSemanticVersionTagsRule,
-	existingSemanticVersionTagRule,
-	existingAliasSemanticVersionTagRule,
-]) {
+for (const rule of semanticVersionTaggingSpecification.rules) {
 	for (const example of rule.examples) {
 		test(expandDescription(example), example.run.bind(example));
 	}
