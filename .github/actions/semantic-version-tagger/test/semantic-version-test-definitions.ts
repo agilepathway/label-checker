@@ -555,6 +555,31 @@ export const existingAliasSemanticVersionTagRule = {
 	],
 };
 
+export type Rule =
+	| typeof patchLevelSemanticVersionRule
+	| typeof minorLevelSemanticVersionRule
+	| typeof majorLevelSemanticVersionRule
+	| typeof missingSemanticVersionTagsRule
+	| typeof existingSemanticVersionTagRule
+	| typeof existingAliasSemanticVersionTagRule;
+
+export type Specification = {
+	title: string;
+	rules: Rule[];
+};
+
+export const semanticVersionTaggingSpecification: Specification = {
+	title: "Semantic Version Tagging",
+	rules: [
+		patchLevelSemanticVersionRule,
+		minorLevelSemanticVersionRule,
+		majorLevelSemanticVersionRule,
+		missingSemanticVersionTagsRule,
+		existingSemanticVersionTagRule,
+		existingAliasSemanticVersionTagRule,
+	],
+};
+
 function runAction(
 	apiUrl: string,
 	semanticVersion: string,

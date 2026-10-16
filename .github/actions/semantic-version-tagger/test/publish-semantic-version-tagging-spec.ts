@@ -1,32 +1,11 @@
 import { writeFile } from "node:fs/promises";
 
 import {
-	existingAliasSemanticVersionTagRule,
-	existingSemanticVersionTagRule,
-	majorLevelSemanticVersionRule,
-	minorLevelSemanticVersionRule,
-	missingSemanticVersionTagsRule,
-	patchLevelSemanticVersionRule,
+	type Rule,
+	semanticVersionTaggingSpecification,
 } from "./semantic-version-test-definitions.ts";
 
-type Rule =
-	| typeof patchLevelSemanticVersionRule
-	| typeof minorLevelSemanticVersionRule
-	| typeof majorLevelSemanticVersionRule
-	| typeof missingSemanticVersionTagsRule
-	| typeof existingSemanticVersionTagRule
-	| typeof existingAliasSemanticVersionTagRule;
-
 type Example = Rule["examples"][number];
-
-const rules: Rule[] = [
-	patchLevelSemanticVersionRule,
-	minorLevelSemanticVersionRule,
-	majorLevelSemanticVersionRule,
-	missingSemanticVersionTagsRule,
-	existingSemanticVersionTagRule,
-	existingAliasSemanticVersionTagRule,
-];
 
 function interpolate(
 	description: string,
@@ -96,9 +75,9 @@ function renderRule(rule: Rule): string {
 }
 
 const markdown = [
-	"# Semantic Version Tagging",
+	`# ${semanticVersionTaggingSpecification.title}`,
 	"---",
-	rules.map(renderRule).join("\n\n---\n\n"),
+	semanticVersionTaggingSpecification.rules.map(renderRule).join("\n\n---\n\n"),
 	"---",
 ].join("\n\n");
 
