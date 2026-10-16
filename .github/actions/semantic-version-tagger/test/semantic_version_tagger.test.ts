@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { FakeGitHubApi } from "./fake-github-api.ts";
-import { semanticVersionTaggingSpecification } from "./semantic-version-test-definitions.ts";
+import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
 
 function expandDescription<T extends { description: string }>(
 	example: T,
