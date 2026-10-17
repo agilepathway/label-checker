@@ -4,7 +4,7 @@ import type {
 	Example,
 	Rule,
 	Table,
-} from "../../../../shared/specification-by-example/specification-by-example.ts";
+} from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
 
 function interpolate(

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
 	type ParameterisedText,
 	textAt,
-} from "../../../../shared/specification-by-example/specification-by-example.ts";
+} from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
 

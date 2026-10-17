@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { type Example, tableAt, textAt } from "./specification-by-example.ts";
+import {
+	type Example,
+	tableAt,
+	textAt,
+} from "../src/specification-by-example.ts";
 
 const example: Example = {
 	content: [
