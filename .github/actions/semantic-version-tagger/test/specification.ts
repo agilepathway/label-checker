@@ -1,10 +1,10 @@
-export type ParameterisedDescription = {
+export type ParameterisedText = {
 	template: string;
 	parameters: Record<string, string>;
 };
 
 export type Example = {
-	description: ParameterisedDescription;
+	text: ParameterisedText;
 	table: {
 		tag: string;
 		before: string | null;

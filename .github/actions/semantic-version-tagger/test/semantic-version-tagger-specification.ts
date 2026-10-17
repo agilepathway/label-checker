@@ -15,7 +15,7 @@ export const patchLevelSemanticVersionRule = {
 
 	examples: [
 		{
-			description: {
+			text: {
 				template:
 					"A new `{semanticVersion}` version and a new commit SHA `{commit}`",
 				parameters: {
@@ -65,8 +65,8 @@ export const patchLevelSemanticVersionRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 
 					assert.equal(result.status, 0, result.stderr);
@@ -90,7 +90,7 @@ export const minorLevelSemanticVersionRule = {
 
 	examples: [
 		{
-			description: {
+			text: {
 				template:
 					"A new `{semanticVersion}` version and a new commit SHA `{commit}`",
 				parameters: {
@@ -149,8 +149,8 @@ export const minorLevelSemanticVersionRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
@@ -172,7 +172,7 @@ export const majorLevelSemanticVersionRule = {
 		"Given a new major semantic version to be applied to a given new commit, a new major, minor and patch tag are created for that commit, and the latest tag is moved to point to the new commit too.",
 	examples: [
 		{
-			description: {
+			text: {
 				template:
 					"A new `{semanticVersion}` version and a new commit SHA `{commit}`",
 				parameters: {
@@ -244,8 +244,8 @@ export const majorLevelSemanticVersionRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
@@ -267,7 +267,7 @@ export const missingSemanticVersionTagsRule = {
 		"Given a new patch semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.",
 	examples: [
 		{
-			description: {
+			text: {
 				template:
 					"The project has only patch tags in existence. A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no major, minor and latest tags already existing.",
 				parameters: {
@@ -314,8 +314,8 @@ export const missingSemanticVersionTagsRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
@@ -330,7 +330,7 @@ export const missingSemanticVersionTagsRule = {
 			},
 		},
 		{
-			description: {
+			text: {
 				template:
 					"The very first semantic `{semanticVersion}` version for the repo and a new commit SHA `{commit}`, with no previous semantic version tags existing.",
 				parameters: {
@@ -372,8 +372,8 @@ export const missingSemanticVersionTagsRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
@@ -388,7 +388,7 @@ export const missingSemanticVersionTagsRule = {
 			},
 		},
 		{
-			description: {
+			text: {
 				template:
 					"The project adopts the `latest` tag for the first time. A new `{semanticVersion}` version and a new commit SHA `{commit}`, with no `latest` tag already existing.",
 				parameters: {
@@ -435,8 +435,8 @@ export const missingSemanticVersionTagsRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
@@ -457,7 +457,7 @@ export const existingSemanticVersionTagRule = {
 	definition: "The new version tag must not already exist.",
 	examples: [
 		{
-			description: {
+			text: {
 				template:
 					"A new `{semanticVersion}` version and a new commit SHA `{commit}`, where the `{semanticVersion}` tag already exists:",
 				parameters: {
@@ -485,8 +485,8 @@ export const existingSemanticVersionTagRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 					assert.notEqual(result.status, null);
 					assert.equal(
@@ -516,7 +516,7 @@ export const existingAliasSemanticVersionTagRule = {
 		"If a tag exists and is in scope to be moved to the new commit, it is moved regardless of which commit it currently points to.",
 	examples: [
 		{
-			description: {
+			text: {
 				template:
 					"The `v2` tag currently (wrongly) points to the commit tagged `v1.0.0`. A new `{semanticVersion}` version and a new commit SHA `{commit}`:",
 				parameters: {
@@ -568,8 +568,8 @@ export const existingAliasSemanticVersionTagRule = {
 				try {
 					const result = await runAction(
 						apiUrl,
-						this.description.parameters.semanticVersion,
-						this.description.parameters.commit,
+						this.text.parameters.semanticVersion,
+						this.text.parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(

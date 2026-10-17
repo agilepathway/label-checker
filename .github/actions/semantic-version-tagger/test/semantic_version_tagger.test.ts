@@ -6,11 +6,11 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-import type { ParameterisedDescription } from "./specification.ts";
+import type { ParameterisedText } from "./specification.ts";
 
-function expandDescription(description: ParameterisedDescription): string {
-	return description.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
-		const value = description.parameters[name];
+function expandText(text: ParameterisedText): string {
+	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
+		const value = text.parameters[name];
 
 		if (value === undefined) {
 			throw new Error(`Unknown example placeholder: {${name}}`);
@@ -20,10 +20,10 @@ function expandDescription(description: ParameterisedDescription): string {
 	});
 }
 
-test("rejects unknown Example description parameters", () => {
+test("rejects unknown Example text parameters", () => {
 	assert.throws(
 		() =>
-			expandDescription({
+			expandText({
 				template: "A `{missing}` value",
 				parameters: {},
 			}),
@@ -31,8 +31,8 @@ test("rejects unknown Example description parameters", () => {
 	);
 });
 
-test("expands known Example description parameters", () => {
-	const description = {
+test("expands known Example text parameters", () => {
+	const text = {
 		template: "A {first} value and a {second} value",
 		parameters: {
 			first: "one",
@@ -40,7 +40,7 @@ test("expands known Example description parameters", () => {
 		},
 	};
 
-	assert.equal(expandDescription(description), "A one value and a two value");
+	assert.equal(expandText(text), "A one value and a two value");
 });
 
 test("prints updated tags with short commit SHAs", async () => {
@@ -76,7 +76,7 @@ test("prints updated tags with short commit SHAs", async () => {
 
 for (const rule of semanticVersionTaggingSpecification.rules) {
 	for (const example of rule.examples) {
-		test(expandDescription(example.description), example.run.bind(example));
+		test(expandText(example.text), example.run.bind(example));
 	}
 }
 
