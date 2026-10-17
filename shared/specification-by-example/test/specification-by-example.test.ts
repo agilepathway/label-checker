@@ -22,6 +22,17 @@ const example: Example = {
 	run: async () => {},
 };
 
+const _tableFirstExample: Example = {
+	content: [
+		{
+			// @ts-expect-error Examples must start with text.
+			type: "table",
+			table: { headers: ["Heading"], rows: [["value"]] },
+		},
+	],
+	run: async () => {},
+};
+
 test("expandText expands known Example text parameters", () => {
 	const text = {
 		template: "A {first} value and a {second} value",

@@ -27,7 +27,7 @@ export type ContentItem =
 	| { type: "table"; table: Table };
 
 export type Example = {
-	content: NonEmptyArray<ContentItem>;
+	content: [{ type: "text"; text: ParameterisedText }, ...ContentItem[]];
 	run(this: Example): Promise<void>;
 };
 
