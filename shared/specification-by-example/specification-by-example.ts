@@ -19,6 +19,30 @@ export type Example = {
 	run(this: Example): Promise<void>;
 };
 
+export function textAt(example: Example, index: number): ParameterisedText {
+	const item = example.content[index];
+	if (item?.type !== "text") {
+		const found = item ? `"${item.type}" content` : "no content";
+		throw new Error(
+			`Expected text content at index ${index}, but found ${found}.`,
+		);
+	}
+
+	return item.text;
+}
+
+export function tableAt(example: Example, index: number): Table {
+	const item = example.content[index];
+	if (item?.type !== "table") {
+		const found = item ? `"${item.type}" content` : "no content";
+		throw new Error(
+			`Expected table content at index ${index}, but found ${found}.`,
+		);
+	}
+
+	return item.table;
+}
+
 export type Rule = {
 	definition: string;
 	examples: Example[];

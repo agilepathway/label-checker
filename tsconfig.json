@@ -17,6 +17,7 @@
   },
   "include": [
     "src",
+    "shared",
     ".github/actions/semantic-version-tagger/src",
     ".github/actions/semantic-version-tagger/test"
   ]

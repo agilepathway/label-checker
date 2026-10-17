@@ -4,9 +4,9 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import type {
-	Example,
-	ParameterisedText,
+import {
+	type ParameterisedText,
+	textAt,
 } from "../../../../shared/specification-by-example/specification-by-example.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
@@ -93,17 +93,8 @@ test("prints updated tags with short commit SHAs", async () => {
 
 for (const rule of semanticVersionTaggingSpecification.rules) {
 	for (const example of rule.examples) {
-		test(expandText(exampleText(example)), example.run.bind(example));
+		test(expandText(textAt(example, 0)), example.run.bind(example));
 	}
-}
-
-function exampleText(example: Example): ParameterisedText {
-	const item = example.content.find((content) => content.type === "text");
-	if (item?.type !== "text") {
-		throw new Error("Example does not contain text content.");
-	}
-
-	return item.text;
 }
 
 function runAction(
