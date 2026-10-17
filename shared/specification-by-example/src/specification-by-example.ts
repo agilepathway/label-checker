@@ -20,8 +20,6 @@ export type Table = {
 	rows: string[][];
 };
 
-export type NonEmptyArray<T> = [T, ...T[]];
-
 export type ContentItem =
 	| { type: "text"; text: ParameterisedText }
 	| { type: "table"; table: Table };
