@@ -3,14 +3,14 @@ export type ParameterisedText = {
 	parameters: Record<string, string>;
 };
 
+export type Table = {
+	headers: string[];
+	rows: string[][];
+};
+
 export type Example = {
 	text: ParameterisedText;
-	table: {
-		tag: string;
-		before: string | null;
-		after: string | null;
-		result?: "Error";
-	}[];
+	table: Table;
 	run(this: Example): Promise<void>;
 };
 

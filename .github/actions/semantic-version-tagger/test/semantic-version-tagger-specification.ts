@@ -5,9 +5,43 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { FakeGitHubApi } from "./fake-github-api.ts";
-import type { Specification } from "./specification.ts";
+import type { Specification, Table } from "./specification.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
+
+function tableCellValue(table: Table, row: string[], header: string): string {
+	const cell = row[table.headers.indexOf(header)];
+
+	if (cell.startsWith("`") && cell.endsWith("`")) {
+		return cell.slice(1, -1);
+	}
+
+	if (cell.startsWith("**") && cell.endsWith("**")) {
+		return cell.slice(2, -2);
+	}
+
+	return cell;
+}
+
+function tagState(
+	table: Table,
+	column: "Before" | "After",
+): Map<string, string> {
+	const valueIndex = table.headers.indexOf(column);
+
+	return new Map(
+		table.rows.flatMap((row): [string, string][] => {
+			const value = row[valueIndex];
+			if (value === "—") {
+				return [];
+			}
+
+			return [
+				[tableCellValue(table, row, "Tag"), tableCellValue(table, row, column)],
+			];
+		}),
+	);
+}
 
 export const patchLevelSemanticVersionRule = {
 	definition:
@@ -24,42 +58,35 @@ export const patchLevelSemanticVersionRule = {
 				},
 			},
 
-			table: [
-				{
-					tag: "v2",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-				},
-				{
-					tag: "v2.0.1",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "latest",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After"],
+				rows: [
+					[
+						"`v2`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.0.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+					],
+					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					[
+						"`latest`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+				],
+			},
 
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 
 				const apiUrl = await fakeGitHubApi.start();
 				try {
@@ -72,9 +99,7 @@ export const patchLevelSemanticVersionRule = {
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -99,52 +124,41 @@ export const minorLevelSemanticVersionRule = {
 				},
 			},
 
-			table: [
-				{
-					tag: "v2",
-					before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
-				},
-				{
-					tag: "v2.0",
-					before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-				},
-				{
-					tag: "v2.0.1",
-					before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.1",
-					before: null,
-					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
-				},
-				{
-					tag: "v2.1.0",
-					before: null,
-					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
-				},
-				{
-					tag: "latest",
-					before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After"],
+				rows: [
+					[
+						"`v2`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+					],
+					[
+						"`v2.0`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.0.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+					],
+					[
+						"`v2.0.1`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					["`v2.1`", "—", "`b2c3d4e5f67890abcdef1234567890abcdef123`"],
+					["`v2.1.0`", "—", "`b2c3d4e5f67890abcdef1234567890abcdef123`"],
+					[
+						"`latest`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+					],
+				],
+			},
 
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
@@ -155,9 +169,7 @@ export const minorLevelSemanticVersionRule = {
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -180,66 +192,51 @@ export const majorLevelSemanticVersionRule = {
 					commit: "c3d4e5f67890abcdef1234567890abcdef1234",
 				},
 			},
-			table: [
-				{
-					tag: "v2",
-					before: "b2c3d4e5f67890abcdef1234567890abcdef123",
-					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
-				},
-				{
-					tag: "v2.0",
-					before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.1",
-					before: "b2c3d4e5f67890abcdef1234567890abcdef123",
-					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
-				},
-				{
-					tag: "v2.0.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-				},
-				{
-					tag: "v2.0.1",
-					before: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.1.0",
-					before: "b2c3d4e5f67890abcdef1234567890abcdef123",
-					after: "b2c3d4e5f67890abcdef1234567890abcdef123",
-				},
-				{
-					tag: "v3",
-					before: null,
-					after: "c3d4e5f67890abcdef1234567890abcdef1234",
-				},
-				{
-					tag: "v3.0",
-					before: null,
-					after: "c3d4e5f67890abcdef1234567890abcdef1234",
-				},
-				{
-					tag: "v3.0.0",
-					before: null,
-					after: "c3d4e5f67890abcdef1234567890abcdef1234",
-				},
-				{
-					tag: "latest",
-					before: "b2c3d4e5f67890abcdef1234567890abcdef123",
-					after: "c3d4e5f67890abcdef1234567890abcdef1234",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After"],
+				rows: [
+					[
+						"`v2`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+					],
+					[
+						"`v2.0`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.1`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+					],
+					[
+						"`v2.0.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+					],
+					[
+						"`v2.0.1`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.1.0`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+					],
+					["`v3`", "—", "`c3d4e5f67890abcdef1234567890abcdef1234`"],
+					["`v3.0`", "—", "`c3d4e5f67890abcdef1234567890abcdef1234`"],
+					["`v3.0.0`", "—", "`c3d4e5f67890abcdef1234567890abcdef1234`"],
+					[
+						"`latest`",
+						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"`c3d4e5f67890abcdef1234567890abcdef1234`",
+					],
+				],
+			},
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
@@ -250,9 +247,7 @@ export const majorLevelSemanticVersionRule = {
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -275,41 +270,22 @@ export const missingSemanticVersionTagsRule = {
 					commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			},
-			table: [
-				{
-					tag: "v2",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-				},
-				{
-					tag: "v2.0.1",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "latest",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After"],
+				rows: [
+					["`v2`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["`v2.0`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					[
+						"`v2.0.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+					],
+					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["`latest`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+				],
+			},
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
@@ -320,9 +296,7 @@ export const missingSemanticVersionTagsRule = {
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -338,36 +312,17 @@ export const missingSemanticVersionTagsRule = {
 					commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			},
-			table: [
-				{
-					tag: "v0",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v0.0",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v0.0.1",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "latest",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After"],
+				rows: [
+					["`v0`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["`v0.0`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["`v0.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["`latest`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+				],
+			},
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
@@ -378,9 +333,7 @@ export const missingSemanticVersionTagsRule = {
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -396,41 +349,30 @@ export const missingSemanticVersionTagsRule = {
 					commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			},
-			table: [
-				{
-					tag: "v2",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-				},
-				{
-					tag: "v2.0.1",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "latest",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After"],
+				rows: [
+					[
+						"`v2`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.0.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+					],
+					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["`latest`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+				],
+			},
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
@@ -441,9 +383,7 @@ export const missingSemanticVersionTagsRule = {
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -465,22 +405,19 @@ export const existingSemanticVersionTagRule = {
 					commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			},
-			table: [
-				{
-					tag: "v2.0.1",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					result: "Error",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After", "Result"],
+				rows: [
+					[
+						"`v2.0.1`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"**Error**",
+					],
+				],
+			},
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
@@ -491,7 +428,7 @@ export const existingSemanticVersionTagRule = {
 					assert.notEqual(result.status, null);
 					assert.equal(
 						result.status === 0 ? "Success" : "Error",
-						this.table[0].result,
+						tableCellValue(this.table, this.table.rows[0], "Result"),
 					);
 					assert.match(
 						result.stderr,
@@ -499,9 +436,7 @@ export const existingSemanticVersionTagRule = {
 					);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -524,46 +459,39 @@ export const existingAliasSemanticVersionTagRule = {
 					commit: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
 				},
 			},
-			table: [
-				{
-					tag: "v1.0.0",
-					before: "9e8d7c6b5a4f3210fedcba9876543210fedcba98",
-					after: "9e8d7c6b5a4f3210fedcba9876543210fedcba98",
-				},
-				{
-					tag: "v2",
-					before: "9e8d7c6b5a4f3210fedcba9876543210fedcba98",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "v2.0.0",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-				},
-				{
-					tag: "v2.0.1",
-					before: null,
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-				{
-					tag: "latest",
-					before: "7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-					after: "a1b2c3d4e5f67890abcdef1234567890abcdef12",
-				},
-			],
+			table: {
+				headers: ["Tag", "Before", "After"],
+				rows: [
+					[
+						"`v1.0.0`",
+						"`9e8d7c6b5a4f3210fedcba9876543210fedcba98`",
+						"`9e8d7c6b5a4f3210fedcba9876543210fedcba98`",
+					],
+					[
+						"`v2`",
+						"`9e8d7c6b5a4f3210fedcba9876543210fedcba98`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+					[
+						"`v2.0.0`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+					],
+					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					[
+						"`latest`",
+						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+					],
+				],
+			},
 			async run(): Promise<void> {
-				const fakeGitHubApi = new FakeGitHubApi(
-					new Map(
-						this.table.flatMap(({ tag, before }) =>
-							before === null ? [] : [[tag, before]],
-						),
-					),
-				);
+				const fakeGitHubApi = new FakeGitHubApi(tagState(this.table, "Before"));
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
@@ -574,9 +502,7 @@ export const existingAliasSemanticVersionTagRule = {
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(
-							this.table.map(({ tag, after }) => [tag, after]),
-						),
+						Object.fromEntries(tagState(this.table, "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
