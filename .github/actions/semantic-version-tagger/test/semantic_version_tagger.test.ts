@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-import type { ParameterisedText } from "./specification.ts";
+import type { Example, ParameterisedText } from "./specification.ts";
 
 function expandText(text: ParameterisedText): string {
 	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
@@ -45,7 +45,11 @@ test("expands known Example text parameters", () => {
 
 test("uses plain text in specification table cells", () => {
 	const cells = semanticVersionTaggingSpecification.rules.flatMap((rule) =>
-		rule.examples.flatMap((example) => example.table.rows.flat()),
+		rule.examples.flatMap((example) =>
+			example.content.flatMap((item) =>
+				item.type === "table" ? item.table.rows.flat() : [],
+			),
+		),
 	);
 
 	for (const cell of cells) {
@@ -86,8 +90,17 @@ test("prints updated tags with short commit SHAs", async () => {
 
 for (const rule of semanticVersionTaggingSpecification.rules) {
 	for (const example of rule.examples) {
-		test(expandText(example.text), example.run.bind(example));
+		test(expandText(exampleText(example)), example.run.bind(example));
 	}
+}
+
+function exampleText(example: Example): ParameterisedText {
+	const item = example.content.find((content) => content.type === "text");
+	if (item?.type !== "text") {
+		throw new Error("Example does not contain text content.");
+	}
+
+	return item.text;
 }
 
 function runAction(
