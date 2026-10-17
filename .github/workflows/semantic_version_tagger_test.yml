@@ -26,3 +26,5 @@ jobs:
         run: npm ci
       - name: Run executable example
         run: npm run test:semantic-version-tagger
+      - name: Run shared tests
+        run: npm run test:shared
