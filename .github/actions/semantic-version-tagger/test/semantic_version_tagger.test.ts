@@ -4,9 +4,12 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import type {
+	Example,
+	ParameterisedText,
+} from "../../../../shared/specification-by-example/specification-by-example.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-import type { Example, ParameterisedText } from "./specification.ts";
 
 function expandText(text: ParameterisedText): string {
 	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {

@@ -1,7 +1,11 @@
 import { writeFile } from "node:fs/promises";
 
+import type {
+	Example,
+	Rule,
+	Table,
+} from "../../../../shared/specification-by-example/specification-by-example.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-import type { Example, Rule, Table } from "./specification.ts";
 
 function interpolate(
 	template: string,

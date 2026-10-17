@@ -4,14 +4,14 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { FakeGitHubApi } from "./fake-github-api.ts";
 import type {
 	Example,
 	ParameterisedText,
 	Rule,
 	Specification,
 	Table,
-} from "./specification.ts";
+} from "../../../../shared/specification-by-example/specification-by-example.ts";
+import { FakeGitHubApi } from "./fake-github-api.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
 
