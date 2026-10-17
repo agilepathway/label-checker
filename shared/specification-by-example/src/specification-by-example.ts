@@ -20,14 +20,12 @@ export type Table = {
 	rows: string[][];
 };
 
-export type NonEmptyArray<T> = [T, ...T[]];
-
 export type ContentItem =
 	| { type: "text"; text: ParameterisedText }
 	| { type: "table"; table: Table };
 
 export type Example = {
-	content: NonEmptyArray<ContentItem>;
+	content: [{ type: "text"; text: ParameterisedText }, ...ContentItem[]];
 	run(this: Example): Promise<void>;
 };
 
