@@ -5,46 +5,11 @@ import { spawn } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
-	type ParameterisedText,
+	expandText,
 	textAt,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-
-function expandText(text: ParameterisedText): string {
-	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
-		const value = text.parameters[name];
-
-		if (value === undefined) {
-			throw new Error(`Unknown example placeholder: {${name}}`);
-		}
-
-		return value;
-	});
-}
-
-test("rejects unknown Example text parameters", () => {
-	assert.throws(
-		() =>
-			expandText({
-				template: "A `{missing}` value",
-				parameters: {},
-			}),
-		{ message: "Unknown example placeholder: {missing}" },
-	);
-});
-
-test("expands known Example text parameters", () => {
-	const text = {
-		template: "A {first} value and a {second} value",
-		parameters: {
-			first: "one",
-			second: "two",
-		},
-	};
-
-	assert.equal(expandText(text), "A one value and a two value");
-});
 
 test("uses plain text in specification table cells", () => {
 	const cells = semanticVersionTaggingSpecification.rules.flatMap((rule) =>

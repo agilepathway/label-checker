@@ -5,22 +5,8 @@ import type {
 	Rule,
 	Table,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
+import { expandText } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-
-function interpolate(
-	template: string,
-	parameters: Record<string, string>,
-): string {
-	return template.replace(/\{(\w+)\}/g, (_match, name: string) => {
-		const value = parameters[name];
-
-		if (value === undefined) {
-			throw new Error(`Unknown example placeholder: {${name}}`);
-		}
-
-		return value;
-	});
-}
 
 function renderTable(table: Table): string {
 	return [
@@ -33,7 +19,7 @@ function renderTable(table: Table): string {
 function renderExample(example: Example): string {
 	const content = example.content.map((item) => {
 		if (item.type === "text") {
-			return interpolate(item.text.template, item.text.parameters);
+			return expandText(item.text);
 		}
 
 		return renderTable(item.table);
