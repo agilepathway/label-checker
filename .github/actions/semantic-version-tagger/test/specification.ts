@@ -1,17 +1,22 @@
+export type ParameterisedDescription = {
+	template: string;
+	parameters: Record<string, string>;
+};
+
+export type Example = {
+	description: ParameterisedDescription;
+	table: {
+		tag: string;
+		before: string | null;
+		after: string | null;
+		result?: "Error";
+	}[];
+	run(this: Example): Promise<void>;
+};
+
 export type Rule = {
 	definition: string;
-	examples: {
-		description: string;
-		semanticVersion: string;
-		commit: string;
-		table: {
-			tag: string;
-			before: string | null;
-			after: string | null;
-			result?: "Error";
-		}[];
-		run: () => Promise<void>;
-	}[];
+	examples: Example[];
 };
 
 export type Specification = {
