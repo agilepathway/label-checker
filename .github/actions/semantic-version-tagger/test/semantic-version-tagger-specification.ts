@@ -9,24 +9,11 @@ import type { Specification, Table } from "./specification.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
 
-function tableCellValue(table: Table, row: string[], header: string): string {
-	const cell = row[table.headers.indexOf(header)];
-
-	if (cell.startsWith("`") && cell.endsWith("`")) {
-		return cell.slice(1, -1);
-	}
-
-	if (cell.startsWith("**") && cell.endsWith("**")) {
-		return cell.slice(2, -2);
-	}
-
-	return cell;
-}
-
 function tagState(
 	table: Table,
 	column: "Before" | "After",
 ): Map<string, string> {
+	const tagIndex = table.headers.indexOf("Tag");
 	const valueIndex = table.headers.indexOf(column);
 
 	return new Map(
@@ -36,9 +23,7 @@ function tagState(
 				return [];
 			}
 
-			return [
-				[tableCellValue(table, row, "Tag"), tableCellValue(table, row, column)],
-			];
+			return [[row[tagIndex], value]];
 		}),
 	);
 }
@@ -62,25 +47,25 @@ export const patchLevelSemanticVersionRule = {
 				headers: ["Tag", "Before", "After"],
 				rows: [
 					[
-						"`v2`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.0.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"v2.0.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
 					],
-					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 					[
-						"`latest`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"latest",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 				],
 			},
@@ -128,31 +113,31 @@ export const minorLevelSemanticVersionRule = {
 				headers: ["Tag", "Before", "After"],
 				rows: [
 					[
-						"`v2`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"v2",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
 					],
 					[
-						"`v2.0`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2.0",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.0.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"v2.0.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
 					],
 					[
-						"`v2.0.1`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2.0.1",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
-					["`v2.1`", "—", "`b2c3d4e5f67890abcdef1234567890abcdef123`"],
-					["`v2.1.0`", "—", "`b2c3d4e5f67890abcdef1234567890abcdef123`"],
+					["v2.1", "—", "b2c3d4e5f67890abcdef1234567890abcdef123"],
+					["v2.1.0", "—", "b2c3d4e5f67890abcdef1234567890abcdef123"],
 					[
-						"`latest`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"latest",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
 					],
 				],
 			},
@@ -196,42 +181,42 @@ export const majorLevelSemanticVersionRule = {
 				headers: ["Tag", "Before", "After"],
 				rows: [
 					[
-						"`v2`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"v2",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
 					],
 					[
-						"`v2.0`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2.0",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.1`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"v2.1",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
 					],
 					[
-						"`v2.0.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"v2.0.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
 					],
 					[
-						"`v2.0.1`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2.0.1",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.1.0`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
+						"v2.1.0",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
 					],
-					["`v3`", "—", "`c3d4e5f67890abcdef1234567890abcdef1234`"],
-					["`v3.0`", "—", "`c3d4e5f67890abcdef1234567890abcdef1234`"],
-					["`v3.0.0`", "—", "`c3d4e5f67890abcdef1234567890abcdef1234`"],
+					["v3", "—", "c3d4e5f67890abcdef1234567890abcdef1234"],
+					["v3.0", "—", "c3d4e5f67890abcdef1234567890abcdef1234"],
+					["v3.0.0", "—", "c3d4e5f67890abcdef1234567890abcdef1234"],
 					[
-						"`latest`",
-						"`b2c3d4e5f67890abcdef1234567890abcdef123`",
-						"`c3d4e5f67890abcdef1234567890abcdef1234`",
+						"latest",
+						"b2c3d4e5f67890abcdef1234567890abcdef123",
+						"c3d4e5f67890abcdef1234567890abcdef1234",
 					],
 				],
 			},
@@ -273,15 +258,15 @@ export const missingSemanticVersionTagsRule = {
 			table: {
 				headers: ["Tag", "Before", "After"],
 				rows: [
-					["`v2`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
-					["`v2.0`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["v2", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+					["v2.0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 					[
-						"`v2.0.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"v2.0.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
 					],
-					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
-					["`latest`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+					["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 				],
 			},
 			async run(): Promise<void> {
@@ -315,10 +300,10 @@ export const missingSemanticVersionTagsRule = {
 			table: {
 				headers: ["Tag", "Before", "After"],
 				rows: [
-					["`v0`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
-					["`v0.0`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
-					["`v0.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
-					["`latest`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["v0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+					["v0.0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+					["v0.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+					["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 				],
 			},
 			async run(): Promise<void> {
@@ -353,22 +338,22 @@ export const missingSemanticVersionTagsRule = {
 				headers: ["Tag", "Before", "After"],
 				rows: [
 					[
-						"`v2`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.0.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"v2.0.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
 					],
-					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
-					["`latest`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+					["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 				],
 			},
 			async run(): Promise<void> {
@@ -409,10 +394,10 @@ export const existingSemanticVersionTagRule = {
 				headers: ["Tag", "Before", "After", "Result"],
 				rows: [
 					[
-						"`v2.0.1`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"**Error**",
+						"v2.0.1",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"Error",
 					],
 				],
 			},
@@ -428,7 +413,7 @@ export const existingSemanticVersionTagRule = {
 					assert.notEqual(result.status, null);
 					assert.equal(
 						result.status === 0 ? "Success" : "Error",
-						tableCellValue(this.table, this.table.rows[0], "Result"),
+						this.table.rows[0][this.table.headers.indexOf("Result")],
 					);
 					assert.match(
 						result.stderr,
@@ -463,30 +448,30 @@ export const existingAliasSemanticVersionTagRule = {
 				headers: ["Tag", "Before", "After"],
 				rows: [
 					[
-						"`v1.0.0`",
-						"`9e8d7c6b5a4f3210fedcba9876543210fedcba98`",
-						"`9e8d7c6b5a4f3210fedcba9876543210fedcba98`",
+						"v1.0.0",
+						"9e8d7c6b5a4f3210fedcba9876543210fedcba98",
+						"9e8d7c6b5a4f3210fedcba9876543210fedcba98",
 					],
 					[
-						"`v2`",
-						"`9e8d7c6b5a4f3210fedcba9876543210fedcba98`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2",
+						"9e8d7c6b5a4f3210fedcba9876543210fedcba98",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"v2.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 					[
-						"`v2.0.0`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
+						"v2.0.0",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
 					],
-					["`v2.0.1`", "—", "`a1b2c3d4e5f67890abcdef1234567890abcdef12`"],
+					["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 					[
-						"`latest`",
-						"`7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b`",
-						"`a1b2c3d4e5f67890abcdef1234567890abcdef12`",
+						"latest",
+						"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+						"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 					],
 				],
 			},
