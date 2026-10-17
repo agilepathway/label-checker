@@ -3,6 +3,18 @@ export type ParameterisedText = {
 	parameters: Record<string, string>;
 };
 
+export function expandText(text: ParameterisedText): string {
+	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
+		const value = text.parameters[name];
+
+		if (value === undefined) {
+			throw new Error(`Unknown example placeholder: {${name}}`);
+		}
+
+		return value;
+	});
+}
+
 export type Table = {
 	headers: string[];
 	rows: string[][];

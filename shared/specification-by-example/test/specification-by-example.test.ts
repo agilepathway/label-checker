@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
 	type Example,
+	expandText,
 	tableAt,
 	textAt,
 } from "../src/specification-by-example.ts";
@@ -20,6 +21,29 @@ const example: Example = {
 	],
 	run: async () => {},
 };
+
+test("expandText expands known Example text parameters", () => {
+	const text = {
+		template: "A {first} value and a {second} value",
+		parameters: {
+			first: "one",
+			second: "two",
+		},
+	};
+
+	assert.equal(expandText(text), "A one value and a two value");
+});
+
+test("expandText rejects unknown Example text parameters", () => {
+	assert.throws(
+		() =>
+			expandText({
+				template: "A `{missing}` value",
+				parameters: {},
+			}),
+		{ message: "Unknown example placeholder: {missing}" },
+	);
+});
 
 test("textAt returns the text payload at the requested index", () => {
 	assert.deepEqual(textAt(example, 0), {
