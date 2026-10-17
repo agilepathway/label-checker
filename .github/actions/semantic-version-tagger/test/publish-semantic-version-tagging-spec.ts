@@ -27,9 +27,15 @@ function renderTable(table: Table): string {
 }
 
 function renderExample(example: Example): string {
-	const text = interpolate(example.text.template, example.text.parameters);
+	const content = example.content.map((item) => {
+		if (item.type === "text") {
+			return interpolate(item.text.template, item.text.parameters);
+		}
 
-	return ["## Example", text, renderTable(example.table)].join("\n\n");
+		return renderTable(item.table);
+	});
+
+	return ["## Example", ...content].join("\n\n");
 }
 
 function renderRule(rule: Rule): string {
