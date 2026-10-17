@@ -1,16 +1,14 @@
 import { writeFile } from "node:fs/promises";
 
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-import type { Rule } from "./specification.ts";
-
-type Example = Rule["examples"][number];
+import type { Example, Rule } from "./specification.ts";
 
 function interpolate(
-	description: string,
-	values: Record<string, string>,
+	template: string,
+	parameters: Record<string, string>,
 ): string {
-	return description.replace(/\{(\w+)\}/g, (_match, name: string) => {
-		const value = values[name];
+	return template.replace(/\{(\w+)\}/g, (_match, name: string) => {
+		const value = parameters[name];
 
 		if (value === undefined) {
 			throw new Error(`Unknown example placeholder: {${name}}`);
@@ -58,10 +56,10 @@ function renderTable(example: Example): string {
 }
 
 function renderExample(example: Example): string {
-	const description = interpolate(example.description, {
-		semanticVersion: example.semanticVersion,
-		commit: example.commit,
-	});
+	const description = interpolate(
+		example.description.template,
+		example.description.parameters,
+	);
 
 	return ["## Example", description, renderTable(example)].join("\n\n");
 }
