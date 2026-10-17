@@ -4,12 +4,12 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import type {
-	Example,
-	ParameterisedText,
-	Rule,
-	Specification,
-	Table,
+import {
+	type Rule,
+	type Specification,
+	type Table,
+	tableAt,
+	textAt,
 } from "../../../../shared/specification-by-example/specification-by-example.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 
@@ -32,24 +32,6 @@ function tagState(
 			return [[row[tagIndex], value]];
 		}),
 	);
-}
-
-function exampleText(example: Example): ParameterisedText {
-	const item = example.content.find((content) => content.type === "text");
-	if (item?.type !== "text") {
-		throw new Error("Example does not contain text content.");
-	}
-
-	return item.text;
-}
-
-function exampleTable(example: Example): Table {
-	const item = example.content.find((content) => content.type === "table");
-	if (item?.type !== "table") {
-		throw new Error("Example does not contain table content.");
-	}
-
-	return item.table;
 }
 
 export const patchLevelSemanticVersionRule: Rule = {
@@ -104,21 +86,21 @@ export const patchLevelSemanticVersionRule: Rule = {
 
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -186,19 +168,19 @@ export const minorLevelSemanticVersionRule: Rule = {
 
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -274,19 +256,19 @@ export const majorLevelSemanticVersionRule: Rule = {
 			],
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -333,19 +315,19 @@ export const missingSemanticVersionTagsRule: Rule = {
 			],
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -380,19 +362,19 @@ export const missingSemanticVersionTagsRule: Rule = {
 			],
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -440,19 +422,19 @@ export const missingSemanticVersionTagsRule: Rule = {
 			],
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -495,20 +477,20 @@ export const existingSemanticVersionTagRule: Rule = {
 			],
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 					assert.notEqual(result.status, null);
 					assert.equal(
 						result.status === 0 ? "Success" : "Error",
-						exampleTable(this).rows[0][
-							exampleTable(this).headers.indexOf("Result")
+						tableAt(this, 1).rows[0][
+							tableAt(this, 1).headers.indexOf("Result")
 						],
 					);
 					assert.match(
@@ -517,7 +499,7 @@ export const existingSemanticVersionTagRule: Rule = {
 					);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
@@ -581,19 +563,19 @@ export const existingAliasSemanticVersionTagRule: Rule = {
 			],
 			async run(): Promise<void> {
 				const fakeGitHubApi = new FakeGitHubApi(
-					tagState(exampleTable(this), "Before"),
+					tagState(tableAt(this, 1), "Before"),
 				);
 				const apiUrl = await fakeGitHubApi.start();
 				try {
 					const result = await runAction(
 						apiUrl,
-						exampleText(this).parameters.semanticVersion,
-						exampleText(this).parameters.commit,
+						textAt(this, 0).parameters.semanticVersion,
+						textAt(this, 0).parameters.commit,
 					);
 					assert.equal(result.status, 0, result.stderr);
 					assert.deepEqual(
 						Object.fromEntries(fakeGitHubApi.tagState()),
-						Object.fromEntries(tagState(exampleTable(this), "After")),
+						Object.fromEntries(tagState(tableAt(this, 1), "After")),
 					);
 				} finally {
 					await fakeGitHubApi.stop();
