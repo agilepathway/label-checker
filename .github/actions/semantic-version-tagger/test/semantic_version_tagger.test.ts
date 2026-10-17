@@ -43,6 +43,16 @@ test("expands known Example text parameters", () => {
 	assert.equal(expandText(text), "A one value and a two value");
 });
 
+test("uses plain text in specification table cells", () => {
+	const cells = semanticVersionTaggingSpecification.rules.flatMap((rule) =>
+		rule.examples.flatMap((example) => example.table.rows.flat()),
+	);
+
+	for (const cell of cells) {
+		assert.doesNotMatch(cell, /[`*]/);
+	}
+});
+
 test("prints updated tags with short commit SHAs", async () => {
 	const commit = "a1b2c3d4e5f67890abcdef1234567890abcdef12";
 	const fakeGitHubApi = new FakeGitHubApi(
