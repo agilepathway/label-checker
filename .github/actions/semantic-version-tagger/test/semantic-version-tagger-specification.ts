@@ -10,7 +10,7 @@ import {
 	type Table,
 	tableAt,
 	textAt,
-} from "../../../../shared/specification-by-example/specification-by-example.ts";
+} from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
