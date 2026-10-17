@@ -56,12 +56,9 @@ function renderTable(example: Example): string {
 }
 
 function renderExample(example: Example): string {
-	const description = interpolate(
-		example.description.template,
-		example.description.parameters,
-	);
+	const text = interpolate(example.text.template, example.text.parameters);
 
-	return ["## Example", description, renderTable(example)].join("\n\n");
+	return ["## Example", text, renderTable(example)].join("\n\n");
 }
 
 function renderRule(rule: Rule): string {
