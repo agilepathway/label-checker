@@ -1,17 +1,22 @@
+export type ParameterisedText = {
+	template: string;
+	parameters: Record<string, string>;
+};
+
+export type Table = {
+	headers: string[];
+	rows: string[][];
+};
+
+export type Example = {
+	text: ParameterisedText;
+	table: Table;
+	run(this: Example): Promise<void>;
+};
+
 export type Rule = {
 	definition: string;
-	examples: {
-		description: string;
-		semanticVersion: string;
-		commit: string;
-		table: {
-			tag: string;
-			before: string | null;
-			after: string | null;
-			result?: "Error";
-		}[];
-		run: () => Promise<void>;
-	}[];
+	examples: Example[];
 };
 
 export type Specification = {

@@ -12,11 +12,11 @@ A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abc
 
 | Tag | Before | After |
 |---|---|---|
-| `v2` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` |
-| `v2.0.1` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `latest` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
+| v2 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b |
+| v2.0.1 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| latest | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 
 ---
 
@@ -30,13 +30,13 @@ A new `v2.1.0` version and a new commit SHA `b2c3d4e5f67890abcdef1234567890abcde
 
 | Tag | Before | After |
 |---|---|---|
-| `v2` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` | `b2c3d4e5f67890abcdef1234567890abcdef123` |
-| `v2.0` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` |
-| `v2.0.1` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.1` | — | `b2c3d4e5f67890abcdef1234567890abcdef123` |
-| `v2.1.0` | — | `b2c3d4e5f67890abcdef1234567890abcdef123` |
-| `latest` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` | `b2c3d4e5f67890abcdef1234567890abcdef123` |
+| v2 | a1b2c3d4e5f67890abcdef1234567890abcdef12 | b2c3d4e5f67890abcdef1234567890abcdef123 |
+| v2.0 | a1b2c3d4e5f67890abcdef1234567890abcdef12 | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b |
+| v2.0.1 | a1b2c3d4e5f67890abcdef1234567890abcdef12 | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.1 | — | b2c3d4e5f67890abcdef1234567890abcdef123 |
+| v2.1.0 | — | b2c3d4e5f67890abcdef1234567890abcdef123 |
+| latest | a1b2c3d4e5f67890abcdef1234567890abcdef12 | b2c3d4e5f67890abcdef1234567890abcdef123 |
 
 ---
 
@@ -50,16 +50,16 @@ A new `v3.0.0` version and a new commit SHA `c3d4e5f67890abcdef1234567890abcdef1
 
 | Tag | Before | After |
 |---|---|---|
-| `v2` | `b2c3d4e5f67890abcdef1234567890abcdef123` | `b2c3d4e5f67890abcdef1234567890abcdef123` |
-| `v2.0` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.1` | `b2c3d4e5f67890abcdef1234567890abcdef123` | `b2c3d4e5f67890abcdef1234567890abcdef123` |
-| `v2.0.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` |
-| `v2.0.1` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.1.0` | `b2c3d4e5f67890abcdef1234567890abcdef123` | `b2c3d4e5f67890abcdef1234567890abcdef123` |
-| `v3` | — | `c3d4e5f67890abcdef1234567890abcdef1234` |
-| `v3.0` | — | `c3d4e5f67890abcdef1234567890abcdef1234` |
-| `v3.0.0` | — | `c3d4e5f67890abcdef1234567890abcdef1234` |
-| `latest` | `b2c3d4e5f67890abcdef1234567890abcdef123` | `c3d4e5f67890abcdef1234567890abcdef1234` |
+| v2 | b2c3d4e5f67890abcdef1234567890abcdef123 | b2c3d4e5f67890abcdef1234567890abcdef123 |
+| v2.0 | a1b2c3d4e5f67890abcdef1234567890abcdef12 | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.1 | b2c3d4e5f67890abcdef1234567890abcdef123 | b2c3d4e5f67890abcdef1234567890abcdef123 |
+| v2.0.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b |
+| v2.0.1 | a1b2c3d4e5f67890abcdef1234567890abcdef12 | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.1.0 | b2c3d4e5f67890abcdef1234567890abcdef123 | b2c3d4e5f67890abcdef1234567890abcdef123 |
+| v3 | — | c3d4e5f67890abcdef1234567890abcdef1234 |
+| v3.0 | — | c3d4e5f67890abcdef1234567890abcdef1234 |
+| v3.0.0 | — | c3d4e5f67890abcdef1234567890abcdef1234 |
+| latest | b2c3d4e5f67890abcdef1234567890abcdef123 | c3d4e5f67890abcdef1234567890abcdef1234 |
 
 ---
 
@@ -73,11 +73,11 @@ The project has only patch tags in existence. A new `v2.0.1` version and a new c
 
 | Tag | Before | After |
 |---|---|---|
-| `v2` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` |
-| `v2.0.1` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `latest` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
+| v2 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b |
+| v2.0.1 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| latest | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 
 ## Example
 
@@ -85,10 +85,10 @@ The very first semantic `v0.0.1` version for the repo and a new commit SHA `a1b2
 
 | Tag | Before | After |
 |---|---|---|
-| `v0` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v0.0` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v0.0.1` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `latest` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
+| v0 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v0.0 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v0.0.1 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| latest | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 
 ## Example
 
@@ -96,11 +96,11 @@ The project adopts the `latest` tag for the first time. A new `v2.0.1` version a
 
 | Tag | Before | After |
 |---|---|---|
-| `v2` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` |
-| `v2.0.1` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `latest` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
+| v2 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b |
+| v2.0.1 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| latest | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 
 ---
 
@@ -114,7 +114,7 @@ A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abc
 
 | Tag | Before | After | Result |
 |---|---|---|---|
-| `v2.0.1` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | **Error** |
+| v2.0.1 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | Error |
 
 ---
 
@@ -128,11 +128,11 @@ The `v2` tag currently (wrongly) points to the commit tagged `v1.0.0`. A new `v2
 
 | Tag | Before | After |
 |---|---|---|
-| `v1.0.0` | `9e8d7c6b5a4f3210fedcba9876543210fedcba98` | `9e8d7c6b5a4f3210fedcba9876543210fedcba98` |
-| `v2` | `9e8d7c6b5a4f3210fedcba9876543210fedcba98` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `v2.0.0` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` |
-| `v2.0.1` | — | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
-| `latest` | `7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b` | `a1b2c3d4e5f67890abcdef1234567890abcdef12` |
+| v1.0.0 | 9e8d7c6b5a4f3210fedcba9876543210fedcba98 | 9e8d7c6b5a4f3210fedcba9876543210fedcba98 |
+| v2 | 9e8d7c6b5a4f3210fedcba9876543210fedcba98 | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| v2.0.0 | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b |
+| v2.0.1 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
+| latest | 7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 
 ---
