@@ -95,17 +95,17 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 						id: "different-table",
 						content: [
 							{
-								type: "text",
-								text: {
-									template: "A table with a different shape.",
-									parameters: {},
-								},
-							},
-							{
 								type: "table",
 								table: {
 									headers: ["Only heading"],
 									rows: [["only row"]],
+								},
+							},
+							{
+								type: "text",
+								text: {
+									template: "A table with a different shape.",
+									parameters: {},
 								},
 							},
 						],
@@ -149,11 +149,11 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 			"",
 			"## Example",
 			"",
-			"A table with a different shape.",
-			"",
 			"| Only heading |",
 			"|---|",
 			"| only row |",
+			"",
+			"A table with a different shape.",
 			"",
 			"---",
 		].join("\n"),
