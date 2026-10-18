@@ -3,18 +3,6 @@ export type ParameterisedText = {
 	parameters: Record<string, string>;
 };
 
-export function expandText(text: ParameterisedText): string {
-	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
-		const value = text.parameters[name];
-
-		if (value === undefined) {
-			throw new Error(`Unknown example placeholder: {${name}}`);
-		}
-
-		return value;
-	});
-}
-
 export type Table = {
 	headers: string[];
 	rows: string[][];
@@ -30,6 +18,28 @@ export type Example = {
 	id: string;
 	content: NonEmptyArray<ContentItem>;
 };
+
+export type Rule = {
+	definition: string;
+	examples: Example[];
+};
+
+export type Specification = {
+	title: string;
+	rules: Rule[];
+};
+
+export function expandText(text: ParameterisedText): string {
+	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
+		const value = text.parameters[name];
+
+		if (value === undefined) {
+			throw new Error(`Unknown example placeholder: {${name}}`);
+		}
+
+		return value;
+	});
+}
 
 export function textAt(example: Example, index: number): ParameterisedText {
 	const item = example.content[index];
@@ -54,16 +64,6 @@ export function tableAt(example: Example, index: number): Table {
 
 	return item.table;
 }
-
-export type Rule = {
-	definition: string;
-	examples: Example[];
-};
-
-export type Specification = {
-	title: string;
-	rules: Rule[];
-};
 
 export function assertUniqueExampleIds(specification: Specification): void {
 	const ids = new Set<string>();
