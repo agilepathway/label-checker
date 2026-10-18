@@ -40,14 +40,10 @@ const specification: Specification = {
 const expectedNames = ["first-example", "second-example", "third-example"];
 let nextExampleIndex = 0;
 
-const implementations = new Map(
-	expectedNames.map((id) => [id, verifyRegistrationOrder]),
-);
-
 function verifyRegistrationOrder(example: Example): Promise<void> {
 	assert.equal(expectedNames[nextExampleIndex], example.id);
 	nextExampleIndex += 1;
 	return Promise.resolve();
 }
 
-registerSpecificationTests(specification, implementations);
+registerSpecificationTests(specification, verifyRegistrationOrder);
