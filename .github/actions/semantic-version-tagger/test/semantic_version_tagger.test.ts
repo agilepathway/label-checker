@@ -80,14 +80,9 @@ async function runTaggingExample(example: Example): Promise<void> {
 			textAt(example, 0).parameters.semanticVersion,
 			textAt(example, 0).parameters.commit,
 		);
-		const resultIndex = table.headers.indexOf("Result");
 
-		if (resultIndex >= 0) {
-			assert.notEqual(result.status, null);
-			assert.equal(
-				result.status === 0 ? "Success" : "Error",
-				table.rows[0][resultIndex],
-			);
+		if (example.id === "rejects-existing-version-tag") {
+			assert.equal(result.status, 1, result.stderr);
 			assert.match(result.stderr, /The version tag v2\.0\.1 already exists\./);
 		} else {
 			assert.equal(result.status, 0, result.stderr);
