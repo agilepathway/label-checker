@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
+import { semanticVersionTaggingTestImplementations } from "./semantic-version-tagger-test-implementations.ts";
 
 test("uses plain text in specification table cells", () => {
 	const cells = semanticVersionTaggingSpecification.rules.flatMap((rule) =>
@@ -53,7 +54,10 @@ test("prints updated tags with short commit SHAs", async () => {
 	}
 });
 
-registerSpecificationTests(semanticVersionTaggingSpecification);
+registerSpecificationTests(
+	semanticVersionTaggingSpecification,
+	semanticVersionTaggingTestImplementations,
+);
 
 function runAction(
 	apiUrl: string,

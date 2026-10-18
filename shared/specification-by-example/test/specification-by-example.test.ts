@@ -2,13 +2,16 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+	assertUniqueExampleIds,
 	type Example,
 	expandText,
+	type Specification,
 	tableAt,
 	textAt,
 } from "../src/specification-by-example.ts";
 
 const example: Example = {
+	id: "sample",
 	content: [
 		{
 			type: "text",
@@ -19,10 +22,10 @@ const example: Example = {
 			table: { headers: ["Heading"], rows: [["value"]] },
 		},
 	],
-	run: async () => {},
 };
 
 const _tableFirstExample: Example = {
+	id: "table-first",
 	content: [
 		{
 			// @ts-expect-error Examples must start with text.
@@ -30,8 +33,30 @@ const _tableFirstExample: Example = {
 			table: { headers: ["Heading"], rows: [["value"]] },
 		},
 	],
-	run: async () => {},
 };
+
+const specification: Specification = {
+	title: "Specification",
+	rules: [{ definition: "Rule", examples: [example] }],
+};
+
+test("assertUniqueExampleIds accepts distinct IDs", () => {
+	assertUniqueExampleIds(specification);
+});
+
+test("assertUniqueExampleIds rejects duplicate IDs", () => {
+	assert.throws(
+		() =>
+			assertUniqueExampleIds({
+				title: "Specification",
+				rules: [
+					{ definition: "First", examples: [example] },
+					{ definition: "Second", examples: [{ ...example }] },
+				],
+			}),
+		{ message: "Duplicate example ID: sample" },
+	);
+});
 
 test("expandText expands known Example text parameters", () => {
 	const text = {

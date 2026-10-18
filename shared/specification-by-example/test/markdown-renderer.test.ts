@@ -11,6 +11,7 @@ test("renderSpecification expands parameterised text", () => {
 				definition: "The rule.",
 				examples: [
 					{
+						id: "version-release",
 						content: [
 							{
 								type: "text",
@@ -20,7 +21,6 @@ test("renderSpecification expands parameterised text", () => {
 								},
 							},
 						],
-						run: async () => {},
 					},
 				],
 			},
@@ -55,6 +55,7 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 				definition: "The first rule.",
 				examples: [
 					{
+						id: "ordered-content",
 						content: [
 							{
 								type: "text",
@@ -75,16 +76,15 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 								text: { template: "After the table.", parameters: {} },
 							},
 						],
-						run: async () => {},
 					},
 					{
+						id: "second-example",
 						content: [
 							{
 								type: "text",
 								text: { template: "A second example.", parameters: {} },
 							},
 						],
-						run: async () => {},
 					},
 				],
 			},
@@ -92,6 +92,7 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 				definition: "The second rule.",
 				examples: [
 					{
+						id: "different-table",
 						content: [
 							{
 								type: "text",
@@ -108,7 +109,6 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 								},
 							},
 						],
-						run: async () => {},
 					},
 				],
 			},
