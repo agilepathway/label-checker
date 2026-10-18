@@ -6,24 +6,15 @@ import type {
 } from "../../src/specification-by-example.ts";
 import { registerSpecificationTests } from "../../src/specification-test-registration.ts";
 
-const expectedNames = ["First example", "Second example", "Third example"];
-let nextExampleIndex = 0;
-
-function createExample(name: string): Example {
-	let example: Example;
-	example = {
+function createExample(id: string): Example {
+	const example: Example = {
+		id,
 		content: [
 			{
 				type: "text",
-				text: { template: name, parameters: {} },
+				text: { template: id, parameters: {} },
 			},
 		],
-		run(): Promise<void> {
-			assert.equal(this, example);
-			assert.equal(expectedNames[nextExampleIndex], name);
-			nextExampleIndex += 1;
-			return Promise.resolve();
-		},
 	};
 
 	return example;
@@ -35,15 +26,28 @@ const specification: Specification = {
 		{
 			definition: "First rule",
 			examples: [
-				createExample("First example"),
-				createExample("Second example"),
+				createExample("first-example"),
+				createExample("second-example"),
 			],
 		},
 		{
 			definition: "Second rule",
-			examples: [createExample("Third example")],
+			examples: [createExample("third-example")],
 		},
 	],
 };
 
-registerSpecificationTests(specification);
+const expectedNames = ["first-example", "second-example", "third-example"];
+let nextExampleIndex = 0;
+
+const implementations = new Map(
+	expectedNames.map((id) => [id, verifyRegistrationOrder]),
+);
+
+function verifyRegistrationOrder(example: Example): Promise<void> {
+	assert.equal(expectedNames[nextExampleIndex], example.id);
+	nextExampleIndex += 1;
+	return Promise.resolve();
+}
+
+registerSpecificationTests(specification, implementations);

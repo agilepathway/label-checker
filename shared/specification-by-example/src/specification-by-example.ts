@@ -25,8 +25,8 @@ export type ContentItem =
 	| { type: "table"; table: Table };
 
 export type Example = {
+	id: string;
 	content: [{ type: "text"; text: ParameterisedText }, ...ContentItem[]];
-	run(this: Example): Promise<void>;
 };
 
 export function textAt(example: Example, index: number): ParameterisedText {
@@ -62,3 +62,15 @@ export type Specification = {
 	title: string;
 	rules: Rule[];
 };
+
+export function assertUniqueExampleIds(specification: Specification): void {
+	const ids = new Set<string>();
+
+	for (const example of specification.rules.flatMap((rule) => rule.examples)) {
+		if (ids.has(example.id)) {
+			throw new Error(`Duplicate example ID: ${example.id}`);
+		}
+
+		ids.add(example.id);
+	}
+}
