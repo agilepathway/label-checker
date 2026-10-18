@@ -12,31 +12,16 @@ import {
 	tableAt,
 	textAt,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
-import type { ExampleTestImplementation } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";
 
-const semanticVersionTaggingTestImplementations: ReadonlyMap<
-	string,
-	ExampleTestImplementation
-> = new Map([
-	["patch-version-creates-tags", runTaggingExample],
-	["minor-version-creates-tags", runTaggingExample],
-	["major-version-creates-tags", runTaggingExample],
-	["creates-missing-alias-tags", runTaggingExample],
-	["first-semantic-version", runTaggingExample],
-	["adopts-latest-tag", runTaggingExample],
-	["rejects-existing-version-tag", runTaggingExample],
-	["moves-existing-alias-tags", runTaggingExample],
-]);
-
 // Register specification-driven tests.
 registerSpecificationTests(
 	semanticVersionTaggingSpecification,
-	semanticVersionTaggingTestImplementations,
+	runTaggingExample,
 );
 
 test("uses plain text in specification table cells", () => {
