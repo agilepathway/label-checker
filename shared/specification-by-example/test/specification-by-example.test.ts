@@ -42,7 +42,12 @@ const _emptyContentExample: Example = {
 
 const specification: Specification = {
 	title: "Specification",
-	rules: [{ definition: "Rule", examples: [example] }],
+	rules: [
+		{
+			definition: "Rule",
+			examples: [example, { ...example, id: "another-sample" }],
+		},
+	],
 };
 
 test("assertUniqueExampleIds accepts distinct IDs", () => {
