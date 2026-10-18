@@ -58,6 +58,10 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 						id: "ordered-content",
 						content: [
 							{
+								type: "text",
+								text: { template: "Before the table.", parameters: {} },
+							},
+							{
 								type: "table",
 								table: {
 									headers: ["Name", "Value"],
@@ -123,6 +127,8 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 			"The first rule.",
 			"",
 			"## Example",
+			"",
+			"Before the table.",
 			"",
 			"| Name | Value |",
 			"|---|---|",
