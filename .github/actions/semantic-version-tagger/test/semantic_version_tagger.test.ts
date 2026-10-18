@@ -4,10 +4,20 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import type {
+	Example,
+	Table,
+} from "../../../../shared/specification-by-example/src/specification-by-example.ts";
+import {
+	tableAt,
+	textAt,
+} from "../../../../shared/specification-by-example/src/specification-by-example.ts";
+import type { ExampleTestImplementation } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
 import { FakeGitHubApi } from "./fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
-import { semanticVersionTaggingTestImplementations } from "./semantic-version-tagger-test-implementations.ts";
+
+const repository = "agilepathway/semantic-version-tagger-spec";
 
 test("uses plain text in specification table cells", () => {
 	const cells = semanticVersionTaggingSpecification.rules.flatMap((rule) =>
@@ -35,7 +45,7 @@ test("prints updated tags with short commit SHAs", async () => {
 	const apiUrl = await fakeGitHubApi.start();
 
 	try {
-		const result = await runAction(apiUrl, commit);
+		const result = await runAction(apiUrl, "v2.0.1", commit);
 
 		assert.equal(result.status, 0, result.stderr);
 		assert.equal(
@@ -54,13 +64,80 @@ test("prints updated tags with short commit SHAs", async () => {
 	}
 });
 
+const semanticVersionTaggingTestImplementations: ReadonlyMap<
+	string,
+	ExampleTestImplementation
+> = new Map([
+	["patch-version-creates-tags", runTaggingExample],
+	["minor-version-creates-tags", runTaggingExample],
+	["major-version-creates-tags", runTaggingExample],
+	["creates-missing-alias-tags", runTaggingExample],
+	["first-semantic-version", runTaggingExample],
+	["adopts-latest-tag", runTaggingExample],
+	["rejects-existing-version-tag", runTaggingExample],
+	["moves-existing-alias-tags", runTaggingExample],
+]);
+
 registerSpecificationTests(
 	semanticVersionTaggingSpecification,
 	semanticVersionTaggingTestImplementations,
 );
 
+async function runTaggingExample(example: Example): Promise<void> {
+	const table = tableAt(example, 1);
+	const fakeGitHubApi = new FakeGitHubApi(tagState(table, "Before"));
+	const apiUrl = await fakeGitHubApi.start();
+
+	try {
+		const result = await runAction(
+			apiUrl,
+			textAt(example, 0).parameters.semanticVersion,
+			textAt(example, 0).parameters.commit,
+		);
+		const resultIndex = table.headers.indexOf("Result");
+
+		if (resultIndex >= 0) {
+			assert.notEqual(result.status, null);
+			assert.equal(
+				result.status === 0 ? "Success" : "Error",
+				table.rows[0][resultIndex],
+			);
+			assert.match(result.stderr, /The version tag v2\.0\.1 already exists\./);
+		} else {
+			assert.equal(result.status, 0, result.stderr);
+		}
+
+		assert.deepEqual(
+			Object.fromEntries(fakeGitHubApi.tagState()),
+			Object.fromEntries(tagState(table, "After")),
+		);
+	} finally {
+		await fakeGitHubApi.stop();
+	}
+}
+
+function tagState(
+	table: Table,
+	column: "Before" | "After",
+): Map<string, string> {
+	const tagIndex = table.headers.indexOf("Tag");
+	const valueIndex = table.headers.indexOf(column);
+
+	return new Map(
+		table.rows.flatMap((row): [string, string][] => {
+			const value = row[valueIndex];
+			if (value === "—") {
+				return [];
+			}
+
+			return [[row[tagIndex], value]];
+		}),
+	);
+}
+
 function runAction(
 	apiUrl: string,
+	semanticVersion: string,
 	commit: string,
 ): Promise<{ status: number | null; stdout: string; stderr: string }> {
 	return new Promise((resolve, reject) => {
@@ -72,10 +149,10 @@ function runAction(
 			],
 			{
 				env: {
-					GITHUB_REPOSITORY: "agilepathway/semantic-version-tagger-spec",
+					GITHUB_REPOSITORY: repository,
 					GITHUB_TOKEN: "fake-token",
 					GITHUB_API_URL: apiUrl,
-					"INPUT_SEMANTIC-VERSION": "v2.0.1",
+					"INPUT_SEMANTIC-VERSION": semanticVersion,
 					INPUT_COMMIT: commit,
 				},
 				stdio: ["ignore", "pipe", "pipe"],
