@@ -19,6 +19,26 @@ import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-s
 
 const repository = "agilepathway/semantic-version-tagger-spec";
 
+const semanticVersionTaggingTestImplementations: ReadonlyMap<
+	string,
+	ExampleTestImplementation
+> = new Map([
+	["patch-version-creates-tags", runTaggingExample],
+	["minor-version-creates-tags", runTaggingExample],
+	["major-version-creates-tags", runTaggingExample],
+	["creates-missing-alias-tags", runTaggingExample],
+	["first-semantic-version", runTaggingExample],
+	["adopts-latest-tag", runTaggingExample],
+	["rejects-existing-version-tag", runTaggingExample],
+	["moves-existing-alias-tags", runTaggingExample],
+]);
+
+// Register specification-driven tests.
+registerSpecificationTests(
+	semanticVersionTaggingSpecification,
+	semanticVersionTaggingTestImplementations,
+);
+
 test("uses plain text in specification table cells", () => {
 	const cells = semanticVersionTaggingSpecification.rules.flatMap((rule) =>
 		rule.examples.flatMap((example) =>
@@ -63,25 +83,6 @@ test("prints updated tags with short commit SHAs", async () => {
 		await fakeGitHubApi.stop();
 	}
 });
-
-const semanticVersionTaggingTestImplementations: ReadonlyMap<
-	string,
-	ExampleTestImplementation
-> = new Map([
-	["patch-version-creates-tags", runTaggingExample],
-	["minor-version-creates-tags", runTaggingExample],
-	["major-version-creates-tags", runTaggingExample],
-	["creates-missing-alias-tags", runTaggingExample],
-	["first-semantic-version", runTaggingExample],
-	["adopts-latest-tag", runTaggingExample],
-	["rejects-existing-version-tag", runTaggingExample],
-	["moves-existing-alias-tags", runTaggingExample],
-]);
-
-registerSpecificationTests(
-	semanticVersionTaggingSpecification,
-	semanticVersionTaggingTestImplementations,
-);
 
 async function runTaggingExample(example: Example): Promise<void> {
 	const table = tableAt(example, 1);
