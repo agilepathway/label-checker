@@ -24,9 +24,11 @@ export type ContentItem =
 	| { type: "text"; text: ParameterisedText }
 	| { type: "table"; table: Table };
 
+export type NonEmptyArray<T> = [T, ...T[]];
+
 export type Example = {
 	id: string;
-	content: [{ type: "text"; text: ParameterisedText }, ...ContentItem[]];
+	content: NonEmptyArray<ContentItem>;
 };
 
 export function textAt(example: Example, index: number): ParameterisedText {

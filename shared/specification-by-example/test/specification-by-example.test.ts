@@ -24,15 +24,20 @@ const example: Example = {
 	],
 };
 
-const _tableFirstExample: Example = {
+const tableFirstExample: Example = {
 	id: "table-first",
 	content: [
 		{
-			// @ts-expect-error Examples must start with text.
 			type: "table",
 			table: { headers: ["Heading"], rows: [["value"]] },
 		},
 	],
+};
+
+const _emptyContentExample: Example = {
+	id: "empty",
+	// @ts-expect-error Examples must have at least one content item.
+	content: [],
 };
 
 const specification: Specification = {
@@ -102,6 +107,13 @@ test("textAt reports a content-type mismatch", () => {
 
 test("tableAt returns the table payload at the requested index", () => {
 	assert.deepEqual(tableAt(example, 1), {
+		headers: ["Heading"],
+		rows: [["value"]],
+	});
+});
+
+test("tableAt returns a table at the start of an example", () => {
+	assert.deepEqual(tableAt(tableFirstExample, 0), {
 		headers: ["Heading"],
 		rows: [["value"]],
 	});
