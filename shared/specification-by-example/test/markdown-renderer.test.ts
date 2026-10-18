@@ -159,3 +159,49 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 		].join("\n"),
 	);
 });
+
+test("renderSpecification escapes literal pipes in table headers and cells", () => {
+	const specification: Specification = {
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "table-with-pipes",
+						content: [
+							{
+								type: "table",
+								table: {
+									headers: ["Name | label", "Value"],
+									rows: [["first", "one | two"]],
+								},
+							},
+						],
+					},
+				],
+			},
+		],
+	};
+
+	assert.equal(
+		renderSpecification(specification),
+		[
+			"# A specification",
+			"",
+			"---",
+			"",
+			"## Rule",
+			"",
+			"The rule.",
+			"",
+			"## Example",
+			"",
+			"| Name \\| label | Value |",
+			"|---|---|",
+			"| first | one \\| two |",
+			"",
+			"---",
+		].join("\n"),
+	);
+});
