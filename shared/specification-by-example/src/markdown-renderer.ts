@@ -6,11 +6,15 @@ import type {
 } from "./specification-by-example.ts";
 import { expandText } from "./specification-by-example.ts";
 
+function escapePipes(value: string): string {
+	return value.replaceAll("|", "\\|");
+}
+
 function renderTable(table: Table): string {
 	return [
-		`| ${table.headers.join(" | ")} |`,
+		`| ${table.headers.map(escapePipes).join(" | ")} |`,
 		`|${table.headers.map(() => "---").join("|")}|`,
-		...table.rows.map((row) => `| ${row.join(" | ")} |`),
+		...table.rows.map((row) => `| ${row.map(escapePipes).join(" | ")} |`),
 	].join("\n");
 }
 
