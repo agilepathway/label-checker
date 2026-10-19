@@ -9,6 +9,10 @@ on:  # yamllint disable-line rule:truthy
       - labeled
       - unlabeled
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
 
   end_to_end_test_one_of:
@@ -17,6 +21,8 @@ jobs:
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./
         with:
           one_of: major,minor,patch
@@ -28,6 +34,8 @@ jobs:
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./
         with:
           none_of: missing
@@ -39,6 +47,8 @@ jobs:
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./
         with:
           any_of: major,minor,patch
@@ -50,6 +60,8 @@ jobs:
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./
         with:
           one_of: major,minor,patch
@@ -63,6 +75,8 @@ jobs:
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - id: success_scenario
         uses: ./
         with:
@@ -90,6 +104,8 @@ jobs:
     # Run the workflow using the label checker code in the branch for the current PR
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./
         with:
           prefix_mode: true
