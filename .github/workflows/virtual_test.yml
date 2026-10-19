@@ -11,6 +11,9 @@ on:  # yamllint disable-line rule:truthy
   schedule:
     - cron: '0 3 * * *'  # * is a special character in YAML so you have to quote this string
 name: Tests
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: Virtual
@@ -22,6 +25,8 @@ jobs:
           node-version: 24.21.0
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Tests
         run: |
           node --test test/check_labels.test.ts
