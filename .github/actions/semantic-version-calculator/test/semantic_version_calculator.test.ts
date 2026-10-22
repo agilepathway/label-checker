@@ -60,9 +60,13 @@ async function runCalculatorExample(example: Example): Promise<void> {
 		case "requested-increment-values":
 			await testRequestedIncrements(tableAt(example, 0));
 			return;
-		case "version-tag-format":
-			await testTagFormats(tableAt(example, 0));
+		case "version-tag-format": {
+			const tagFormats = tableAt(example, 0);
+			await testTagFormats(tagFormats);
+			await testRejectedTagFormats(tagFormats);
+			await testAllInvalidTags(tagFormats);
 			return;
+		}
 		case "highest-existing-semantic-version-tag":
 			await testHighestTags(tableAt(example, 0));
 			return;
@@ -75,6 +79,16 @@ async function runCalculatorExample(example: Example): Promise<void> {
 		default:
 			throw new Error(`Unexpected semantic-version example: ${example.id}`);
 	}
+}
+
+function rejectedTags(table: Table): string[] {
+	return table.rows.flatMap((row) => {
+		const tag = row[0];
+		const accepted = row[1];
+		assert(tag !== undefined);
+		assert(accepted !== undefined);
+		return accepted === "No" ? [tag] : [];
+	});
 }
 
 async function testRequestedIncrements(table: Table): Promise<void> {
@@ -126,6 +140,29 @@ async function testTagFormats(table: Table): Promise<void> {
 			`new-semantic-version=${accepted === "Yes" ? expectedIncrement(tag, "patch") : "v2.0.1"}\n`,
 		);
 	}
+}
+
+async function testRejectedTagFormats(table: Table): Promise<void> {
+	for (const tag of rejectedTags(table)) {
+		const result = await runAction(new Map([[tag, "invalid-tag"]]), "patch");
+
+		assert.equal(result.status, 1);
+		assert.match(result.stderr, /No valid semantic version tags exist/);
+		assert.equal(result.output, "");
+	}
+}
+
+async function testAllInvalidTags(table: Table): Promise<void> {
+	const tags = new Map(
+		rejectedTags(table).map((tag) => [tag, "invalid-tag"] as const),
+	);
+	assert(tags.size > 0);
+
+	const result = await runAction(tags, "patch");
+
+	assert.equal(result.status, 1);
+	assert.match(result.stderr, /No valid semantic version tags exist/);
+	assert.equal(result.output, "");
 }
 
 async function testHighestTags(table: Table): Promise<void> {
