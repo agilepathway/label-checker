@@ -73,7 +73,7 @@ function parseVersion(value: string): Version | undefined {
 	};
 }
 
-function compareVersions(left: Version, right: Version): number {
+function compareVersions(left: Version, right: Version): -1 | 0 | 1 {
 	for (const component of ["major", "minor", "patch"] as const) {
 		if (left[component] > right[component]) return 1;
 		if (left[component] < right[component]) return -1;
