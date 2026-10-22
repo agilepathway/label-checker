@@ -21,10 +21,18 @@ jobs:
         name: Checkout
         uses: actions/checkout@v4
       -
+        name: Calculate version
+        id: calculate-version
+        uses: ./.github/actions/semantic-version-calculator
+        with:
+          increment: patch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
         name: Tag
         uses: ./.github/actions/semantic-version-tagger
         with:
-          semantic-version: v2.0.38
+          semantic-version: ${{ steps.calculate-version.outputs.new-semantic-version }}
           commit: ${{ github.sha }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
