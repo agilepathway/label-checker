@@ -15,7 +15,7 @@ import {
 	textAt,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
-import { FakeGitHubApi } from "./fake-github-api.ts";
+import { FakeGitHubApi } from "../../test-support/fake-github-api.ts";
 import { semanticVersionTaggingSpecification } from "./semantic-version-tagger-specification.ts";
 
 const repository = "agilepathway/semantic-version-tagger-spec";

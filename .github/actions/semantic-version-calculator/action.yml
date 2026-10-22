@@ -1,0 +1,14 @@
+---
+name: Semantic version calculator
+description: Calculates the next semantic version
+author: John Boyes
+inputs:
+  increment:
+    description: Semantic version component to increment (major, minor, or patch)
+    required: true
+outputs:
+  new-semantic-version:
+    description: The calculated semantic version
+runs:
+  using: node24
+  main: src/index.ts

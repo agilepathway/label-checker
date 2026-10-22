@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { FakeGitHubApi } from "./fake-github-api.ts";
+import { FakeGitHubApi } from "../../test-support/fake-github-api.ts";
 
 test("enforces ref creation and forced-update semantics", async () => {
 	const api = new FakeGitHubApi(new Map([["v2", "existing-commit"]]));
@@ -55,6 +55,35 @@ test("enforces ref creation and forced-update semantics", async () => {
 			200,
 		);
 		assert.equal(api.tagState().get("v2"), "new-commit");
+	} finally {
+		await api.stop();
+	}
+});
+
+test("lists tags using GitHub's paginated tags endpoint", async () => {
+	const initialTags = new Map<string, string>(
+		Array.from({ length: 101 }, (_, index): [string, string] => [
+			`tag-${index}`,
+			`commit-${index}`,
+		]),
+	);
+	const api = new FakeGitHubApi(initialTags);
+	const apiUrl = await api.start();
+	try {
+		const firstPage = await fetch(
+			`${apiUrl}/repos/example/repo/tags?per_page=100&page=1`,
+		);
+		const firstTags: unknown = await firstPage.json();
+		assert(Array.isArray(firstTags));
+		assert.equal(firstTags.length, 100);
+		assert.match(firstPage.headers.get("link") ?? "", /rel="next"/);
+
+		const nextURL = firstPage.headers.get("link")?.match(/<([^>]+)>/)?.[1];
+		assert(nextURL);
+		const secondPage = await fetch(nextURL);
+		const secondTags: unknown = await secondPage.json();
+		assert(Array.isArray(secondTags));
+		assert.equal(secondTags.length, 1);
 	} finally {
 		await api.stop();
 	}
