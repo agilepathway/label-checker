@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { FakeGitHubApi } from "../../test-support/fake-github-api.ts";
+import { FakeGitHubApi } from "./fake-github-api.ts";
 
 test("enforces ref creation and forced-update semantics", async () => {
 	const api = new FakeGitHubApi(new Map([["v2", "existing-commit"]]));

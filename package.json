@@ -11,7 +11,7 @@
     "format": "biome format --write src shared",
     "check": "biome check src test shared .github/actions/test-support .github/actions/semantic-version-tagger/src .github/actions/semantic-version-tagger/test .github/actions/semantic-version-calculator/src .github/actions/semantic-version-calculator/test --enforce-assist=false",
     "test": "node --test \"**/*.test.ts\" \".github/**/*.test.ts\"",
-    "test:shared": "node --test shared/specification-by-example/test/*.test.ts",
+    "test:shared": "node --test shared/specification-by-example/test/*.test.ts .github/actions/test-support/*.test.ts",
     "test:semantic-version-tagger": "node --test .github/actions/semantic-version-tagger/test/*.test.ts",
     "test:semantic-version-calculator": "node --test .github/actions/semantic-version-calculator/test/*.test.ts",
     "test:integration": "INPUT_REPO_TOKEN=\"${GITHUB_TOKEN:-${GH_TOKEN:?GITHUB_TOKEN or GH_TOKEN must be set}}\" TEST_MODE=integration node --test test/check_labels.test.ts",
