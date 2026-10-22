@@ -46,29 +46,60 @@ export class FakeGitHubApi {
 		request: IncomingMessage,
 		response: ServerResponse,
 	): Promise<void> {
-		const path = new URL(request.url ?? "/", "http://localhost").pathname;
+		const url = new URL(
+			request.url ?? "/",
+			`http://${request.headers.host ?? "localhost"}`,
+		);
 		if (request.method === "GET") {
-			this.handleGetRequest(path, response);
+			this.handleGetRequest(url, response);
 			return;
 		}
 		if (request.method === "POST") {
-			await this.handleCreateRequest(request, path, response);
+			await this.handleCreateRequest(request, url.pathname, response);
 			return;
 		}
 		if (request.method === "PATCH") {
-			await this.handleUpdateRequest(request, path, response);
+			await this.handleUpdateRequest(request, url.pathname, response);
 			return;
 		}
 		response.writeHead(404).end();
 	}
 
-	private handleGetRequest(path: string, response: ServerResponse): void {
-		const tag = path.match(/\/git\/ref\/tags\/([^/]+)$/)?.[1];
+	private handleGetRequest(url: URL, response: ServerResponse): void {
+		if (/\/repos\/[^/]+\/[^/]+\/tags$/.test(url.pathname)) {
+			this.handleListTags(url, response);
+			return;
+		}
+		const tag = url.pathname.match(/\/git\/ref\/tags\/([^/]+)$/)?.[1];
 		if (tag) {
 			this.handleGet(tag, response);
 		} else {
 			response.writeHead(404).end();
 		}
+	}
+
+	private handleListTags(url: URL, response: ServerResponse): void {
+		const page = Number(url.searchParams.get("page") ?? "1");
+		const perPage = Number(url.searchParams.get("per_page") ?? "30");
+		if (
+			!Number.isSafeInteger(page) ||
+			page < 1 ||
+			!Number.isSafeInteger(perPage) ||
+			perPage < 1
+		) {
+			response.writeHead(400).end("Invalid pagination parameters");
+			return;
+		}
+
+		const allTags = [...this.tags.keys()];
+		const pageTags = allTags.slice((page - 1) * perPage, page * perPage);
+		if (page * perPage < allTags.length) {
+			const nextURL = new URL(url);
+			nextURL.searchParams.set("page", String(page + 1));
+			response.setHeader("link", `<${nextURL}>; rel="next"`);
+		}
+		response.writeHead(200, { "content-type": "application/json" });
+		response.end(JSON.stringify(pageTags.map((name) => ({ name }))));
 	}
 
 	private async handleCreateRequest(

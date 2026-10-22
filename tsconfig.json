@@ -18,8 +18,10 @@
   "include": [
     "src",
     "shared",
+    ".github/actions/test-support",
     ".github/actions/semantic-version-tagger/src",
     ".github/actions/semantic-version-tagger/test",
+    ".github/actions/semantic-version-calculator/src",
     ".github/actions/semantic-version-calculator/test"
   ]
 }
