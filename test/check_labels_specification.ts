@@ -118,5 +118,69 @@ export const labelCheckerSpecification: Specification = {
 				},
 			],
 		},
+		{
+			definition: "The label checker can combine multiple checks together.",
+			examples: [
+				{
+					id: "two_checks_combined",
+					content: [
+						{
+							type: "text",
+							text: {
+								template: "2 checks combined:",
+								parameters: {},
+							},
+						},
+						{
+							type: "table",
+							table: {
+								headers: [
+									"Criterion 1",
+									"Criterion 2",
+									"Labels on the pull request",
+									"Criterion 1 outcome",
+									"Criterion 2 outcome",
+									"Overall outcome",
+								],
+								rows: [
+									[
+										noneOfCriterion,
+										oneOfCriterion,
+										"(none)",
+										"Success",
+										"Failure",
+										"Failure",
+									],
+									[
+										noneOfCriterion,
+										oneOfCriterion,
+										"minor",
+										"Failure",
+										"Success",
+										"Failure",
+									],
+									[
+										noneOfCriterion,
+										oneOfCriterion,
+										"minor, patch",
+										"Failure",
+										"Failure",
+										"Failure",
+									],
+									[
+										noneOfCriterion,
+										oneOfCriterion,
+										"major, minor, patch",
+										"Failure",
+										"Failure",
+										"Failure",
+									],
+								],
+							},
+						},
+					],
+				},
+			],
+		},
 	],
 };
