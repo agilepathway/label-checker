@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { expandText, tableAt } from "../shared/specification-by-example/src/specification-by-example.ts";
+import {
+	expandText,
+	tableAt,
+} from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import { noneOfSpecification } from "./check_labels_specification.ts";
 import {
@@ -492,23 +495,23 @@ const scenarios: Scenario[] = [
 
 const noneOfDiagnosticExpectations = [
 	{
-		stdout: "Checking GitHub labels ...\\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\\n",
+		stdout: "Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
 		stderr: "",
 		output: "label_check=success",
 	},
 	{
-		stdout: "Checking GitHub labels ...\\n",
-		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\\n",
+		stdout: "Checking GitHub labels ...\n",
+		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
 		output: "label_check=failure",
 	},
 	{
-		stdout: "Checking GitHub labels ...\\n",
-		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\\n",
+		stdout: "Checking GitHub labels ...\n",
+		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 		output: "label_check=failure",
 	},
 	{
-		stdout: "Checking GitHub labels ...\\n",
-		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\\n",
+		stdout: "Checking GitHub labels ...\n",
+		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
 		output: "label_check=failure",
 	},
 ];
@@ -537,7 +540,9 @@ registerSpecificationTests(noneOfSpecification, async (example) => {
 	}
 });
 
-function renderTableText(value: string | { template: string; parameters: Record<string, string> }): string {
+function renderTableText(
+	value: string | { template: string; parameters: Record<string, string> },
+): string {
 	return typeof value === "string" ? value : expandText(value);
 }
 
