@@ -6,7 +6,7 @@
 
 Given a new patch semantic version to be applied to a given new commit, a new patch tag is created for that commit and the major, minor and latest tags are moved to point to the new commit too.
 
-## Example
+### Example
 
 A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`
 
@@ -24,7 +24,7 @@ A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abc
 
 Given a new minor semantic version to be applied to a given new commit, a new minor and patch tag are created for that commit, and the major and latest tags are moved to point to the new commit too.
 
-## Example
+### Example
 
 A new `v2.1.0` version and a new commit SHA `b2c3d4e5f67890abcdef1234567890abcdef123`
 
@@ -44,7 +44,7 @@ A new `v2.1.0` version and a new commit SHA `b2c3d4e5f67890abcdef1234567890abcde
 
 Given a new major semantic version to be applied to a given new commit, a new major, minor and patch tag are created for that commit, and the latest tag is moved to point to the new commit too.
 
-## Example
+### Example
 
 A new `v3.0.0` version and a new commit SHA `c3d4e5f67890abcdef1234567890abcdef1234`
 
@@ -67,7 +67,7 @@ A new `v3.0.0` version and a new commit SHA `c3d4e5f67890abcdef1234567890abcdef1
 
 Given a new patch semantic version to be applied to a given new commit, if any of the semantic version tags expected to already be present on an earlier commit are missing then they are created rather than moved.
 
-## Example
+### Example
 
 The project has only patch tags in existence. A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, with no major, minor and latest tags already existing.
 
@@ -79,7 +79,7 @@ The project has only patch tags in existence. A new `v2.0.1` version and a new c
 | v2.0.1 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 | latest | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 
-## Example
+### Example
 
 The very first semantic `v0.0.1` version for the repo and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, with no previous semantic version tags existing.
 
@@ -90,7 +90,7 @@ The very first semantic `v0.0.1` version for the repo and a new commit SHA `a1b2
 | v0.0.1 | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 | latest | — | a1b2c3d4e5f67890abcdef1234567890abcdef12 |
 
-## Example
+### Example
 
 The project adopts the `latest` tag for the first time. A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, with no `latest` tag already existing.
 
@@ -108,7 +108,7 @@ The project adopts the `latest` tag for the first time. A new `v2.0.1` version a
 
 The new version tag must not already exist.
 
-## Example
+### Example
 
 A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`, where the `v2.0.1` tag already exists:
 
@@ -122,7 +122,7 @@ A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abc
 
 If a tag exists and is in scope to be moved to the new commit, it is moved regardless of which commit it currently points to.
 
-## Example
+### Example
 
 The `v2` tag currently (wrongly) points to the commit tagged `v1.0.0`. A new `v2.0.1` version and a new commit SHA `a1b2c3d4e5f67890abcdef1234567890abcdef12`:
 
