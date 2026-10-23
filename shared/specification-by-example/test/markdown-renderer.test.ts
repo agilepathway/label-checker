@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { renderSpecification } from "../src/markdown-renderer.ts";
-import type { Specification } from "../src/specification-by-example.ts";
+import type {
+	ContentItem,
+	Specification,
+} from "../src/specification-by-example.ts";
 
 test("renderSpecification expands parameterised text", () => {
 	const specification: Specification = {
@@ -203,5 +206,92 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 			"",
 			"---",
 		].join("\n"),
+	);
+});
+
+test("renderSpecification expands parameterised table headers and cells", () => {
+	const specification: Specification = {
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "parameterised-table",
+						content: [
+							{
+								type: "table",
+								table: {
+									headers: [
+										{
+											template: "Name {kind}",
+											parameters: { kind: "label|value" },
+										},
+									],
+									rows: [
+										[
+											{
+												template: "{name}",
+												parameters: { name: "first|one" },
+											},
+										],
+									],
+								},
+							},
+						],
+					},
+				],
+			},
+		],
+	};
+
+	assert.match(
+		renderSpecification(specification),
+		/\| Name label\\\|value \|\n\|---\|\n\| first\\\|one \|/,
+	);
+});
+
+test("renderSpecification rejects unknown placeholders in table headers and cells", () => {
+	const tableSpecification = (content: ContentItem): Specification => ({
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "unknown-table-placeholder",
+						content: [content],
+					},
+				],
+			},
+		],
+	});
+
+	assert.throws(
+		() =>
+			renderSpecification(
+				tableSpecification({
+					type: "table",
+					table: {
+						headers: [{ template: "{missing}", parameters: {} }],
+						rows: [],
+					},
+				}),
+			),
+		{ message: "Unknown example placeholder: {missing}" },
+	);
+
+	assert.throws(
+		() =>
+			renderSpecification(
+				tableSpecification({
+					type: "table",
+					table: {
+						headers: ["Heading"],
+						rows: [[{ template: "{missing}", parameters: {} }]],
+					},
+				}),
+			),
+		{ message: "Unknown example placeholder: {missing}" },
 	);
 });

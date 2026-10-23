@@ -3,9 +3,11 @@ export type ParameterisedText = {
 	parameters: Record<string, string>;
 };
 
-export type Table = {
-	headers: string[];
-	rows: string[][];
+export type TableText = string | ParameterisedText;
+
+export type Table<T extends TableText = TableText> = {
+	headers: T[];
+	rows: T[][];
 };
 
 export type ContentItem =
