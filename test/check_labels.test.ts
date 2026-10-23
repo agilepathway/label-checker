@@ -3,12 +3,13 @@ import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { renderSpecification } from "../shared/specification-by-example/src/markdown-renderer.ts";
 import {
+	type Example,
 	expandText,
 	type TableText,
 	tableAt,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
-import { noneOfSpecification } from "./check_labels_specification.ts";
+import { labelCheckerSpecification } from "./check_labels_specification.ts";
 import {
 	type Requirements,
 	runLabelCheck,
@@ -19,7 +20,7 @@ test("published label-checker specification is up to date", async () => {
 		new URL("../spec/label-checker.md", import.meta.url),
 		"utf8",
 	);
-	const expectedMarkdown = renderSpecification(noneOfSpecification);
+	const expectedMarkdown = renderSpecification(labelCheckerSpecification);
 
 	assert.equal(
 		publishedMarkdown,
@@ -42,51 +43,6 @@ type Scenario = {
 };
 
 const scenarios: Scenario[] = [
-	// The none_of scenarios are exercised from the executable specification below.
-	{
-		name: "one, got 0",
-		pullRequestNumber: 1,
-		labels: [],
-		requirements: { one: "major,minor,patch" },
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		name: "one, got 1",
-		pullRequestNumber: 2,
-		labels: ["minor"],
-		requirements: { one: "major,minor,patch" },
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		name: "one, got 2",
-		pullRequestNumber: 3,
-		labels: ["minor", "patch"],
-		requirements: { one: "major,minor,patch" },
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		name: "one, got 3",
-		pullRequestNumber: 4,
-		labels: ["major", "minor", "patch"],
-		requirements: { one: "major,minor,patch" },
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
 	{
 		name: "all, got 0",
 		pullRequestNumber: 1,
@@ -511,26 +467,68 @@ const scenarios: Scenario[] = [
 	},
 ];
 
-const noneOfDiagnosticExpectations = [
+type DiagnosticExpectation = {
+	status: number;
+	stdout: string;
+	stderr: string;
+	output: string;
+};
+
+const oneOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+];
+
+const noneOfDiagnosticExpectations: DiagnosticExpectation[] = [
+	{
+		status: 0,
 		stdout:
 			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
 		stderr: "",
 		output: "label_check=success",
 	},
 	{
+		status: 1,
 		stdout: "Checking GitHub labels ...\n",
 		stderr:
 			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
 		output: "label_check=failure",
 	},
 	{
+		status: 1,
 		stdout: "Checking GitHub labels ...\n",
 		stderr:
 			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 		output: "label_check=failure",
 	},
 	{
+		status: 1,
 		stdout: "Checking GitHub labels ...\n",
 		stderr:
 			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
@@ -538,9 +536,33 @@ const noneOfDiagnosticExpectations = [
 	},
 ];
 
-registerSpecificationTests(noneOfSpecification, async (example) => {
+registerSpecificationTests(labelCheckerSpecification, async (example) => {
+	if (example.id === "one_of_major_minor_patch") {
+		await verifySpecificationExample(
+			example,
+			"one",
+			oneOfDiagnosticExpectations,
+		);
+		return;
+	}
+	if (example.id === "none_of_major_minor_patch") {
+		await verifySpecificationExample(
+			example,
+			"none",
+			noneOfDiagnosticExpectations,
+		);
+		return;
+	}
+	throw new Error(`Unexpected label-checker example: ${example.id}`);
+});
+
+async function verifySpecificationExample(
+	example: Example,
+	requirement: "one" | "none",
+	expectations: DiagnosticExpectation[],
+): Promise<void> {
 	const table = tableAt(example, 0);
-	assert.equal(table.rows.length, noneOfDiagnosticExpectations.length);
+	assert.equal(table.rows.length, expectations.length);
 
 	for (const [index, row] of table.rows.entries()) {
 		const criterion = row[0];
@@ -554,21 +576,24 @@ registerSpecificationTests(noneOfSpecification, async (example) => {
 		const labelsText = renderTableText(row[1]);
 		const labels = labelsText === "(none)" ? [] : labelsText.split(", ");
 		const outcome = renderTableText(row[2]);
-		const expected = noneOfDiagnosticExpectations[index];
+		const expected = expectations[index];
 		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
 
 		const result = await runLabelCheck({
 			pullRequestNumber: index + 1,
 			labels,
-			requirements: { none: requiredLabels.replaceAll(", ", ",") },
+			requirements: {
+				[requirement]: requiredLabels.replaceAll(", ", ","),
+			},
 		});
 
-		assert.equal(result.status, outcome === "Success" ? 0 : 1);
+		assert.equal(result.status, expected.status);
+		assert.equal(expected.status, outcome === "Success" ? 0 : 1);
 		assert.equal(result.stdout, expected.stdout);
 		assert.equal(result.stderr, expected.stderr);
 		assert.equal(result.output, expected.output);
 	}
-});
+}
 
 function renderTableText(value: TableText): string {
 	return typeof value === "string" ? value : expandText(value);
