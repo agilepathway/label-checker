@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { test } from "node:test";
+import { renderSpecification } from "../shared/specification-by-example/src/markdown-renderer.ts";
 import {
 	expandText,
 	type TableText,
@@ -11,6 +13,21 @@ import {
 	type Requirements,
 	runLabelCheck,
 } from "./check_labels_test_harness.ts";
+
+test("published label-checker specification is up to date", async () => {
+	const publishedMarkdown = await readFile(
+		new URL("../spec/label-checker.md", import.meta.url),
+		"utf8",
+	);
+	const expectedMarkdown = renderSpecification(noneOfSpecification);
+
+	assert.equal(
+		publishedMarkdown,
+		expectedMarkdown,
+		"Published label-checker.md is stale. Regenerate it with:\n" +
+			"node test/publish-label-checker-spec.ts",
+	);
+});
 
 type Scenario = {
 	name: string;
