@@ -13,9 +13,37 @@ const noneOfCriterion: ParameterisedText = {
 	parameters: { required: "major, minor, patch" },
 };
 
+const anyOfCriterion: ParameterisedText = {
+	template: "At least one of {required} is present.",
+	parameters: { required: "major, minor, patch" },
+};
+
 export const labelCheckerSpecification: Specification = {
 	title: "Label checker",
 	rules: [
+		{
+			definition:
+				"A pull request must not have any of the labels specified by `none_of`.",
+			examples: [
+				{
+					id: "none_of_major_minor_patch",
+					content: [
+						{
+							type: "table",
+							table: {
+								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+								rows: [
+									[noneOfCriterion, "(none)", "Success"],
+									[noneOfCriterion, "minor", "Failure"],
+									[noneOfCriterion, "minor, patch", "Failure"],
+									[noneOfCriterion, "major, minor, patch", "Failure"],
+								],
+							},
+						},
+					],
+				},
+			],
+		},
 		{
 			definition:
 				"A pull request must have exactly one of the labels specified by `one_of`.",
@@ -41,20 +69,20 @@ export const labelCheckerSpecification: Specification = {
 		},
 		{
 			definition:
-				"A pull request must not have any of the labels specified by `none_of`.",
+				"A pull request must have at least one of the labels specified by `any_of`.",
 			examples: [
 				{
-					id: "none_of_major_minor_patch",
+					id: "any_of_major_minor_patch",
 					content: [
 						{
 							type: "table",
 							table: {
 								headers: ["Criterion", "Labels on the pull request", "Outcome"],
 								rows: [
-									[noneOfCriterion, "(none)", "Success"],
-									[noneOfCriterion, "minor", "Failure"],
-									[noneOfCriterion, "minor, patch", "Failure"],
-									[noneOfCriterion, "major, minor, patch", "Failure"],
+									[anyOfCriterion, "(none)", "Failure"],
+									[anyOfCriterion, "minor", "Success"],
+									[anyOfCriterion, "minor, patch", "Success"],
+									[anyOfCriterion, "major, minor, patch", "Success"],
 								],
 							},
 						},

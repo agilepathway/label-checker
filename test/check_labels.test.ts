@@ -536,15 +536,38 @@ const noneOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	},
 ];
 
+const anyOfDiagnosticExpectations: DiagnosticExpectation[] = [
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+];
+
 registerSpecificationTests(labelCheckerSpecification, async (example) => {
-	if (example.id === "one_of_major_minor_patch") {
-		await verifySpecificationExample(
-			example,
-			"one",
-			oneOfDiagnosticExpectations,
-		);
-		return;
-	}
 	if (example.id === "none_of_major_minor_patch") {
 		await verifySpecificationExample(
 			example,
@@ -553,12 +576,28 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 		);
 		return;
 	}
+	if (example.id === "one_of_major_minor_patch") {
+		await verifySpecificationExample(
+			example,
+			"one",
+			oneOfDiagnosticExpectations,
+		);
+		return;
+	}
+	if (example.id === "any_of_major_minor_patch") {
+		await verifySpecificationExample(
+			example,
+			"any",
+			anyOfDiagnosticExpectations,
+		);
+		return;
+	}
 	throw new Error(`Unexpected label-checker example: ${example.id}`);
 });
 
 async function verifySpecificationExample(
 	example: Example,
-	requirement: "one" | "none",
+	requirement: "one" | "none" | "any",
 	expectations: DiagnosticExpectation[],
 ): Promise<void> {
 	const table = tableAt(example, 0);
