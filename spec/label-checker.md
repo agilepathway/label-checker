@@ -61,3 +61,20 @@ A pull request must have at least one of the labels specified by `any_of`.
 | At least one of major, minor, patch is present. | major, minor, patch | Success |
 
 ---
+
+## Rule
+
+The label checker can combine multiple checks together.
+
+## Example
+
+2 checks combined:
+
+| Criterion 1 | Criterion 2 | Labels on the pull request | Criterion 1 outcome | Criterion 2 outcome | Overall outcome |
+|---|---|---|---|---|---|
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | (none) | Success | Failure | Failure |
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | minor | Failure | Success | Failure |
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | minor, patch | Failure | Failure | Failure |
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | major, minor, patch | Failure | Failure | Failure |
+
+---
