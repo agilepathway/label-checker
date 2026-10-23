@@ -536,6 +536,37 @@ const noneOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	},
 ];
 
+const allOfDiagnosticExpectations: DiagnosticExpectation[] = [
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+];
+
 const anyOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	{
 		status: 1,
@@ -584,6 +615,14 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 		);
 		return;
 	}
+	if (example.id === "all_of_major_minor_patch") {
+		await verifySpecificationExample(
+			example,
+			"all",
+			allOfDiagnosticExpectations,
+		);
+		return;
+	}
 	if (example.id === "any_of_major_minor_patch") {
 		await verifySpecificationExample(
 			example,
@@ -597,7 +636,7 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 
 async function verifySpecificationExample(
 	example: Example,
-	requirement: "one" | "none" | "any",
+	requirement: "one" | "none" | "all" | "any",
 	expectations: DiagnosticExpectation[],
 ): Promise<void> {
 	const table = tableAt(example, 0);

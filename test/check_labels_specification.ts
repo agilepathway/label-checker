@@ -18,6 +18,11 @@ const anyOfCriterion: ParameterisedText = {
 	parameters: { required: "major, minor, patch" },
 };
 
+const allOfCriterion: ParameterisedText = {
+	template: "All of {required} are present.",
+	parameters: { required: "major, minor, patch" },
+};
+
 export const labelCheckerSpecification: Specification = {
 	title: "Label checker",
 	rules: [
@@ -60,6 +65,29 @@ export const labelCheckerSpecification: Specification = {
 									[oneOfCriterion, "minor", "Success"],
 									[oneOfCriterion, "minor, patch", "Failure"],
 									[oneOfCriterion, "major, minor, patch", "Failure"],
+								],
+							},
+						},
+					],
+				},
+			],
+		},
+		{
+			definition:
+				"A pull request must have all of the labels specified by `all_of`.",
+			examples: [
+				{
+					id: "all_of_major_minor_patch",
+					content: [
+						{
+							type: "table",
+							table: {
+								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+								rows: [
+									[allOfCriterion, "(none)", "Failure"],
+									[allOfCriterion, "minor", "Failure"],
+									[allOfCriterion, "minor, patch", "Failure"],
+									[allOfCriterion, "major, minor, patch", "Success"],
 								],
 							},
 						},
