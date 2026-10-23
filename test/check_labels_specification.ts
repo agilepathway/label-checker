@@ -14,18 +14,14 @@ export const noneOfSpecification: Specification = {
 		{
 			definition:
 				"A pull request must not have any of the labels specified by `none_of`.",
-		examples: [
+			examples: [
 				{
 					id: "none_of_major_minor_patch",
 					content: [
 						{
 							type: "table",
 							table: {
-								headers: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
-								],
+								headers: ["Criterion", "Labels on the pull request", "Outcome"],
 								rows: [
 									[criterion, "(none)", "Success"],
 									[criterion, "minor", "Failure"],
