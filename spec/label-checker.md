@@ -34,6 +34,21 @@ A pull request must have exactly one of the labels specified by `one_of`.
 
 ## Rule
 
+A pull request must have all of the labels specified by `all_of`.
+
+## Example
+
+| Criterion | Labels on the pull request | Outcome |
+|---|---|---|
+| All of major, minor, patch are present. | (none) | Failure |
+| All of major, minor, patch are present. | minor | Failure |
+| All of major, minor, patch are present. | minor, patch | Failure |
+| All of major, minor, patch are present. | major, minor, patch | Success |
+
+---
+
+## Rule
+
 A pull request must have at least one of the labels specified by `any_of`.
 
 ## Example
