@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { expandText, tableAt } from "../shared/specification-by-example/src/specification-by-example.ts";
+import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
+import { noneOfSpecification } from "./check_labels_specification.ts";
 import {
 	type Requirements,
 	runLabelCheck,
@@ -18,50 +21,7 @@ type Scenario = {
 };
 
 const scenarios: Scenario[] = [
-	{
-		name: "none, got 0",
-		pullRequestNumber: 1,
-		labels: [],
-		requirements: { none: "major,minor,patch" },
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		name: "none, got 1",
-		pullRequestNumber: 2,
-		labels: ["minor"],
-		requirements: { none: "major,minor,patch" },
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-		output: "label_check=failure",
-	},
-	{
-		name: "none, got 2",
-		pullRequestNumber: 3,
-		labels: ["minor", "patch"],
-		requirements: { none: "major,minor,patch" },
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		name: "none, got 3",
-		pullRequestNumber: 4,
-		labels: ["major", "minor", "patch"],
-		requirements: { none: "major,minor,patch" },
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
+	// The none_of scenarios are exercised from the executable specification below.
 	{
 		name: "one, got 0",
 		pullRequestNumber: 1,
@@ -529,6 +489,57 @@ const scenarios: Scenario[] = [
 		output: "label_check=failure",
 	},
 ];
+
+const noneOfDiagnosticExpectations = [
+	{
+		stdout: "Checking GitHub labels ...\\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		stdout: "Checking GitHub labels ...\\n",
+		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\\n",
+		output: "label_check=failure",
+	},
+	{
+		stdout: "Checking GitHub labels ...\\n",
+		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\\n",
+		output: "label_check=failure",
+	},
+	{
+		stdout: "Checking GitHub labels ...\\n",
+		stderr: "::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\\n",
+		output: "label_check=failure",
+	},
+];
+
+registerSpecificationTests(noneOfSpecification, async (example) => {
+	const table = tableAt(example, 0);
+	assert.equal(table.rows.length, noneOfDiagnosticExpectations.length);
+
+	for (const [index, row] of table.rows.entries()) {
+		const labelsText = renderTableText(row[1]);
+		const labels = labelsText === "(none)" ? [] : labelsText.split(", ");
+		const outcome = renderTableText(row[2]);
+		const expected = noneOfDiagnosticExpectations[index];
+		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
+
+		const result = await runLabelCheck({
+			pullRequestNumber: index + 1,
+			labels,
+			requirements: { none: "major,minor,patch" },
+		});
+
+		assert.equal(result.status, outcome === "Success" ? 0 : 1);
+		assert.equal(result.stdout, expected.stdout);
+		assert.equal(result.stderr, expected.stderr);
+		assert.equal(result.output, expected.output);
+	}
+});
+
+function renderTableText(value: string | { template: string; parameters: Record<string, string> }): string {
+	return typeof value === "string" ? value : expandText(value);
+}
 
 for (const scenario of scenarios) {
 	test(`checks labels for ${scenario.name}`, async () => {
