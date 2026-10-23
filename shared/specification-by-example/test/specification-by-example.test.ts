@@ -34,6 +34,19 @@ const tableFirstExample: Example = {
 	],
 };
 
+const parameterisedTableExample: Example = {
+	id: "parameterised-table",
+	content: [
+		{
+			type: "table",
+			table: {
+				headers: [{ template: "Heading {name}", parameters: { name: "one" } }],
+				rows: [[{ template: "Value {name}", parameters: { name: "two" } }]],
+			},
+		},
+	],
+};
+
 const _emptyContentExample: Example = {
 	id: "empty",
 	// @ts-expect-error Examples must have at least one content item.
@@ -121,6 +134,13 @@ test("tableAt returns a table at the start of an example", () => {
 	assert.deepEqual(tableAt(tableFirstExample, 0), {
 		headers: ["Heading"],
 		rows: [["value"]],
+	});
+});
+
+test("tableAt returns parameterised headers and cells", () => {
+	assert.deepEqual(tableAt(parameterisedTableExample, 0), {
+		headers: [{ template: "Heading {name}", parameters: { name: "one" } }],
+		rows: [[{ template: "Value {name}", parameters: { name: "two" } }]],
 	});
 });
 

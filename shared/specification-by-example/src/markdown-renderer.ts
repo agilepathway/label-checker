@@ -3,6 +3,7 @@ import type {
 	Rule,
 	Specification,
 	Table,
+	TableText,
 } from "./specification-by-example.ts";
 import { expandText } from "./specification-by-example.ts";
 
@@ -10,11 +11,17 @@ function escapePipes(value: string): string {
 	return value.replaceAll("|", "\\|");
 }
 
+function renderTableText(value: TableText): string {
+	return typeof value === "string" ? value : expandText(value);
+}
+
 function renderTable(table: Table): string {
 	return [
-		`| ${table.headers.map(escapePipes).join(" | ")} |`,
+		`| ${table.headers.map(renderTableText).map(escapePipes).join(" | ")} |`,
 		`|${table.headers.map(() => "---").join("|")}|`,
-		...table.rows.map((row) => `| ${row.map(escapePipes).join(" | ")} |`),
+		...table.rows.map(
+			(row) => `| ${row.map(renderTableText).map(escapePipes).join(" | ")} |`,
+		),
 	].join("\n");
 }
 

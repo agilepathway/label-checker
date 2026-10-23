@@ -9,8 +9,10 @@ import { renderSpecification } from "../../../../shared/specification-by-example
 import type {
 	Example,
 	Table,
+	TableText,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import {
+	expandText,
 	tableAt,
 	textAt,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
@@ -53,7 +55,10 @@ test("uses plain text in specification table cells", () => {
 	);
 
 	for (const cell of cells) {
-		assert.doesNotMatch(cell, /[`*]/);
+		assert.doesNotMatch(
+			typeof cell === "string" ? cell : expandText(cell),
+			/[`*]/,
+		);
 	}
 });
 
@@ -89,7 +94,7 @@ test("prints updated tags with short commit SHAs", async () => {
 });
 
 async function runTaggingExample(example: Example): Promise<void> {
-	const table = tableAt(example, 1);
+	const table = plainTable(tableAt(example, 1));
 	const fakeGitHubApi = new FakeGitHubApi(tagState(table, "Before"));
 	const apiUrl = await fakeGitHubApi.start();
 
@@ -116,8 +121,18 @@ async function runTaggingExample(example: Example): Promise<void> {
 	}
 }
 
+function plainTable(table: Table): Table<string> {
+	const plainText = (value: TableText): string =>
+		typeof value === "string" ? value : expandText(value);
+
+	return {
+		headers: table.headers.map(plainText),
+		rows: table.rows.map((row) => row.map(plainText)),
+	};
+}
+
 function tagState(
-	table: Table,
+	table: Table<string>,
 	column: "Before" | "After",
 ): Map<string, string> {
 	const tagIndex = table.headers.indexOf("Tag");
