@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
 	expandText,
 	tableAt,
+	type TableText,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import { noneOfSpecification } from "./check_labels_specification.ts";
@@ -540,9 +541,7 @@ registerSpecificationTests(noneOfSpecification, async (example) => {
 	}
 });
 
-function renderTableText(
-	value: string | { template: string; parameters: Record<string, string> },
-): string {
+function renderTableText(value: TableText): string {
 	return typeof value === "string" ? value : expandText(value);
 }
 
