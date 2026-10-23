@@ -5,6 +5,7 @@ import { renderSpecification } from "../shared/specification-by-example/src/mark
 import {
 	type Example,
 	expandText,
+	type ParameterisedText,
 	type TableText,
 	tableAt,
 	textAt,
@@ -644,6 +645,7 @@ async function verifyCombinedChecksSpecificationRow(
 ): Promise<void> {
 	const requiredLabels = getRequiredLabels(row[0], "first");
 	assert.equal(getRequiredLabels(row[1], "second"), requiredLabels);
+	assertCombinedCheckCriterionDescriptions(row[0], row[1]);
 
 	const labels = parseLabels(renderTableText(row[2]));
 	const noneOutcome = renderTableText(row[3]);
@@ -672,20 +674,62 @@ async function verifyCombinedChecksSpecificationRow(
 	assert.equal(result.output, expected.output);
 }
 
+test("combined-check criterion descriptions detect swapped checks", () => {
+	const example = labelCheckerSpecification.rules
+		.flatMap((rule) => rule.examples)
+		.find((candidate) => candidate.id === "two_checks_combined");
+	assert(example, "Missing the two_checks_combined example");
+
+	const row = tableAt(example, 1).rows[0];
+	assert(row, "Missing the first combined-check row");
+
+	assert.doesNotThrow(() =>
+		assertCombinedCheckCriterionDescriptions(row[0], row[1]),
+	);
+	assert.throws(
+		() => assertCombinedCheckCriterionDescriptions(row[1], row[0]),
+		/first criterion must describe none_of/,
+	);
+});
+
+function assertCombinedCheckCriterionDescriptions(
+	firstCriterion: TableText | undefined,
+	secondCriterion: TableText | undefined,
+): void {
+	assert.match(
+		expandText(getCriterion(firstCriterion, "first")),
+		/\bnone\b/i,
+		"The first criterion must describe none_of",
+	);
+	assert.match(
+		expandText(getCriterion(secondCriterion, "second")),
+		/\bexactly one\b/i,
+		"The second criterion must describe one_of",
+	);
+}
+
 function getRequiredLabels(
 	criterion: TableText | undefined,
 	name: string,
 ): string {
-	assert(
-		typeof criterion !== "string" && criterion !== undefined,
-		`Expected the ${name} criterion to use parameterised text`,
-	);
-	const requiredLabels = criterion.parameters.required;
+	const criterionText = getCriterion(criterion, name);
+	const requiredLabels = criterionText.parameters.required;
 	assert(
 		requiredLabels,
 		`Expected the ${name} criterion to define required labels`,
 	);
 	return requiredLabels;
+}
+
+function getCriterion(
+	criterion: TableText | undefined,
+	name: string,
+): ParameterisedText {
+	assert(
+		typeof criterion !== "string" && criterion !== undefined,
+		`Expected the ${name} criterion to use parameterised text`,
+	);
+	return criterion;
 }
 
 function parseLabels(labelsText: string): string[] {
