@@ -4,6 +4,21 @@
 
 ## Rule
 
+A pull request must not have any of the labels specified by `none_of`.
+
+## Example
+
+| Criterion | Labels on the pull request | Outcome |
+|---|---|---|
+| None of major, minor, patch are present. | (none) | Success |
+| None of major, minor, patch are present. | minor | Failure |
+| None of major, minor, patch are present. | minor, patch | Failure |
+| None of major, minor, patch are present. | major, minor, patch | Failure |
+
+---
+
+## Rule
+
 A pull request must have exactly one of the labels specified by `one_of`.
 
 ## Example
@@ -19,15 +34,15 @@ A pull request must have exactly one of the labels specified by `one_of`.
 
 ## Rule
 
-A pull request must not have any of the labels specified by `none_of`.
+A pull request must have at least one of the labels specified by `any_of`.
 
 ## Example
 
 | Criterion | Labels on the pull request | Outcome |
 |---|---|---|
-| None of major, minor, patch are present. | (none) | Success |
-| None of major, minor, patch are present. | minor | Failure |
-| None of major, minor, patch are present. | minor, patch | Failure |
-| None of major, minor, patch are present. | major, minor, patch | Failure |
+| At least one of major, minor, patch is present. | (none) | Failure |
+| At least one of major, minor, patch is present. | minor | Success |
+| At least one of major, minor, patch is present. | minor, patch | Success |
+| At least one of major, minor, patch is present. | major, minor, patch | Success |
 
 ---
