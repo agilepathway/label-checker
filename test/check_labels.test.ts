@@ -522,6 +522,14 @@ registerSpecificationTests(noneOfSpecification, async (example) => {
 	assert.equal(table.rows.length, noneOfDiagnosticExpectations.length);
 
 	for (const [index, row] of table.rows.entries()) {
+		const criterion = row[0];
+		assert(
+			typeof criterion !== "string",
+			"Expected the criterion to use parameterised text",
+		);
+		const requiredLabels = criterion.parameters.required;
+		assert(requiredLabels, "Expected the criterion to define required labels");
+
 		const labelsText = renderTableText(row[1]);
 		const labels = labelsText === "(none)" ? [] : labelsText.split(", ");
 		const outcome = renderTableText(row[2]);
@@ -531,7 +539,7 @@ registerSpecificationTests(noneOfSpecification, async (example) => {
 		const result = await runLabelCheck({
 			pullRequestNumber: index + 1,
 			labels,
-			requirements: { none: "major,minor,patch" },
+			requirements: { none: requiredLabels.replaceAll(", ", ",") },
 		});
 
 		assert.equal(result.status, outcome === "Success" ? 0 : 1);
