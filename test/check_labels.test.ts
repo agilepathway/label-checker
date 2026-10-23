@@ -696,14 +696,14 @@ function assertCombinedCheckCriterionDescriptions(
 	firstCriterion: TableText | undefined,
 	secondCriterion: TableText | undefined,
 ): void {
-	assert.match(
-		expandText(getCriterion(firstCriterion, "first")),
-		/\bnone\b/i,
+	assert.equal(
+		getCriterion(firstCriterion, "first").template,
+		"None of {required} are present.",
 		"The first criterion must describe none_of",
 	);
-	assert.match(
-		expandText(getCriterion(secondCriterion, "second")),
-		/\bexactly one\b/i,
+	assert.equal(
+		getCriterion(secondCriterion, "second").template,
+		"Exactly one of {required} is present.",
 		"The second criterion must describe one_of",
 	);
 }
