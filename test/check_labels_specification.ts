@@ -1,3 +1,5 @@
+// biome-ignore-all lint/security/noSecrets: Prefix criteria are specification text, not secrets.
+
 import type {
 	ParameterisedText,
 	Specification,
@@ -31,6 +33,35 @@ const anyOfPrefixCriterion: ParameterisedText = {
 const allOfPrefixCriterion: ParameterisedText = {
 	template: "All labels start with prefix {prefix}",
 	parameters: { prefix: "type:" },
+};
+
+const multiplePrefixes = {
+	firstPrefix: "type:",
+	secondPrefix: "visibility/",
+};
+
+const noneOfMultiplePrefixesCriterion: ParameterisedText = {
+	template:
+		"No labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	parameters: multiplePrefixes,
+};
+
+const oneOfMultiplePrefixesCriterion: ParameterisedText = {
+	template:
+		"Exactly one label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	parameters: multiplePrefixes,
+};
+
+const anyOfMultiplePrefixesCriterion: ParameterisedText = {
+	template:
+		"At least one label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	parameters: multiplePrefixes,
+};
+
+const allOfMultiplePrefixesCriterion: ParameterisedText = {
+	template:
+		"All labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	parameters: multiplePrefixes,
 };
 
 const anyOfCriterion: ParameterisedText = {
@@ -241,6 +272,28 @@ export const labelCheckerSpecification: Specification = {
 							table: {
 								headers: ["Criterion", "Outcome"],
 								rows: [[allOfPrefixCriterion, "Error"]],
+							},
+						},
+					],
+				},
+			],
+		},
+		{
+			definition: "Each prefix check can specify only one prefix.",
+			examples: [
+				{
+					id: "multiple_prefixes_per_check",
+					content: [
+						{
+							type: "table",
+							table: {
+								headers: ["Criterion", "Outcome"],
+								rows: [
+									[noneOfMultiplePrefixesCriterion, "Error"],
+									[oneOfMultiplePrefixesCriterion, "Error"],
+									[anyOfMultiplePrefixesCriterion, "Error"],
+									[allOfMultiplePrefixesCriterion, "Error"],
+								],
 							},
 						},
 					],

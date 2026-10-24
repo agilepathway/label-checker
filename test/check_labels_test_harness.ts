@@ -144,9 +144,11 @@ function createEndpointEnvironment(
 	endpoint: string | undefined,
 	enterprisePlatform: string | undefined,
 	enterpriseServer: boolean,
-): Pick<
-	NodeJS.ProcessEnv,
-	"GITHUB_API_URL" | "INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL"
+): Partial<
+	Pick<
+		NodeJS.ProcessEnv,
+		"GITHUB_API_URL" | "INPUT_GITHUB_ENTERPRISE_GRAPHQL_URL"
+	>
 > {
 	const apiEnvironment = endpoint ? { GITHUB_API_URL: endpoint } : {};
 	if (!enterprisePlatform) return apiEnvironment;
@@ -170,7 +172,7 @@ function getEnterpriseEndpoint(
 
 function createPrefixModeEnvironment(
 	prefixMode: boolean,
-): Pick<NodeJS.ProcessEnv, "INPUT_PREFIX_MODE"> {
+): Partial<Pick<NodeJS.ProcessEnv, "INPUT_PREFIX_MODE">> {
 	if (prefixMode) {
 		return { INPUT_PREFIX_MODE: "true" };
 	}
@@ -180,9 +182,11 @@ function createPrefixModeEnvironment(
 
 function createRequirementEnvironment(
 	requirements: Requirements,
-): Pick<
-	NodeJS.ProcessEnv,
-	"INPUT_NONE_OF" | "INPUT_ONE_OF" | "INPUT_ALL_OF" | "INPUT_ANY_OF"
+): Partial<
+	Pick<
+		NodeJS.ProcessEnv,
+		"INPUT_NONE_OF" | "INPUT_ONE_OF" | "INPUT_ALL_OF" | "INPUT_ANY_OF"
+	>
 > {
 	return {
 		...(requirements.none ? { INPUT_NONE_OF: requirements.none } : {}),
@@ -201,10 +205,14 @@ function collectProcessResult(child: ReturnType<typeof spawn>): Promise<{
 		let stdout = "";
 		let stderr = "";
 
-		child.stdout.on("data", (chunk: Buffer) => {
+		const { stdout: stdoutStream, stderr: stderrStream } = child;
+		assert(stdoutStream, "Child process stdout must be piped");
+		assert(stderrStream, "Child process stderr must be piped");
+
+		stdoutStream.on("data", (chunk: Buffer) => {
 			stdout += chunk;
 		});
-		child.stderr.on("data", (chunk: Buffer) => {
+		stderrStream.on("data", (chunk: Buffer) => {
 			stderr += chunk;
 		});
 		child.on("error", reject);

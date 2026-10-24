@@ -111,6 +111,21 @@ The label checker can check for labels that start with a given prefix.
 
 ## Rule
 
+Each prefix check can specify only one prefix.
+
+### Example
+
+| Criterion | Outcome |
+|---|---|
+| No labels start with prefixes `type:` and `visibility/` | Error |
+| Exactly one label starts with prefixes `type:` and `visibility/` | Error |
+| At least one label starts with prefixes `type:` and `visibility/` | Error |
+| All labels start with prefixes `type:` and `visibility/` | Error |
+
+---
+
+## Rule
+
 The label checker can combine multiple checks together.
 
 ### Example
