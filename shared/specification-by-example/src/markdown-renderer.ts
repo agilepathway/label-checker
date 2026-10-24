@@ -34,7 +34,7 @@ function renderExample(example: Example): string {
 		return renderTable(item.table);
 	});
 
-	return ["## Example", ...content].join("\n\n");
+	return ["### Example", ...content].join("\n\n");
 }
 
 function renderRule(rule: Rule): string {

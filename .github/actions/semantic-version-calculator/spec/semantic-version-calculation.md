@@ -6,7 +6,7 @@
 
 The consumer must provide exactly one semantic version increment: `major`, `minor` or `patch`. The value is case-insensitive.
 
-## Example
+### Example
 
 | Input | Outcome |
 |---|---|
@@ -29,7 +29,7 @@ The consumer must provide exactly one semantic version increment: `major`, `mino
 
 A version tag must take the form `vX.Y.Z` where X is the major version, Y is the minor version and Z is the patch version.
 
-## Example
+### Example
 
 | Existing tag | Accepted? | Notes |
 |---|---|---|
@@ -50,7 +50,7 @@ A version tag must take the form `vX.Y.Z` where X is the major version, Y is the
 
 The version increment is applied against the highest valid existing semantic version tag in the repository.
 
-## Example
+### Example
 
 | Existing tags | Highest existing semantic version tag | Notes |
 |---|---|---|
@@ -66,7 +66,7 @@ The version increment is applied against the highest valid existing semantic ver
 
 At least one valid semantic version tag must exist in the repository. If none exists, calculation fails.
 
-## Example
+### Example
 
 | Existing tags | Outcome |
 |---|---|
@@ -80,7 +80,7 @@ This behaviour is acceptable for `label-checker`, which already has valid SemVer
 
 The specified version component is incremented by one. When the major version is incremented, the minor and patch versions are reset to zero. When the minor version is incremented, the patch version is reset to zero.
 
-## Example
+### Example
 
 | Starting version | Increment | Result |
 |---|---|---|
