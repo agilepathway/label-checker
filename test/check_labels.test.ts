@@ -582,6 +582,8 @@ const specificationExampleImplementations: Record<
 	one_of_type_prefix: verifyOneOfTypePrefixSpecificationExample,
 	any_of_type_prefix: verifyAnyOfTypePrefixSpecificationExample,
 	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
+	multiple_prefixes_per_check:
+		verifyMultiplePrefixesPerCheckSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "one", oneOfDiagnosticExpectations),
 	all_of_major_minor_patch: (example: Example) =>
@@ -600,6 +602,61 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 	}
 	await implementation(example);
 });
+
+async function verifyMultiplePrefixesPerCheckSpecificationExample(
+	example: Example,
+): Promise<void> {
+	const table = tableAt(example, 0);
+	assert.equal(table.rows.length, 4);
+	const verifiedRequirements = new Set<Requirement>();
+	const requirementByOpening = new Map<string, Requirement>([
+		["No", "none"],
+		["Exactly", "one"],
+		["At", "any"],
+		["All", "all"],
+	]);
+
+	for (const [index, row] of table.rows.entries()) {
+		const criterion = row[0];
+		assert(
+			typeof criterion !== "string",
+			"Expected the criterion to use parameterised text",
+		);
+		const opening = criterion.template.split(" ")[0];
+		const requirement = requirementByOpening.get(opening);
+		assert(
+			requirement,
+			`Unexpected multiple-prefix criterion: ${criterion.template}`,
+		);
+		assert(
+			!verifiedRequirements.has(requirement),
+			`Duplicate multiple-prefix criterion: ${criterion.template}`,
+		);
+		verifiedRequirements.add(requirement);
+		assert.deepEqual(criterion.parameters, {
+			firstPrefix: "type:",
+			secondPrefix: "visibility/",
+		});
+		assert.equal(renderTableText(row[1]), "Error");
+
+		const result = await runLabelCheck({
+			pullRequestNumber: index + 1,
+			labels: [],
+			requirements: { [requirement]: "type:,visibility/" },
+			prefixMode: true,
+		});
+
+		assert.equal(result.status, 1);
+		assert.equal(result.stdout, "Checking GitHub labels ...\n");
+		assert.equal(
+			result.stderr,
+			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+		);
+		assert.equal(result.output, "label_check=failure");
+	}
+
+	assert.equal(verifiedRequirements.size, 4);
+}
 
 async function verifyAllOfTypePrefixSpecificationExample(
 	example: Example,
@@ -1070,46 +1127,5 @@ for (const scenario of scenarios) {
 		assert.equal(result.stdout, scenario.stdout);
 		assert.equal(result.stderr, scenario.stderr);
 		assert.equal(result.output, scenario.output);
-	});
-}
-
-for (const scenario of [
-	{
-		name: "none",
-		requirements: { none: "type:,visibility/" },
-		stderr:
-			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
-	},
-	{
-		name: "one",
-		requirements: { one: "type:,visibility/" },
-		stderr:
-			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
-	},
-	{
-		name: "any",
-		requirements: { any: "type:,visibility/" },
-		stderr:
-			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
-	},
-	{
-		name: "all with multiple prefixes",
-		requirements: { all: "type:,visibility/" },
-		stderr:
-			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
-	},
-] as const) {
-	test(`rejects prefix ${scenario.name} configuration`, async () => {
-		const result = await runLabelCheck({
-			pullRequestNumber: 1,
-			labels: [],
-			requirements: scenario.requirements,
-			prefixMode: true,
-		});
-
-		assert.equal(result.status, 1);
-		assert.equal(result.stdout, "Checking GitHub labels ...\n");
-		assert.equal(result.stderr, scenario.stderr);
-		assert.equal(result.output, "label_check=failure");
 	});
 }
