@@ -33,6 +33,34 @@ test("published label-checker specification is up to date", async () => {
 	);
 });
 
+test("combined prefix example is grouped under the combined-prefix rule", () => {
+	const combinedPrefixRule = labelCheckerSpecification.rules.find(
+		(rule) =>
+			rule.definition ===
+			"The label checker can combine multiple prefix checks.",
+	);
+	assert(combinedPrefixRule, "Missing the combined-prefix rule");
+	assert(
+		combinedPrefixRule.examples.some(
+			(example) => example.id === "two_prefix_checks_combined",
+		),
+		"The combined-prefix example must be under the combined-prefix rule",
+	);
+
+	const combinedChecksRule = labelCheckerSpecification.rules.find(
+		(rule) =>
+			rule.definition ===
+			"The label checker can combine multiple checks together.",
+	);
+	assert(combinedChecksRule, "Missing the combined-checks rule");
+	assert(
+		!combinedChecksRule.examples.some(
+			(example) => example.id === "two_prefix_checks_combined",
+		),
+		"The combined-prefix example must not be under the combined-checks rule",
+	);
+});
+
 test("prefix examples are grouped under the prefix-matching rule", () => {
 	const prefixRule = labelCheckerSpecification.rules.find(
 		(rule) =>

@@ -301,7 +301,7 @@ export const labelCheckerSpecification: Specification = {
 			],
 		},
 		{
-			definition: "The label checker can combine multiple checks together.",
+			definition: "The label checker can combine multiple prefix checks.",
 			examples: [
 				{
 					id: "two_prefix_checks_combined",
@@ -331,6 +331,11 @@ export const labelCheckerSpecification: Specification = {
 						},
 					],
 				},
+			],
+		},
+		{
+			definition: "The label checker can combine multiple checks together.",
+			examples: [
 				{
 					id: "two_checks_combined",
 					content: [
