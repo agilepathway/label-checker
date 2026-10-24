@@ -301,6 +301,39 @@ export const labelCheckerSpecification: Specification = {
 			],
 		},
 		{
+			definition: "The label checker can combine multiple prefix checks.",
+			examples: [
+				{
+					id: "two_prefix_checks_combined",
+					content: [
+						{
+							type: "table",
+							table: {
+								headers: [
+									"Criterion 1",
+									"Criterion 2",
+									"Labels on the pull request",
+									"Criterion 1 outcome",
+									"Criterion 2 outcome",
+									"Overall outcome",
+								],
+								rows: [
+									[
+										noneOfPrefixCriterion,
+										oneOfPrefixCriterion,
+										"(none)",
+										"Success",
+										"Failure",
+										"Failure",
+									],
+								],
+							},
+						},
+					],
+				},
+			],
+		},
+		{
 			definition: "The label checker can combine multiple checks together.",
 			examples: [
 				{
