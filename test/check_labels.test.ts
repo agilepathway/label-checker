@@ -88,6 +88,28 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 	);
 });
 
+test("prefix examples have plain-text captions before their tables", () => {
+	const prefixExamples = labelCheckerSpecification.rules
+		.find(
+			(rule) =>
+				rule.definition ===
+				"The label checker can check for labels that start with a given prefix.",
+		)
+		?.examples.filter((example) => example.id.endsWith("_type_prefix"));
+
+	assert(prefixExamples, "Missing the prefix-matching rule");
+	assert.equal(prefixExamples.length, 3);
+
+	for (const example of prefixExamples) {
+		assert.equal(
+			expandText(textAt(example, 0)),
+			"Checking labels starting with type:",
+		);
+		assert.equal(example.content[1]?.type, "table");
+		tableAt(example, 1);
+	}
+});
+
 type Scenario = {
 	name: string;
 	pullRequestNumber: number;
@@ -561,7 +583,7 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 async function verifyNoneOfTypePrefixSpecificationExample(
 	example: Example,
 ): Promise<void> {
-	const table = tableAt(example, 0);
+	const table = tableAt(example, 1);
 	assert.equal(
 		table.rows.length,
 		noneOfTypePrefixDiagnosticExpectations.length,
@@ -608,7 +630,7 @@ async function verifyNoneOfTypePrefixSpecificationExample(
 async function verifyOneOfTypePrefixSpecificationExample(
 	example: Example,
 ): Promise<void> {
-	const table = tableAt(example, 0);
+	const table = tableAt(example, 1);
 	assert.equal(table.rows.length, oneOfTypePrefixDiagnosticExpectations.length);
 	const pullRequestNumbers = [1, 5, 6, 7];
 
@@ -652,7 +674,7 @@ async function verifyOneOfTypePrefixSpecificationExample(
 async function verifyAnyOfTypePrefixSpecificationExample(
 	example: Example,
 ): Promise<void> {
-	const table = tableAt(example, 0);
+	const table = tableAt(example, 1);
 	assert.equal(table.rows.length, anyOfTypePrefixDiagnosticExpectations.length);
 	const pullRequestNumbers = [1, 5, 6, 7];
 

@@ -68,6 +68,8 @@ The label checker can check for labels that start with a given prefix.
 
 ### Example
 
+Checking labels starting with type:
+
 | Criterion | Labels on the pull request | Outcome |
 |---|---|---|
 | No labels starting with type: are present. | (none) | Success |
@@ -77,6 +79,8 @@ The label checker can check for labels that start with a given prefix.
 
 ### Example
 
+Checking labels starting with type:
+
 | Criterion | Labels on the pull request | Outcome |
 |---|---|---|
 | Exactly one label starting with type: is present. | (none) | Failure |
@@ -85,6 +89,8 @@ The label checker can check for labels that start with a given prefix.
 | Exactly one label starting with type: is present. | type:fix, type:feature, type:documentation | Failure |
 
 ### Example
+
+Checking labels starting with type:
 
 | Criterion | Labels on the pull request | Outcome |
 |---|---|---|
