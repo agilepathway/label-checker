@@ -81,8 +81,36 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 		"The any_of prefix example must be under the prefix-matching rule",
 	);
 	assert(
-		prefixRule.examples.some((example) => example.id === "all_of_type_prefix"),
-		"The all_of prefix example must be under the prefix-matching rule",
+		!prefixRule.examples.some((example) => example.id === "all_of_type_prefix"),
+		"The all_of prefix example must not be under the prefix-matching rule",
+	);
+
+	const allOfPrefixRule = labelCheckerSpecification.rules.find(
+		(rule) =>
+			rule.definition ===
+			"The label checker does not support prefix checking with `all_of`.",
+	);
+	assert(allOfPrefixRule, "Missing the unsupported all_of prefix rule");
+	assert(
+		allOfPrefixRule.examples.some(
+			(example) => example.id === "all_of_type_prefix",
+		),
+		"The all_of prefix example must be under the unsupported all_of prefix rule",
+	);
+
+	const onePrefixRuleIndex = labelCheckerSpecification.rules.findIndex(
+		(rule) =>
+			rule.definition === "Each prefix check can specify only one prefix.",
+	);
+	assert.equal(
+		labelCheckerSpecification.rules.indexOf(allOfPrefixRule),
+		labelCheckerSpecification.rules.indexOf(prefixRule) + 1,
+		"The unsupported all_of prefix rule must immediately follow the prefix-matching rule",
+	);
+	assert.equal(
+		onePrefixRuleIndex,
+		labelCheckerSpecification.rules.indexOf(allOfPrefixRule) + 1,
+		"The one-prefix rule must immediately follow the unsupported all_of prefix rule",
 	);
 
 	const noneOfRule = labelCheckerSpecification.rules.find(
@@ -142,12 +170,11 @@ test("prefix examples have captions identifying each check before their tables",
 		?.examples.filter((example) => example.id.endsWith("_type_prefix"));
 
 	assert(prefixExamples, "Missing the prefix-matching rule");
-	assert.equal(prefixExamples.length, 4);
+	assert.equal(prefixExamples.length, 3);
 	const expectedCaptions = new Map([
 		["none_of_type_prefix", "**`none_of`**"],
 		["one_of_type_prefix", "**`one_of`**"],
 		["any_of_type_prefix", "**`any_of`**"],
-		["all_of_type_prefix", "**`all_of`**"],
 	]);
 
 	for (const example of prefixExamples) {
