@@ -257,6 +257,12 @@ export const labelCheckerSpecification: Specification = {
 						},
 					],
 				},
+			],
+		},
+		{
+			definition:
+				"The label checker does not support prefix checking with `all_of`.",
+			examples: [
 				{
 					id: "all_of_type_prefix",
 					content: [
