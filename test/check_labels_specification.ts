@@ -29,7 +29,7 @@ const anyOfPrefixCriterion: ParameterisedText = {
 };
 
 const allOfPrefixCriterion: ParameterisedText = {
-	template: "All labels start with prefix {prefix}.",
+	template: "All labels start with prefix {prefix}",
 	parameters: { prefix: "type:" },
 };
 

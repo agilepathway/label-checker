@@ -613,7 +613,7 @@ async function verifyAllOfTypePrefixSpecificationExample(
 		typeof criterion !== "string",
 		"Expected the criterion to use parameterised text",
 	);
-	assert.equal(criterion.template, "All labels start with prefix {prefix}.");
+	assert.equal(criterion.template, "All labels start with prefix {prefix}");
 	assert.equal(criterion.parameters.prefix, "type:");
 	assert.equal(renderTableText(row[1]), "Error");
 

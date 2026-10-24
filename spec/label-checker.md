@@ -105,7 +105,7 @@ The label checker can check for labels that start with a given prefix.
 
 | Criterion | Outcome |
 |---|---|
-| All labels start with prefix type:. | Error |
+| All labels start with prefix type: | Error |
 
 ---
 
