@@ -15,6 +15,15 @@ A pull request must not have any of the labels specified by `none_of`.
 | None of major, minor, patch are present. | minor, patch | Failure |
 | None of major, minor, patch are present. | major, minor, patch | Failure |
 
+### Example
+
+| Criterion | Labels on the pull request | Outcome |
+|---|---|---|
+| No labels starting with type: are present. | (none) | Success |
+| No labels starting with type: are present. | type:fix | Failure |
+| No labels starting with type: are present. | type:fix, type:feature | Failure |
+| No labels starting with type: are present. | type:fix, type:feature, type:documentation | Failure |
+
 ---
 
 ## Rule

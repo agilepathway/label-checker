@@ -134,54 +134,6 @@ const scenarios: Scenario[] = [
 		output: "label_check=success",
 	},
 	{
-		name: "prefix none, got 0",
-		pullRequestNumber: 1,
-		labels: [],
-		requirements: { none: "type:" },
-		prefixMode: true,
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		name: "prefix none, got 1",
-		pullRequestNumber: 5,
-		labels: ["type:fix"],
-		requirements: { none: "type:" },
-		prefixMode: true,
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
-		output: "label_check=failure",
-	},
-	{
-		name: "prefix none, got 2",
-		pullRequestNumber: 6,
-		labels: ["type:fix", "type:feature"],
-		requirements: { none: "type:" },
-		prefixMode: true,
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
-		output: "label_check=failure",
-	},
-	{
-		name: "prefix none, got 3",
-		pullRequestNumber: 7,
-		labels: ["type:fix", "type:feature", "type:documentation"],
-		requirements: { none: "type:" },
-		prefixMode: true,
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
-		output: "label_check=failure",
-	},
-	{
 		name: "prefix one, got 0",
 		pullRequestNumber: 1,
 		labels: [],
@@ -361,6 +313,37 @@ const noneOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	},
 ];
 
+const noneOfTypePrefixDiagnosticExpectations: DiagnosticExpectation[] = [
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+		output: "label_check=failure",
+	},
+];
+
 const allOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	{
 		status: 1,
@@ -531,6 +514,7 @@ const specificationExampleImplementations: Record<
 > = {
 	none_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "none", noneOfDiagnosticExpectations),
+	none_of_type_prefix: verifyNoneOfTypePrefixSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "one", oneOfDiagnosticExpectations),
 	all_of_major_minor_patch: (example: Example) =>
@@ -549,6 +533,53 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 	}
 	await implementation(example);
 });
+
+async function verifyNoneOfTypePrefixSpecificationExample(
+	example: Example,
+): Promise<void> {
+	const table = tableAt(example, 0);
+	assert.equal(
+		table.rows.length,
+		noneOfTypePrefixDiagnosticExpectations.length,
+	);
+	const pullRequestNumbers = [1, 5, 6, 7];
+
+	for (const [index, row] of table.rows.entries()) {
+		const criterion = row[0];
+		assert(
+			typeof criterion !== "string",
+			"Expected the criterion to use parameterised text",
+		);
+		assert.equal(
+			criterion.template,
+			"No labels starting with {prefix} are present.",
+		);
+		assert.equal(criterion.parameters.prefix, "type:");
+
+		const labels = parseLabels(renderTableText(row[1]));
+		const outcome = renderTableText(row[2]);
+		const expected = noneOfTypePrefixDiagnosticExpectations[index];
+		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
+		const pullRequestNumber = pullRequestNumbers[index];
+		assert(
+			pullRequestNumber,
+			`Missing pull request number for row ${index + 1}`,
+		);
+
+		const result = await runLabelCheck({
+			pullRequestNumber,
+			labels,
+			requirements: { none: criterion.parameters.prefix },
+			prefixMode: true,
+		});
+
+		assert.equal(result.status, expected.status);
+		assert.equal(expected.status, outcome === "Success" ? 0 : 1);
+		assert.equal(result.stdout, expected.stdout);
+		assert.equal(result.stderr, expected.stderr);
+		assert.equal(result.output, expected.output);
+	}
+}
 
 async function verifyThreeChecksSpecificationExample(
 	example: Example,
