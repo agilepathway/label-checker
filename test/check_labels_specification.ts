@@ -143,7 +143,7 @@ export const labelCheckerSpecification: Specification = {
 						{
 							type: "text",
 							text: {
-								template: "Checking labels starting with type:",
+								template: "**`none_of`**",
 								parameters: {},
 							},
 						},
@@ -171,7 +171,7 @@ export const labelCheckerSpecification: Specification = {
 						{
 							type: "text",
 							text: {
-								template: "Checking labels starting with type:",
+								template: "**`one_of`**",
 								parameters: {},
 							},
 						},
@@ -199,7 +199,7 @@ export const labelCheckerSpecification: Specification = {
 						{
 							type: "text",
 							text: {
-								template: "Checking labels starting with type:",
+								template: "**`any_of`**",
 								parameters: {},
 							},
 						},

@@ -68,7 +68,7 @@ The label checker can check for labels that start with a given prefix.
 
 ### Example
 
-Checking labels starting with type:
+**`none_of`**
 
 | Criterion | Labels on the pull request | Outcome |
 |---|---|---|
@@ -79,7 +79,7 @@ Checking labels starting with type:
 
 ### Example
 
-Checking labels starting with type:
+**`one_of`**
 
 | Criterion | Labels on the pull request | Outcome |
 |---|---|---|
@@ -90,7 +90,7 @@ Checking labels starting with type:
 
 ### Example
 
-Checking labels starting with type:
+**`any_of`**
 
 | Criterion | Labels on the pull request | Outcome |
 |---|---|---|

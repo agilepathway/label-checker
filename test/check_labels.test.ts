@@ -88,7 +88,7 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 	);
 });
 
-test("prefix examples have plain-text captions before their tables", () => {
+test("prefix examples have captions identifying each check before their tables", () => {
 	const prefixExamples = labelCheckerSpecification.rules
 		.find(
 			(rule) =>
@@ -99,12 +99,16 @@ test("prefix examples have plain-text captions before their tables", () => {
 
 	assert(prefixExamples, "Missing the prefix-matching rule");
 	assert.equal(prefixExamples.length, 3);
+	const expectedCaptions = new Map([
+		["none_of_type_prefix", "**`none_of`**"],
+		["one_of_type_prefix", "**`one_of`**"],
+		["any_of_type_prefix", "**`any_of`**"],
+	]);
 
 	for (const example of prefixExamples) {
-		assert.equal(
-			expandText(textAt(example, 0)),
-			"Checking labels starting with type:",
-		);
+		const expectedCaption = expectedCaptions.get(example.id);
+		assert(expectedCaption, `Unexpected prefix example: ${example.id}`);
+		assert.equal(expandText(textAt(example, 0)), expectedCaption);
 		assert.equal(example.content[1]?.type, "table");
 		tableAt(example, 1);
 	}
