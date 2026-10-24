@@ -32,6 +32,32 @@ test("published label-checker specification is up to date", async () => {
 	);
 });
 
+test("prefix examples are grouped under the prefix-matching rule", () => {
+	const prefixRule = labelCheckerSpecification.rules.find(
+		(rule) =>
+			rule.definition ===
+			"The label checker can check for labels that start with a given prefix.",
+	);
+	assert(prefixRule, "Missing the prefix-matching rule");
+	assert(
+		prefixRule.examples.some((example) => example.id === "none_of_type_prefix"),
+		"The none_of prefix example must be under the prefix-matching rule",
+	);
+
+	const noneOfRule = labelCheckerSpecification.rules.find(
+		(rule) =>
+			rule.definition ===
+			"A pull request must not have any of the labels specified by `none_of`.",
+	);
+	assert(noneOfRule, "Missing the none_of rule");
+	assert(
+		!noneOfRule.examples.some(
+			(example) => example.id === "none_of_type_prefix",
+		),
+		"The none_of prefix example must not be under the none_of rule",
+	);
+});
+
 type Scenario = {
 	name: string;
 	pullRequestNumber: number;
