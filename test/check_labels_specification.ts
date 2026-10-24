@@ -18,6 +18,11 @@ const noneOfPrefixCriterion: ParameterisedText = {
 	parameters: { prefix: "type:" },
 };
 
+const oneOfPrefixCriterion: ParameterisedText = {
+	template: "Exactly one label starting with {prefix} is present.",
+	parameters: { prefix: "type:" },
+};
+
 const anyOfCriterion: ParameterisedText = {
 	template: "At least one of {required} is present.",
 	parameters: { required: "major, minor, patch" },
@@ -140,6 +145,27 @@ export const labelCheckerSpecification: Specification = {
 									[noneOfPrefixCriterion, "type:fix, type:feature", "Failure"],
 									[
 										noneOfPrefixCriterion,
+										"type:fix, type:feature, type:documentation",
+										"Failure",
+									],
+								],
+							},
+						},
+					],
+				},
+				{
+					id: "one_of_type_prefix",
+					content: [
+						{
+							type: "table",
+							table: {
+								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+								rows: [
+									[oneOfPrefixCriterion, "(none)", "Failure"],
+									[oneOfPrefixCriterion, "type:fix", "Success"],
+									[oneOfPrefixCriterion, "type:fix, type:feature", "Failure"],
+									[
+										oneOfPrefixCriterion,
 										"type:fix, type:feature, type:documentation",
 										"Failure",
 									],
