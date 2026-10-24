@@ -232,19 +232,6 @@ const scenarios: Scenario[] = [
 		stderr: "",
 		output: "label_check=success",
 	},
-	{
-		name: "prefix [none, one], got none",
-		pullRequestNumber: 1,
-		labels: [],
-		requirements: { none: "type:", one: "type:" },
-		prefixMode: true,
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
-		stderr:
-			"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
-		output: "label_check=failure",
-	},
 ];
 
 type DiagnosticExpectation = {
@@ -585,6 +572,7 @@ const specificationExampleImplementations: Record<
 	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
 	multiple_prefixes_per_check:
 		verifyMultiplePrefixesPerCheckSpecificationExample,
+	two_prefix_checks_combined: verifyCombinedPrefixChecksSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "one", oneOfDiagnosticExpectations),
 	all_of_major_minor_patch: (example: Example) =>
@@ -657,6 +645,55 @@ async function verifyMultiplePrefixesPerCheckSpecificationExample(
 	}
 
 	assert.equal(verifiedRequirements.size, 4);
+}
+
+async function verifyCombinedPrefixChecksSpecificationExample(
+	example: Example,
+): Promise<void> {
+	const table = tableAt(example, 0);
+	assert.equal(table.rows.length, 1);
+	const row = table.rows[0];
+	assert(row, "Missing the combined-prefix-check example row");
+
+	const noneCriterion = getCriterion(row[0], "first");
+	const oneCriterion = getCriterion(row[1], "second");
+	assert.equal(
+		noneCriterion.template,
+		"No labels starting with {prefix} are present.",
+	);
+	assert.deepEqual(noneCriterion.parameters, { prefix: "type:" });
+	assert.equal(
+		oneCriterion.template,
+		"Exactly one label starting with {prefix} is present.",
+	);
+	assert.deepEqual(oneCriterion.parameters, { prefix: "type:" });
+
+	const labels = parseLabels(renderTableText(row[2]));
+	const noneOutcome = renderTableText(row[3]);
+	const oneOutcome = renderTableText(row[4]);
+	const overallOutcome = renderTableText(row[5]);
+	assert.equal(noneOutcome, "Success");
+	assert.equal(oneOutcome, "Failure");
+	assert.equal(overallOutcome, "Failure");
+
+	const result = await runLabelCheck({
+		pullRequestNumber: 1,
+		labels,
+		requirements: { none: "type:", one: "type:" },
+		prefixMode: true,
+	});
+
+	assert.equal(result.status, 1);
+	assert.equal(overallOutcome, "Failure");
+	assert.equal(
+		result.stdout,
+		"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
+	);
+	assert.equal(
+		result.stderr,
+		"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
+	);
+	assert.equal(result.output, "label_check=failure");
 }
 
 async function verifyAllOfTypePrefixSpecificationExample(

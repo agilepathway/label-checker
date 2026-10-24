@@ -130,6 +130,12 @@ The label checker can combine multiple checks together.
 
 ### Example
 
+| Criterion 1 | Criterion 2 | Labels on the pull request | Criterion 1 outcome | Criterion 2 outcome | Overall outcome |
+|---|---|---|---|---|---|
+| No labels starting with type: are present. | Exactly one label starting with type: is present. | (none) | Success | Failure | Failure |
+
+### Example
+
 2 checks combined:
 
 | Criterion 1 | Criterion 2 | Labels on the pull request | Criterion 1 outcome | Criterion 2 outcome | Overall outcome |
