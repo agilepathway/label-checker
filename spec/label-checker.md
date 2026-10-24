@@ -15,15 +15,6 @@ A pull request must not have any of the labels specified by `none_of`.
 | None of major, minor, patch are present. | minor, patch | Failure |
 | None of major, minor, patch are present. | major, minor, patch | Failure |
 
-### Example
-
-| Criterion | Labels on the pull request | Outcome |
-|---|---|---|
-| No labels starting with type: are present. | (none) | Success |
-| No labels starting with type: are present. | type:fix | Failure |
-| No labels starting with type: are present. | type:fix, type:feature | Failure |
-| No labels starting with type: are present. | type:fix, type:feature, type:documentation | Failure |
-
 ---
 
 ## Rule
@@ -68,6 +59,21 @@ A pull request must have at least one of the labels specified by `any_of`.
 | At least one of major, minor, patch is present. | minor | Success |
 | At least one of major, minor, patch is present. | minor, patch | Success |
 | At least one of major, minor, patch is present. | major, minor, patch | Success |
+
+---
+
+## Rule
+
+The label checker can check for labels that start with a given prefix.
+
+### Example
+
+| Criterion | Labels on the pull request | Outcome |
+|---|---|---|
+| No labels starting with type: are present. | (none) | Success |
+| No labels starting with type: are present. | type:fix | Failure |
+| No labels starting with type: are present. | type:fix, type:feature | Failure |
+| No labels starting with type: are present. | type:fix, type:feature, type:documentation | Failure |
 
 ---
 

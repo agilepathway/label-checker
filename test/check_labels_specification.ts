@@ -52,27 +52,6 @@ export const labelCheckerSpecification: Specification = {
 						},
 					],
 				},
-				{
-					id: "none_of_type_prefix",
-					content: [
-						{
-							type: "table",
-							table: {
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
-								rows: [
-									[noneOfPrefixCriterion, "(none)", "Success"],
-									[noneOfPrefixCriterion, "type:fix", "Failure"],
-									[noneOfPrefixCriterion, "type:fix, type:feature", "Failure"],
-									[
-										noneOfPrefixCriterion,
-										"type:fix, type:feature, type:documentation",
-										"Failure",
-									],
-								],
-							},
-						},
-					],
-				},
 			],
 		},
 		{
@@ -137,6 +116,33 @@ export const labelCheckerSpecification: Specification = {
 									[anyOfCriterion, "minor", "Success"],
 									[anyOfCriterion, "minor, patch", "Success"],
 									[anyOfCriterion, "major, minor, patch", "Success"],
+								],
+							},
+						},
+					],
+				},
+			],
+		},
+		{
+			definition:
+				"The label checker can check for labels that start with a given prefix.",
+			examples: [
+				{
+					id: "none_of_type_prefix",
+					content: [
+						{
+							type: "table",
+							table: {
+								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+								rows: [
+									[noneOfPrefixCriterion, "(none)", "Success"],
+									[noneOfPrefixCriterion, "type:fix", "Failure"],
+									[noneOfPrefixCriterion, "type:fix, type:feature", "Failure"],
+									[
+										noneOfPrefixCriterion,
+										"type:fix, type:feature, type:documentation",
+										"Failure",
+									],
 								],
 							},
 						},
