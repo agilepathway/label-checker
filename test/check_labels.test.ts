@@ -13,6 +13,7 @@ import {
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import { labelCheckerSpecification } from "./check_labels_specification.ts";
 import {
+	type Requirement,
 	type Requirements,
 	runLabelCheck,
 } from "./check_labels_test_harness.ts";
@@ -886,7 +887,7 @@ async function verifyFourChecksSpecificationRow(
 	});
 
 	assert.equal(result.status, expected.status);
-	assert.equal(expected.status, overallOutcome === "Success" ? 0 : 1);
+	assert.equal(expected.status, 1);
 	assert.equal(result.stdout, expected.stdout);
 	assert.equal(result.stderr, expected.stderr);
 	assert.equal(result.output, expected.output);
@@ -925,7 +926,7 @@ async function verifyThreeChecksSpecificationRow(
 	});
 
 	assert.equal(result.status, expected.status);
-	assert.equal(expected.status, overallOutcome === "Success" ? 0 : 1);
+	assert.equal(expected.status, 1);
 	assert.equal(result.stdout, expected.stdout);
 	assert.equal(result.stderr, expected.stderr);
 	assert.equal(result.output, expected.output);
@@ -1003,7 +1004,7 @@ async function verifyCombinedChecksSpecificationRow(
 	});
 
 	assert.equal(result.status, expected.status);
-	assert.equal(expected.status, overallOutcome === "Success" ? 0 : 1);
+	assert.equal(expected.status, 1);
 	assert.equal(result.stdout, expected.stdout);
 	assert.equal(result.stderr, expected.stderr);
 	assert.equal(result.output, expected.output);
