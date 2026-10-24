@@ -88,4 +88,15 @@ The label checker can combine multiple checks together.
 | None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | All of major, minor, patch are present. | minor, patch | Failure | Failure | Failure | Failure |
 | None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | All of major, minor, patch are present. | major, minor, patch | Failure | Failure | Success | Failure |
 
+### Example
+
+4 checks combined:
+
+| Criterion 1 | Criterion 2 | Criterion 3 | Criterion 4 | Labels on the pull request | Criterion 1 outcome | Criterion 2 outcome | Criterion 3 outcome | Criterion 4 outcome | Overall outcome |
+|---|---|---|---|---|---|---|---|---|---|
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | All of major, minor, patch are present. | At least one of major, minor, patch is present. | (none) | Success | Failure | Failure | Failure | Failure |
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | All of major, minor, patch are present. | At least one of major, minor, patch is present. | minor | Failure | Success | Failure | Success | Failure |
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | All of major, minor, patch are present. | At least one of major, minor, patch is present. | minor, patch | Failure | Failure | Failure | Success | Failure |
+| None of major, minor, patch are present. | Exactly one of major, minor, patch is present. | All of major, minor, patch are present. | At least one of major, minor, patch is present. | major, minor, patch | Failure | Failure | Success | Success | Failure |
+
 ---
