@@ -99,6 +99,14 @@ The label checker can check for labels that start with a given prefix.
 | At least one label starting with type: is present. | type:fix, type:feature | Success |
 | At least one label starting with type: is present. | type:fix, type:feature, type:documentation | Success |
 
+### Example
+
+**`all_of`**
+
+| Criterion | Outcome |
+|---|---|
+| All labels start with prefix type: | Error |
+
 ---
 
 ## Rule
