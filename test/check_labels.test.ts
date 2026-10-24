@@ -47,6 +47,10 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 		prefixRule.examples.some((example) => example.id === "one_of_type_prefix"),
 		"The one_of prefix example must be under the prefix-matching rule",
 	);
+	assert(
+		prefixRule.examples.some((example) => example.id === "any_of_type_prefix"),
+		"The any_of prefix example must be under the prefix-matching rule",
+	);
 
 	const noneOfRule = labelCheckerSpecification.rules.find(
 		(rule) =>
@@ -70,6 +74,17 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 	assert(
 		!oneOfRule.examples.some((example) => example.id === "one_of_type_prefix"),
 		"The one_of prefix example must not be under the one_of rule",
+	);
+
+	const anyOfRule = labelCheckerSpecification.rules.find(
+		(rule) =>
+			rule.definition ===
+			"A pull request must have at least one of the labels specified by `any_of`.",
+	);
+	assert(anyOfRule, "Missing the any_of rule");
+	assert(
+		!anyOfRule.examples.some((example) => example.id === "any_of_type_prefix"),
+		"The any_of prefix example must not be under the any_of rule",
 	);
 });
 
@@ -171,54 +186,6 @@ const scenarios: Scenario[] = [
 		status: 0,
 		stdout:
 			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		name: "prefix any, got 0",
-		pullRequestNumber: 1,
-		labels: [],
-		requirements: { any: "type:" },
-		prefixMode: true,
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		name: "prefix any, got 1",
-		pullRequestNumber: 5,
-		labels: ["type:fix"],
-		requirements: { any: "type:" },
-		prefixMode: true,
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		name: "prefix any, got 2",
-		pullRequestNumber: 6,
-		labels: ["type:fix", "type:feature"],
-		requirements: { any: "type:" },
-		prefixMode: true,
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		name: "prefix any, got 3",
-		pullRequestNumber: 7,
-		labels: ["type:fix", "type:feature", "type:documentation"],
-		requirements: { any: "type:" },
-		prefixMode: true,
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 		stderr: "",
 		output: "label_check=success",
 	},
@@ -365,6 +332,37 @@ const oneOfTypePrefixDiagnosticExpectations: DiagnosticExpectation[] = [
 		stderr:
 			"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 		output: "label_check=failure",
+	},
+];
+
+const anyOfTypePrefixDiagnosticExpectations: DiagnosticExpectation[] = [
+	{
+		status: 1,
+		stdout: "Checking GitHub labels ...\n",
+		stderr:
+			"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
+		output: "label_check=failure",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
+		stderr: "",
+		output: "label_check=success",
+	},
+	{
+		status: 0,
+		stdout:
+			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+		stderr: "",
+		output: "label_check=success",
 	},
 ];
 
@@ -540,6 +538,7 @@ const specificationExampleImplementations: Record<
 		verifySpecificationExample(example, "none", noneOfDiagnosticExpectations),
 	none_of_type_prefix: verifyNoneOfTypePrefixSpecificationExample,
 	one_of_type_prefix: verifyOneOfTypePrefixSpecificationExample,
+	any_of_type_prefix: verifyAnyOfTypePrefixSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "one", oneOfDiagnosticExpectations),
 	all_of_major_minor_patch: (example: Example) =>
@@ -639,6 +638,50 @@ async function verifyOneOfTypePrefixSpecificationExample(
 			pullRequestNumber,
 			labels,
 			requirements: { one: criterion.parameters.prefix },
+			prefixMode: true,
+		});
+
+		assert.equal(result.status, expected.status);
+		assert.equal(expected.status, outcome === "Success" ? 0 : 1);
+		assert.equal(result.stdout, expected.stdout);
+		assert.equal(result.stderr, expected.stderr);
+		assert.equal(result.output, expected.output);
+	}
+}
+
+async function verifyAnyOfTypePrefixSpecificationExample(
+	example: Example,
+): Promise<void> {
+	const table = tableAt(example, 0);
+	assert.equal(table.rows.length, anyOfTypePrefixDiagnosticExpectations.length);
+	const pullRequestNumbers = [1, 5, 6, 7];
+
+	for (const [index, row] of table.rows.entries()) {
+		const criterion = row[0];
+		assert(
+			typeof criterion !== "string",
+			"Expected the criterion to use parameterised text",
+		);
+		assert.equal(
+			criterion.template,
+			"At least one label starting with {prefix} is present.",
+		);
+		assert.equal(criterion.parameters.prefix, "type:");
+
+		const labels = parseLabels(renderTableText(row[1]));
+		const outcome = renderTableText(row[2]);
+		const expected = anyOfTypePrefixDiagnosticExpectations[index];
+		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
+		const pullRequestNumber = pullRequestNumbers[index];
+		assert(
+			pullRequestNumber,
+			`Missing pull request number for row ${index + 1}`,
+		);
+
+		const result = await runLabelCheck({
+			pullRequestNumber,
+			labels,
+			requirements: { any: criterion.parameters.prefix },
 			prefixMode: true,
 		});
 
