@@ -84,6 +84,15 @@ The label checker can check for labels that start with a given prefix.
 | Exactly one label starting with type: is present. | type:fix, type:feature | Failure |
 | Exactly one label starting with type: is present. | type:fix, type:feature, type:documentation | Failure |
 
+### Example
+
+| Criterion | Labels on the pull request | Outcome |
+|---|---|---|
+| At least one label starting with type: is present. | (none) | Failure |
+| At least one label starting with type: is present. | type:fix | Success |
+| At least one label starting with type: is present. | type:fix, type:feature | Success |
+| At least one label starting with type: is present. | type:fix, type:feature, type:documentation | Success |
+
 ---
 
 ## Rule
