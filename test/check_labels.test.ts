@@ -88,6 +88,32 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 	);
 });
 
+test("prefix examples have captions identifying each check before their tables", () => {
+	const prefixExamples = labelCheckerSpecification.rules
+		.find(
+			(rule) =>
+				rule.definition ===
+				"The label checker can check for labels that start with a given prefix.",
+		)
+		?.examples.filter((example) => example.id.endsWith("_type_prefix"));
+
+	assert(prefixExamples, "Missing the prefix-matching rule");
+	assert.equal(prefixExamples.length, 3);
+	const expectedCaptions = new Map([
+		["none_of_type_prefix", "**`none_of`**"],
+		["one_of_type_prefix", "**`one_of`**"],
+		["any_of_type_prefix", "**`any_of`**"],
+	]);
+
+	for (const example of prefixExamples) {
+		const expectedCaption = expectedCaptions.get(example.id);
+		assert(expectedCaption, `Unexpected prefix example: ${example.id}`);
+		assert.equal(expandText(textAt(example, 0)), expectedCaption);
+		assert.equal(example.content[1]?.type, "table");
+		tableAt(example, 1);
+	}
+});
+
 type Scenario = {
 	name: string;
 	pullRequestNumber: number;
@@ -561,7 +587,7 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 async function verifyNoneOfTypePrefixSpecificationExample(
 	example: Example,
 ): Promise<void> {
-	const table = tableAt(example, 0);
+	const table = tableAt(example, 1);
 	assert.equal(
 		table.rows.length,
 		noneOfTypePrefixDiagnosticExpectations.length,
@@ -608,7 +634,7 @@ async function verifyNoneOfTypePrefixSpecificationExample(
 async function verifyOneOfTypePrefixSpecificationExample(
 	example: Example,
 ): Promise<void> {
-	const table = tableAt(example, 0);
+	const table = tableAt(example, 1);
 	assert.equal(table.rows.length, oneOfTypePrefixDiagnosticExpectations.length);
 	const pullRequestNumbers = [1, 5, 6, 7];
 
@@ -652,7 +678,7 @@ async function verifyOneOfTypePrefixSpecificationExample(
 async function verifyAnyOfTypePrefixSpecificationExample(
 	example: Example,
 ): Promise<void> {
-	const table = tableAt(example, 0);
+	const table = tableAt(example, 1);
 	assert.equal(table.rows.length, anyOfTypePrefixDiagnosticExpectations.length);
 	const pullRequestNumbers = [1, 5, 6, 7];
 

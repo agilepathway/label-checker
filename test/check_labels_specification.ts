@@ -141,6 +141,13 @@ export const labelCheckerSpecification: Specification = {
 					id: "none_of_type_prefix",
 					content: [
 						{
+							type: "text",
+							text: {
+								template: "**`none_of`**",
+								parameters: {},
+							},
+						},
+						{
 							type: "table",
 							table: {
 								headers: ["Criterion", "Labels on the pull request", "Outcome"],
@@ -162,6 +169,13 @@ export const labelCheckerSpecification: Specification = {
 					id: "one_of_type_prefix",
 					content: [
 						{
+							type: "text",
+							text: {
+								template: "**`one_of`**",
+								parameters: {},
+							},
+						},
+						{
 							type: "table",
 							table: {
 								headers: ["Criterion", "Labels on the pull request", "Outcome"],
@@ -182,6 +196,13 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "any_of_type_prefix",
 					content: [
+						{
+							type: "text",
+							text: {
+								template: "**`any_of`**",
+								parameters: {},
+							},
+						},
 						{
 							type: "table",
 							table: {
