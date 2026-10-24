@@ -28,6 +28,11 @@ const anyOfPrefixCriterion: ParameterisedText = {
 	parameters: { prefix: "type:" },
 };
 
+const allOfPrefixCriterion: ParameterisedText = {
+	template: "All labels start with prefix {prefix}.",
+	parameters: { prefix: "type:" },
+};
+
 const anyOfCriterion: ParameterisedText = {
 	template: "At least one of {required} is present.",
 	parameters: { required: "major, minor, patch" },
@@ -217,6 +222,25 @@ export const labelCheckerSpecification: Specification = {
 										"Success",
 									],
 								],
+							},
+						},
+					],
+				},
+				{
+					id: "all_of_type_prefix",
+					content: [
+						{
+							type: "text",
+							text: {
+								template: "**`all_of`**",
+								parameters: {},
+							},
+						},
+						{
+							type: "table",
+							table: {
+								headers: ["Criterion", "Outcome"],
+								rows: [[allOfPrefixCriterion, "Error"]],
 							},
 						},
 					],

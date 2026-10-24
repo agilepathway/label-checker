@@ -51,6 +51,10 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 		prefixRule.examples.some((example) => example.id === "any_of_type_prefix"),
 		"The any_of prefix example must be under the prefix-matching rule",
 	);
+	assert(
+		prefixRule.examples.some((example) => example.id === "all_of_type_prefix"),
+		"The all_of prefix example must be under the prefix-matching rule",
+	);
 
 	const noneOfRule = labelCheckerSpecification.rules.find(
 		(rule) =>
@@ -86,6 +90,17 @@ test("prefix examples are grouped under the prefix-matching rule", () => {
 		!anyOfRule.examples.some((example) => example.id === "any_of_type_prefix"),
 		"The any_of prefix example must not be under the any_of rule",
 	);
+
+	const allOfRule = labelCheckerSpecification.rules.find(
+		(rule) =>
+			rule.definition ===
+			"A pull request must have all of the labels specified by `all_of`.",
+	);
+	assert(allOfRule, "Missing the all_of rule");
+	assert(
+		!allOfRule.examples.some((example) => example.id === "all_of_type_prefix"),
+		"The all_of prefix example must not be under the all_of rule",
+	);
 });
 
 test("prefix examples have captions identifying each check before their tables", () => {
@@ -98,11 +113,12 @@ test("prefix examples have captions identifying each check before their tables",
 		?.examples.filter((example) => example.id.endsWith("_type_prefix"));
 
 	assert(prefixExamples, "Missing the prefix-matching rule");
-	assert.equal(prefixExamples.length, 3);
+	assert.equal(prefixExamples.length, 4);
 	const expectedCaptions = new Map([
 		["none_of_type_prefix", "**`none_of`**"],
 		["one_of_type_prefix", "**`one_of`**"],
 		["any_of_type_prefix", "**`any_of`**"],
+		["all_of_type_prefix", "**`all_of`**"],
 	]);
 
 	for (const example of prefixExamples) {
@@ -565,6 +581,7 @@ const specificationExampleImplementations: Record<
 	none_of_type_prefix: verifyNoneOfTypePrefixSpecificationExample,
 	one_of_type_prefix: verifyOneOfTypePrefixSpecificationExample,
 	any_of_type_prefix: verifyAnyOfTypePrefixSpecificationExample,
+	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "one", oneOfDiagnosticExpectations),
 	all_of_major_minor_patch: (example: Example) =>
@@ -583,6 +600,38 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 	}
 	await implementation(example);
 });
+
+async function verifyAllOfTypePrefixSpecificationExample(
+	example: Example,
+): Promise<void> {
+	const table = tableAt(example, 1);
+	assert.equal(table.rows.length, 1);
+	const row = table.rows[0];
+	assert(row, "Missing the all_of prefix example row");
+	const criterion = row[0];
+	assert(
+		typeof criterion !== "string",
+		"Expected the criterion to use parameterised text",
+	);
+	assert.equal(criterion.template, "All labels start with prefix {prefix}.");
+	assert.equal(criterion.parameters.prefix, "type:");
+	assert.equal(renderTableText(row[1]), "Error");
+
+	const result = await runLabelCheck({
+		pullRequestNumber: 1,
+		labels: [],
+		requirements: { all: criterion.parameters.prefix },
+		prefixMode: true,
+	});
+
+	assert.equal(result.status, 1);
+	assert.equal(result.stdout, "Checking GitHub labels ...\n");
+	assert.equal(
+		result.stderr,
+		"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
+	);
+	assert.equal(result.output, "label_check=failure");
+}
 
 async function verifyNoneOfTypePrefixSpecificationExample(
 	example: Example,
@@ -1025,12 +1074,6 @@ for (const scenario of scenarios) {
 }
 
 for (const scenario of [
-	{
-		name: "all",
-		requirements: { all: "type:" },
-		stderr:
-			"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
-	},
 	{
 		name: "none",
 		requirements: { none: "type:,visibility/" },
