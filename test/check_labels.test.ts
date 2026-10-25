@@ -451,6 +451,33 @@ const anyOfTypePrefixDiagnosticExpectations: DiagnosticExpectation[] = [
 	},
 ];
 
+type TypePrefixSpecificationVerification = {
+	requirement: Extract<Requirement, "none" | "one" | "any">;
+	criterionTemplate: string;
+	diagnosticExpectations: DiagnosticExpectation[];
+};
+
+const typePrefixSpecificationVerifications: Record<
+	"none_of_type_prefix" | "one_of_type_prefix" | "any_of_type_prefix",
+	TypePrefixSpecificationVerification
+> = {
+	none_of_type_prefix: {
+		requirement: "none",
+		criterionTemplate: "No labels starting with {prefix} are present.",
+		diagnosticExpectations: noneOfTypePrefixDiagnosticExpectations,
+	},
+	one_of_type_prefix: {
+		requirement: "one",
+		criterionTemplate: "Exactly one label starting with {prefix} is present.",
+		diagnosticExpectations: oneOfTypePrefixDiagnosticExpectations,
+	},
+	any_of_type_prefix: {
+		requirement: "any",
+		criterionTemplate: "At least one label starting with {prefix} is present.",
+		diagnosticExpectations: anyOfTypePrefixDiagnosticExpectations,
+	},
+};
+
 const allOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	{
 		status: 1,
@@ -621,9 +648,21 @@ const specificationExampleImplementations: Record<
 > = {
 	none_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "none", noneOfDiagnosticExpectations),
-	none_of_type_prefix: verifyNoneOfTypePrefixSpecificationExample,
-	one_of_type_prefix: verifyOneOfTypePrefixSpecificationExample,
-	any_of_type_prefix: verifyAnyOfTypePrefixSpecificationExample,
+	none_of_type_prefix: (example: Example) =>
+		verifyTypePrefixSpecificationExample(
+			example,
+			typePrefixSpecificationVerifications.none_of_type_prefix,
+		),
+	one_of_type_prefix: (example: Example) =>
+		verifyTypePrefixSpecificationExample(
+			example,
+			typePrefixSpecificationVerifications.one_of_type_prefix,
+		),
+	any_of_type_prefix: (example: Example) =>
+		verifyTypePrefixSpecificationExample(
+			example,
+			typePrefixSpecificationVerifications.any_of_type_prefix,
+		),
 	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
 	multiple_prefixes_per_check:
 		verifyMultiplePrefixesPerCheckSpecificationExample,
@@ -783,14 +822,12 @@ async function verifyAllOfTypePrefixSpecificationExample(
 	assert.equal(result.output, "label_check=failure");
 }
 
-async function verifyNoneOfTypePrefixSpecificationExample(
+async function verifyTypePrefixSpecificationExample(
 	example: Example,
+	verification: TypePrefixSpecificationVerification,
 ): Promise<void> {
 	const table = tableAt(example, 1);
-	assert.equal(
-		table.rows.length,
-		noneOfTypePrefixDiagnosticExpectations.length,
-	);
+	assert.equal(table.rows.length, verification.diagnosticExpectations.length);
 	const pullRequestNumbers = [1, 5, 6, 7];
 
 	for (const [index, row] of table.rows.entries()) {
@@ -799,15 +836,12 @@ async function verifyNoneOfTypePrefixSpecificationExample(
 			typeof criterion !== "string",
 			"Expected the criterion to use parameterised text",
 		);
-		assert.equal(
-			criterion.template,
-			"No labels starting with {prefix} are present.",
-		);
+		assert.equal(criterion.template, verification.criterionTemplate);
 		assert.equal(criterion.parameters.prefix, "type:");
 
 		const labels = parseLabels(renderTableText(row[1]));
 		const outcome = renderTableText(row[2]);
-		const expected = noneOfTypePrefixDiagnosticExpectations[index];
+		const expected = verification.diagnosticExpectations[index];
 		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
 		const pullRequestNumber = pullRequestNumbers[index];
 		assert(
@@ -818,95 +852,9 @@ async function verifyNoneOfTypePrefixSpecificationExample(
 		const result = await runLabelCheck({
 			pullRequestNumber,
 			labels,
-			requirements: { none: criterion.parameters.prefix },
-			prefixMode: true,
-		});
-
-		assert.equal(result.status, expected.status);
-		assert.equal(expected.status, outcome === "Success" ? 0 : 1);
-		assert.equal(result.stdout, expected.stdout);
-		assert.equal(result.stderr, expected.stderr);
-		assert.equal(result.output, expected.output);
-	}
-}
-
-async function verifyOneOfTypePrefixSpecificationExample(
-	example: Example,
-): Promise<void> {
-	const table = tableAt(example, 1);
-	assert.equal(table.rows.length, oneOfTypePrefixDiagnosticExpectations.length);
-	const pullRequestNumbers = [1, 5, 6, 7];
-
-	for (const [index, row] of table.rows.entries()) {
-		const criterion = row[0];
-		assert(
-			typeof criterion !== "string",
-			"Expected the criterion to use parameterised text",
-		);
-		assert.equal(
-			criterion.template,
-			"Exactly one label starting with {prefix} is present.",
-		);
-		assert.equal(criterion.parameters.prefix, "type:");
-
-		const labels = parseLabels(renderTableText(row[1]));
-		const outcome = renderTableText(row[2]);
-		const expected = oneOfTypePrefixDiagnosticExpectations[index];
-		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
-		const pullRequestNumber = pullRequestNumbers[index];
-		assert(
-			pullRequestNumber,
-			`Missing pull request number for row ${index + 1}`,
-		);
-
-		const result = await runLabelCheck({
-			pullRequestNumber,
-			labels,
-			requirements: { one: criterion.parameters.prefix },
-			prefixMode: true,
-		});
-
-		assert.equal(result.status, expected.status);
-		assert.equal(expected.status, outcome === "Success" ? 0 : 1);
-		assert.equal(result.stdout, expected.stdout);
-		assert.equal(result.stderr, expected.stderr);
-		assert.equal(result.output, expected.output);
-	}
-}
-
-async function verifyAnyOfTypePrefixSpecificationExample(
-	example: Example,
-): Promise<void> {
-	const table = tableAt(example, 1);
-	assert.equal(table.rows.length, anyOfTypePrefixDiagnosticExpectations.length);
-	const pullRequestNumbers = [1, 5, 6, 7];
-
-	for (const [index, row] of table.rows.entries()) {
-		const criterion = row[0];
-		assert(
-			typeof criterion !== "string",
-			"Expected the criterion to use parameterised text",
-		);
-		assert.equal(
-			criterion.template,
-			"At least one label starting with {prefix} is present.",
-		);
-		assert.equal(criterion.parameters.prefix, "type:");
-
-		const labels = parseLabels(renderTableText(row[1]));
-		const outcome = renderTableText(row[2]);
-		const expected = anyOfTypePrefixDiagnosticExpectations[index];
-		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
-		const pullRequestNumber = pullRequestNumbers[index];
-		assert(
-			pullRequestNumber,
-			`Missing pull request number for row ${index + 1}`,
-		);
-
-		const result = await runLabelCheck({
-			pullRequestNumber,
-			labels,
-			requirements: { any: criterion.parameters.prefix },
+			requirements: {
+				[verification.requirement]: criterion.parameters.prefix,
+			},
 			prefixMode: true,
 		});
 
