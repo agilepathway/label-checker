@@ -6,13 +6,19 @@ import type {
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 
 const oneOfCriterion: ParameterisedText = {
-	template: "Exactly one of {required} is present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} is present.",
+	parameters: {
+		operator: "Exactly one of",
+		required: "major, minor, patch",
+	},
 };
 
 const noneOfCriterion: ParameterisedText = {
-	template: "None of {required} are present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} are present.",
+	parameters: {
+		operator: "None of",
+		required: "major, minor, patch",
+	},
 };
 
 const noneOfPrefixCriterion: ParameterisedText = {
@@ -65,13 +71,19 @@ const allOfMultiplePrefixesCriterion: ParameterisedText = {
 };
 
 const anyOfCriterion: ParameterisedText = {
-	template: "At least one of {required} is present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} is present.",
+	parameters: {
+		operator: "At least one of",
+		required: "major, minor, patch",
+	},
 };
 
 const allOfCriterion: ParameterisedText = {
-	template: "All of {required} are present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} are present.",
+	parameters: {
+		operator: "All of",
+		required: "major, minor, patch",
+	},
 };
 
 export const labelCheckerSpecification: Specification = {
