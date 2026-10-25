@@ -980,7 +980,7 @@ test("combined-check operators accept only canonical phrases case-insensitively"
 	);
 });
 
-function interpretOverallOutcome(outcome: TableText | undefined): number {
+function interpretOverallOutcome(outcome: TableText | undefined): 0 | 1 {
 	assert(
 		typeof outcome !== "string" && outcome !== undefined,
 		"Expected the overall outcome to use parameterised text",
