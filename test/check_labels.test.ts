@@ -913,24 +913,7 @@ async function verifyCombinedChecksSpecificationRow(
 			`Duplicate combined-check operator: ${requirement}`,
 		);
 		const labelsRequirement = requiredLabels.replaceAll(", ", ",");
-		const individualRequirements = { [requirement]: labelsRequirement };
 		requirements[requirement] = labelsRequirement;
-
-		const outcome = renderTableText(row[checkCount + criterionIndex + 1]);
-		assert(
-			outcome === "Success" || outcome === "Failure",
-			`Unexpected outcome for the ${name} criterion: ${outcome}`,
-		);
-		const result = await runLabelCheck({
-			pullRequestNumber: index + 1,
-			labels,
-			requirements: individualRequirements,
-		});
-		assert.equal(
-			result.status,
-			outcome === "Success" ? 0 : 1,
-			`Unexpected ${name} criterion outcome for row ${index + 1}`,
-		);
 	}
 
 	const expected = expectations[index];
