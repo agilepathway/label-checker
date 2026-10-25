@@ -457,27 +457,6 @@ type TypePrefixSpecificationVerification = {
 	diagnosticExpectations: DiagnosticExpectation[];
 };
 
-const typePrefixSpecificationVerifications: Record<
-	"none_of_type_prefix" | "one_of_type_prefix" | "any_of_type_prefix",
-	TypePrefixSpecificationVerification
-> = {
-	none_of_type_prefix: {
-		requirement: "none",
-		criterionTemplate: "No labels starting with {prefix} are present.",
-		diagnosticExpectations: noneOfTypePrefixDiagnosticExpectations,
-	},
-	one_of_type_prefix: {
-		requirement: "one",
-		criterionTemplate: "Exactly one label starting with {prefix} is present.",
-		diagnosticExpectations: oneOfTypePrefixDiagnosticExpectations,
-	},
-	any_of_type_prefix: {
-		requirement: "any",
-		criterionTemplate: "At least one label starting with {prefix} is present.",
-		diagnosticExpectations: anyOfTypePrefixDiagnosticExpectations,
-	},
-};
-
 const allOfDiagnosticExpectations: DiagnosticExpectation[] = [
 	{
 		status: 1,
@@ -648,21 +627,21 @@ const specificationExampleImplementations: Record<
 > = {
 	none_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "none", noneOfDiagnosticExpectations),
-	none_of_type_prefix: (example: Example) =>
-		verifyTypePrefixSpecificationExample(
-			example,
-			typePrefixSpecificationVerifications.none_of_type_prefix,
-		),
-	one_of_type_prefix: (example: Example) =>
-		verifyTypePrefixSpecificationExample(
-			example,
-			typePrefixSpecificationVerifications.one_of_type_prefix,
-		),
-	any_of_type_prefix: (example: Example) =>
-		verifyTypePrefixSpecificationExample(
-			example,
-			typePrefixSpecificationVerifications.any_of_type_prefix,
-		),
+	none_of_type_prefix: createTypePrefixSpecificationImplementation({
+		requirement: "none",
+		criterionTemplate: "No labels starting with {prefix} are present.",
+		diagnosticExpectations: noneOfTypePrefixDiagnosticExpectations,
+	}),
+	one_of_type_prefix: createTypePrefixSpecificationImplementation({
+		requirement: "one",
+		criterionTemplate: "Exactly one label starting with {prefix} is present.",
+		diagnosticExpectations: oneOfTypePrefixDiagnosticExpectations,
+	}),
+	any_of_type_prefix: createTypePrefixSpecificationImplementation({
+		requirement: "any",
+		criterionTemplate: "At least one label starting with {prefix} is present.",
+		diagnosticExpectations: anyOfTypePrefixDiagnosticExpectations,
+	}),
 	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
 	multiple_prefixes_per_check:
 		verifyMultiplePrefixesPerCheckSpecificationExample,
@@ -685,6 +664,13 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 	}
 	await implementation(example);
 });
+
+function createTypePrefixSpecificationImplementation(
+	verification: TypePrefixSpecificationVerification,
+): (example: Example) => Promise<void> {
+	return (example: Example) =>
+		verifyTypePrefixSpecificationExample(example, verification);
+}
 
 async function verifyMultiplePrefixesPerCheckSpecificationExample(
 	example: Example,
