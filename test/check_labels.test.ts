@@ -915,6 +915,7 @@ async function verifyCombinedChecksSpecificationRow(
 	}
 
 	const labels = parseLabels(renderTableText(row[checkCount]));
+	const overallStatus = interpretOverallOutcome(row[checkCount * 2 + 1]);
 	const expected = expectations[index];
 	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
 
@@ -926,6 +927,7 @@ async function verifyCombinedChecksSpecificationRow(
 
 	assert.equal(result.status, expected.status);
 	assert.equal(expected.status, 1);
+	assert.equal(result.status, overallStatus);
 	assert.equal(result.stdout, expected.stdout);
 	assert.equal(result.stderr, expected.stderr);
 	assert.equal(result.output, expected.output);
@@ -977,6 +979,20 @@ test("combined-check operators accept only canonical phrases case-insensitively"
 		/Expected the first criterion to define an operator/,
 	);
 });
+
+function interpretOverallOutcome(outcome: TableText | undefined): number {
+	assert(
+		typeof outcome !== "string" && outcome !== undefined,
+		"Expected the overall outcome to use parameterised text",
+	);
+	const declaredOutcome = outcome.parameters.outcome;
+	assert(
+		declaredOutcome === "Success" || declaredOutcome === "Failure",
+		`Unexpected combined-check overall outcome: "${declaredOutcome}"`,
+	);
+	assert.equal(expandText(outcome), declaredOutcome);
+	return declaredOutcome === "Success" ? 0 : 1;
+}
 
 function getRequirement(
 	criterion: TableText | undefined,
