@@ -552,6 +552,15 @@ const combinedChecksDiagnosticExpectations: DiagnosticExpectation[] = [
 	},
 ];
 
+const requirementByOperator = new Map<string, Requirement>([
+	["none of", "none"],
+	["one of", "one"],
+	["exactly one of", "one"],
+	["any of", "any"],
+	["at least one of", "any"],
+	["all of", "all"],
+]);
+
 const threeChecksDiagnosticExpectations: DiagnosticExpectation[] = [
 	{
 		status: 1,
@@ -653,8 +662,8 @@ const specificationExampleImplementations: Record<
 	any_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example, "any", anyOfDiagnosticExpectations),
 	two_checks_combined: verifyCombinedChecksSpecificationExample,
-	three_checks_combined: verifyThreeChecksSpecificationExample,
-	four_checks_combined: verifyFourChecksSpecificationExample,
+	three_checks_combined: verifyCombinedChecksSpecificationExample,
+	four_checks_combined: verifyCombinedChecksSpecificationExample,
 };
 
 registerSpecificationTests(labelCheckerSpecification, async (example) => {
@@ -852,154 +861,69 @@ async function verifyTypePrefixSpecificationExample(
 	}
 }
 
-async function verifyThreeChecksSpecificationExample(
-	example: Example,
-): Promise<void> {
-	assert.equal(expandText(textAt(example, 0)), "3 checks combined:");
-	const table = tableAt(example, 1);
-	assert.equal(table.rows.length, threeChecksDiagnosticExpectations.length);
-
-	for (const [index, row] of table.rows.entries()) {
-		await verifyThreeChecksSpecificationRow(row, index);
-	}
-}
-
-async function verifyFourChecksSpecificationExample(
-	example: Example,
-): Promise<void> {
-	assert.equal(expandText(textAt(example, 0)), "4 checks combined:");
-	const table = tableAt(example, 1);
-	assert.equal(table.rows.length, fourChecksDiagnosticExpectations.length);
-
-	for (const [index, row] of table.rows.entries()) {
-		await verifyFourChecksSpecificationRow(row, index);
-	}
-}
-
-async function verifyFourChecksSpecificationRow(
-	row: TableText[],
-	index: number,
-): Promise<void> {
-	const requiredLabels = getRequiredLabels(row[0], "first");
-	assert.equal(getRequiredLabels(row[1], "second"), requiredLabels);
-	assert.equal(getRequiredLabels(row[2], "third"), requiredLabels);
-	assert.equal(getRequiredLabels(row[3], "fourth"), requiredLabels);
-	assertCombinedFourCheckCriterionDescriptions(row[0], row[1], row[2], row[3]);
-
-	const labels = parseLabels(renderTableText(row[4]));
-	const expected = fourChecksDiagnosticExpectations[index];
-	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
-
-	const result = await runLabelCheck({
-		pullRequestNumber: index + 1,
-		labels,
-		requirements: {
-			none: requiredLabels.replaceAll(", ", ","),
-			one: requiredLabels.replaceAll(", ", ","),
-			all: requiredLabels.replaceAll(", ", ","),
-			any: requiredLabels.replaceAll(", ", ","),
-		},
-	});
-
-	assert.equal(result.status, expected.status);
-	assert.equal(expected.status, 1);
-	assert.equal(result.stdout, expected.stdout);
-	assert.equal(result.stderr, expected.stderr);
-	assert.equal(result.output, expected.output);
-}
-
-async function verifyThreeChecksSpecificationRow(
-	row: TableText[],
-	index: number,
-): Promise<void> {
-	const requiredLabels = getRequiredLabels(row[0], "first");
-	assert.equal(getRequiredLabels(row[1], "second"), requiredLabels);
-	assert.equal(getRequiredLabels(row[2], "third"), requiredLabels);
-	assertCombinedThreeCheckCriterionDescriptions(row[0], row[1], row[2]);
-
-	const labels = parseLabels(renderTableText(row[3]));
-	const expected = threeChecksDiagnosticExpectations[index];
-	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
-
-	const result = await runLabelCheck({
-		pullRequestNumber: index + 1,
-		labels,
-		requirements: {
-			none: requiredLabels.replaceAll(", ", ","),
-			one: requiredLabels.replaceAll(", ", ","),
-			all: requiredLabels.replaceAll(", ", ","),
-		},
-	});
-
-	assert.equal(result.status, expected.status);
-	assert.equal(expected.status, 1);
-	assert.equal(result.stdout, expected.stdout);
-	assert.equal(result.stderr, expected.stderr);
-	assert.equal(result.output, expected.output);
-}
-
 async function verifyCombinedChecksSpecificationExample(
 	example: Example,
 ): Promise<void> {
-	assert.equal(expandText(textAt(example, 0)), "2 checks combined:");
 	const table = tableAt(example, 1);
-	assert.equal(table.rows.length, combinedChecksDiagnosticExpectations.length);
+	const labelsColumn = table.headers.indexOf("Labels on the pull request");
+	assert(labelsColumn >= 2, "Missing combined-check criterion columns");
+	const checkCount = labelsColumn;
+	const expectationsByCheckCount = new Map([
+		[2, combinedChecksDiagnosticExpectations],
+		[3, threeChecksDiagnosticExpectations],
+		[4, fourChecksDiagnosticExpectations],
+	]);
+	const expectations = expectationsByCheckCount.get(checkCount);
+	assert(expectations, `Unexpected number of combined checks: ${checkCount}`);
+	assert.equal(
+		expandText(textAt(example, 0)),
+		`${checkCount} checks combined:`,
+	);
+	assert.equal(table.headers.length, checkCount * 2 + 2);
+	assert.equal(table.rows.length, expectations.length);
 
 	for (const [index, row] of table.rows.entries()) {
-		await verifyCombinedChecksSpecificationRow(row, index);
+		await verifyCombinedChecksSpecificationRow(
+			row,
+			index,
+			checkCount,
+			expectations,
+		);
 	}
-}
-
-function assertCombinedThreeCheckCriterionDescriptions(
-	firstCriterion: TableText | undefined,
-	secondCriterion: TableText | undefined,
-	thirdCriterion: TableText | undefined,
-): void {
-	assertCombinedCheckCriterionDescriptions(firstCriterion, secondCriterion);
-	assert.equal(
-		getCriterion(thirdCriterion, "third").template,
-		"All of {required} are present.",
-		"The third criterion must describe all_of",
-	);
-}
-
-function assertCombinedFourCheckCriterionDescriptions(
-	firstCriterion: TableText | undefined,
-	secondCriterion: TableText | undefined,
-	thirdCriterion: TableText | undefined,
-	fourthCriterion: TableText | undefined,
-): void {
-	assertCombinedThreeCheckCriterionDescriptions(
-		firstCriterion,
-		secondCriterion,
-		thirdCriterion,
-	);
-	assert.equal(
-		getCriterion(fourthCriterion, "fourth").template,
-		"At least one of {required} is present.",
-		"The fourth criterion must describe any_of",
-	);
 }
 
 async function verifyCombinedChecksSpecificationRow(
 	row: TableText[],
 	index: number,
+	checkCount: number,
+	expectations: DiagnosticExpectation[],
 ): Promise<void> {
-	const requiredLabels = getRequiredLabels(row[0], "first");
-	assert.equal(getRequiredLabels(row[1], "second"), requiredLabels);
-	assertCombinedCheckCriterionDescriptions(row[0], row[1]);
+	assert.equal(row.length, checkCount * 2 + 2);
+	const criteria = row.slice(0, checkCount);
+	const requiredLabels = getRequiredLabels(criteria[0], "first");
+	const requirements: Requirements = {};
 
-	const labels = parseLabels(renderTableText(row[2]));
-	const expected = combinedChecksDiagnosticExpectations[index];
+	for (const [criterionIndex, criterion] of criteria.entries()) {
+		const name = ["first", "second", "third", "fourth"][criterionIndex];
+		assert(name, `Unexpected criterion index: ${criterionIndex}`);
+		assert.equal(getRequiredLabels(criterion, name), requiredLabels);
+
+		const requirement = getRequirement(criterion, name);
+		assert(
+			requirements[requirement] === undefined,
+			`Duplicate combined-check operator: ${requirement}`,
+		);
+		requirements[requirement] = requiredLabels.replaceAll(", ", ",");
+	}
+
+	const labels = parseLabels(renderTableText(row[checkCount]));
+	const expected = expectations[index];
 	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
 
 	const result = await runLabelCheck({
 		pullRequestNumber: index + 1,
 		labels,
-		requirements: {
-			none: requiredLabels.replaceAll(", ", ","),
-			one: requiredLabels.replaceAll(", ", ","),
-		},
+		requirements,
 	});
 
 	assert.equal(result.status, expected.status);
@@ -1009,38 +933,61 @@ async function verifyCombinedChecksSpecificationRow(
 	assert.equal(result.output, expected.output);
 }
 
-test("combined-check criterion descriptions detect swapped checks", () => {
-	const example = labelCheckerSpecification.rules
-		.flatMap((rule) => rule.examples)
-		.find((candidate) => candidate.id === "two_checks_combined");
-	assert(example, "Missing the two_checks_combined example");
-
-	const row = tableAt(example, 1).rows[0];
-	assert(row, "Missing the first combined-check row");
-
-	assert.doesNotThrow(() =>
-		assertCombinedCheckCriterionDescriptions(row[0], row[1]),
+test("combined-check operators map case-insensitively and reject unsupported values", () => {
+	assert.equal(
+		getRequirement(
+			{ template: "{operator}", parameters: { operator: "nOnE Of" } },
+			"first",
+		),
+		"none",
+	);
+	assert.equal(
+		getRequirement(
+			{ template: "{operator}", parameters: { operator: "ONE OF" } },
+			"second",
+		),
+		"one",
+	);
+	assert.equal(
+		getRequirement(
+			{ template: "{operator}", parameters: { operator: "Any of" } },
+			"third",
+		),
+		"any",
+	);
+	assert.equal(
+		getRequirement(
+			{ template: "{operator}", parameters: { operator: "All of" } },
+			"fourth",
+		),
+		"all",
 	);
 	assert.throws(
-		() => assertCombinedCheckCriterionDescriptions(row[1], row[0]),
-		/first criterion must describe none_of/,
+		() =>
+			getRequirement(
+				{ template: "{operator}", parameters: { operator: "Some of" } },
+				"first",
+			),
+		/Unsupported combined-check operator "Some of" in the first criterion/,
+	);
+	assert.throws(
+		() => getRequirement({ template: "{operator}", parameters: {} }, "first"),
+		/Expected the first criterion to define an operator/,
 	);
 });
 
-function assertCombinedCheckCriterionDescriptions(
-	firstCriterion: TableText | undefined,
-	secondCriterion: TableText | undefined,
-): void {
-	assert.equal(
-		getCriterion(firstCriterion, "first").template,
-		"None of {required} are present.",
-		"The first criterion must describe none_of",
+function getRequirement(
+	criterion: TableText | undefined,
+	name: string,
+): Requirement {
+	const operator = getCriterion(criterion, name).parameters.operator;
+	assert(operator, `Expected the ${name} criterion to define an operator`);
+	const requirement = requirementByOperator.get(operator.toLowerCase());
+	assert(
+		requirement,
+		`Unsupported combined-check operator "${operator}" in the ${name} criterion`,
 	);
-	assert.equal(
-		getCriterion(secondCriterion, "second").template,
-		"Exactly one of {required} is present.",
-		"The second criterion must describe one_of",
-	);
+	return requirement;
 }
 
 function getRequiredLabels(
