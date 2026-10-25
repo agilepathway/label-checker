@@ -11,7 +11,11 @@ import {
 	textAt,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
-import { labelCheckerSpecification } from "./check_labels_specification.ts";
+import {
+	type CombinedDiagnosticExpectation,
+	type ExampleWithDiagnostics,
+	labelCheckerSpecification,
+} from "./check_labels_specification.ts";
 import {
 	type Requirement,
 	type Requirements,
@@ -289,268 +293,10 @@ const scenarios: Scenario[] = [
 	},
 ];
 
-type DiagnosticExpectation = {
-	status: number;
-	stdout: string;
-	stderr: string;
-	output: string;
-};
-
-const oneOfDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-];
-
-const noneOfDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-];
-
-const noneOfTypePrefixDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
-		output: "label_check=failure",
-	},
-];
-
-const oneOfTypePrefixDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
-		output: "label_check=failure",
-	},
-];
-
-const anyOfTypePrefixDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-];
-
 type TypePrefixSpecificationVerification = {
 	requirement: Extract<Requirement, "none" | "one" | "any">;
 	criterionTemplate: string;
-	diagnosticExpectations: DiagnosticExpectation[];
 };
-
-const allOfDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-];
-
-const anyOfDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-	{
-		status: 0,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-		stderr: "",
-		output: "label_check=success",
-	},
-];
-
-const combinedChecksDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-];
 
 const requirementByOperator = new Map<string, Requirement>([
 	["none of", "none"],
@@ -559,106 +305,34 @@ const requirementByOperator = new Map<string, Requirement>([
 	["all of", "all"],
 ]);
 
-const threeChecksDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout: "Checking GitHub labels ...\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-];
-
-const fourChecksDiagnosticExpectations: DiagnosticExpectation[] = [
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-		stderr:
-			"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-	{
-		status: 1,
-		stdout:
-			"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-		stderr:
-			"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-		output: "label_check=failure",
-	},
-];
-
 const specificationExampleImplementations: Record<
 	string,
 	(example: Example) => Promise<void>
 > = {
 	none_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "none", noneOfDiagnosticExpectations),
+		verifySpecificationExample(example, "none"),
 	none_of_type_prefix: createTypePrefixSpecificationImplementation({
 		requirement: "none",
 		criterionTemplate: "No labels starting with {prefix} are present.",
-		diagnosticExpectations: noneOfTypePrefixDiagnosticExpectations,
 	}),
 	one_of_type_prefix: createTypePrefixSpecificationImplementation({
 		requirement: "one",
 		criterionTemplate: "Exactly one label starting with {prefix} is present.",
-		diagnosticExpectations: oneOfTypePrefixDiagnosticExpectations,
 	}),
 	any_of_type_prefix: createTypePrefixSpecificationImplementation({
 		requirement: "any",
 		criterionTemplate: "At least one label starting with {prefix} is present.",
-		diagnosticExpectations: anyOfTypePrefixDiagnosticExpectations,
 	}),
 	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
 	multiple_prefixes_per_check:
 		verifyMultiplePrefixesPerCheckSpecificationExample,
 	two_prefix_checks_combined: verifyCombinedPrefixChecksSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "one", oneOfDiagnosticExpectations),
+		verifySpecificationExample(example, "one"),
 	all_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "all", allOfDiagnosticExpectations),
+		verifySpecificationExample(example, "all"),
 	any_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "any", anyOfDiagnosticExpectations),
+		verifySpecificationExample(example, "any"),
 	two_checks_combined: verifyCombinedChecksSpecificationExample,
 	three_checks_combined: verifyCombinedChecksSpecificationExample,
 	four_checks_combined: verifyCombinedChecksSpecificationExample,
@@ -735,7 +409,7 @@ async function verifyMultiplePrefixesPerCheckSpecificationExample(
 }
 
 async function verifyCombinedPrefixChecksSpecificationExample(
-	example: Example,
+	example: ExampleWithDiagnostics,
 ): Promise<void> {
 	const table = tableAt(example, 0);
 	assert.equal(table.rows.length, 1);
@@ -755,7 +429,9 @@ async function verifyCombinedPrefixChecksSpecificationExample(
 	);
 	assert.deepEqual(oneCriterion.parameters, { prefix: "type:" });
 
-	const labels = parseLabels(renderTableText(row[2]));
+	const labelsText = renderTableText(row[2]);
+	const labels = parseLabels(labelsText);
+	const diagnosticsByLabels = getDiagnosticExpectations(example, [labelsText]);
 	const noneOutcome = renderTableText(row[3]);
 	const oneOutcome = renderTableText(row[4]);
 	const overallOutcome = renderTableText(row[5]);
@@ -772,15 +448,14 @@ async function verifyCombinedPrefixChecksSpecificationExample(
 
 	assert.equal(result.status, 1);
 	assert.equal(overallOutcome, "Failure");
-	assert.equal(
-		result.stdout,
-		"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
+	const expected = diagnosticsByLabels[labelsText];
+	assert(
+		expected,
+		`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
 	);
-	assert.equal(
-		result.stderr,
-		"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
-	);
-	assert.equal(result.output, "label_check=failure");
+	assert.equal(result.stdout, expected.stdout);
+	assert.equal(result.stderr, expected.stderr);
+	assert.equal(result.output, expected.output);
 }
 
 async function verifyAllOfTypePrefixSpecificationExample(
@@ -815,12 +490,40 @@ async function verifyAllOfTypePrefixSpecificationExample(
 	assert.equal(result.output, "label_check=failure");
 }
 
+function getDiagnosticExpectations(
+	example: ExampleWithDiagnostics,
+	labelsInputs: string[],
+): Record<string, CombinedDiagnosticExpectation> {
+	const diagnosticsByLabels = example.diagnosticsByLabels;
+	assert(
+		diagnosticsByLabels,
+		`Missing diagnostic expectations for ${example.id}`,
+	);
+	assert.deepEqual(
+		Object.keys(diagnosticsByLabels).sort(),
+		labelsInputs.sort(),
+		"Diagnostic expectations must correspond exactly to the example's label inputs",
+	);
+	return diagnosticsByLabels;
+}
+
+function interpretSuccessFailureOutcome(outcome: string): 0 | 1 {
+	assert(
+		outcome === "Success" || outcome === "Failure",
+		`Unexpected check outcome: "${outcome}"`,
+	);
+	return outcome === "Success" ? 0 : 1;
+}
+
 async function verifyTypePrefixSpecificationExample(
-	example: Example,
+	example: ExampleWithDiagnostics,
 	verification: TypePrefixSpecificationVerification,
 ): Promise<void> {
 	const table = tableAt(example, 1);
-	assert.equal(table.rows.length, verification.diagnosticExpectations.length);
+	const diagnosticsByLabels = getDiagnosticExpectations(
+		example,
+		table.rows.map((row) => renderTableText(row[1])),
+	);
 	const pullRequestNumbers = [1, 5, 6, 7];
 
 	for (const [index, row] of table.rows.entries()) {
@@ -832,10 +535,15 @@ async function verifyTypePrefixSpecificationExample(
 		assert.equal(criterion.template, verification.criterionTemplate);
 		assert.equal(criterion.parameters.prefix, "type:");
 
-		const labels = parseLabels(renderTableText(row[1]));
+		const labelsText = renderTableText(row[1]);
+		const labels = parseLabels(labelsText);
 		const outcome = renderTableText(row[2]);
-		const expected = verification.diagnosticExpectations[index];
-		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
+		const expectedStatus = interpretSuccessFailureOutcome(outcome);
+		const expected = diagnosticsByLabels[labelsText];
+		assert(
+			expected,
+			`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
+		);
 		const pullRequestNumber = pullRequestNumbers[index];
 		assert(
 			pullRequestNumber,
@@ -851,8 +559,7 @@ async function verifyTypePrefixSpecificationExample(
 			prefixMode: true,
 		});
 
-		assert.equal(result.status, expected.status);
-		assert.equal(expected.status, outcome === "Success" ? 0 : 1);
+		assert.equal(result.status, expectedStatus);
 		assert.equal(result.stdout, expected.stdout);
 		assert.equal(result.stderr, expected.stderr);
 		assert.equal(result.output, expected.output);
@@ -860,41 +567,49 @@ async function verifyTypePrefixSpecificationExample(
 }
 
 async function verifyCombinedChecksSpecificationExample(
-	example: Example,
+	example: ExampleWithDiagnostics,
 ): Promise<void> {
 	const table = tableAt(example, 1);
 	const labelsColumn = table.headers.indexOf("Labels on the pull request");
 	assert(labelsColumn >= 2, "Missing combined-check criterion columns");
 	const checkCount = labelsColumn;
-	const expectationsByCheckCount = new Map([
-		[2, combinedChecksDiagnosticExpectations],
-		[3, threeChecksDiagnosticExpectations],
-		[4, fourChecksDiagnosticExpectations],
-	]);
-	const expectations = expectationsByCheckCount.get(checkCount);
-	assert(expectations, `Unexpected number of combined checks: ${checkCount}`);
+	assert(
+		[2, 3, 4].includes(checkCount),
+		`Unexpected number of combined checks: ${checkCount}`,
+	);
+	const diagnosticsByLabels = example.diagnosticsByLabels;
+	assert(
+		diagnosticsByLabels,
+		`Missing diagnostic expectations for ${example.id}`,
+	);
 	assert.equal(
 		expandText(textAt(example, 0)),
 		`${checkCount} checks combined:`,
 	);
 	assert.equal(table.headers.length, checkCount * 2 + 2);
-	assert.equal(table.rows.length, expectations.length);
+	assert.deepEqual(
+		Object.keys(diagnosticsByLabels).sort(),
+		table.rows.map((row) => renderTableText(row[labelsColumn])).sort(),
+		"Diagnostic expectations must correspond exactly to the example's label inputs",
+	);
 
 	for (const [index, row] of table.rows.entries()) {
 		await verifyCombinedChecksSpecificationRow(
+			example,
 			row,
 			index,
 			checkCount,
-			expectations,
+			diagnosticsByLabels,
 		);
 	}
 }
 
 async function verifyCombinedChecksSpecificationRow(
+	example: Example,
 	row: TableText[],
 	index: number,
 	checkCount: number,
-	expectations: DiagnosticExpectation[],
+	diagnosticsByLabels: Record<string, CombinedDiagnosticExpectation>,
 ): Promise<void> {
 	assert.equal(row.length, checkCount * 2 + 2);
 	const criteria = row.slice(0, checkCount);
@@ -914,10 +629,14 @@ async function verifyCombinedChecksSpecificationRow(
 		requirements[requirement] = requiredLabels.replaceAll(", ", ",");
 	}
 
-	const labels = parseLabels(renderTableText(row[checkCount]));
+	const labelsText = renderTableText(row[checkCount]);
+	const labels = parseLabels(labelsText);
 	const overallStatus = interpretOverallOutcome(row[checkCount * 2 + 1]);
-	const expected = expectations[index];
-	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
+	const expected = diagnosticsByLabels[labelsText];
+	assert(
+		expected,
+		`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
+	);
 
 	const result = await runLabelCheck({
 		pullRequestNumber: index + 1,
@@ -925,8 +644,6 @@ async function verifyCombinedChecksSpecificationRow(
 		requirements,
 	});
 
-	assert.equal(result.status, expected.status);
-	assert.equal(expected.status, 1);
 	assert.equal(result.status, overallStatus);
 	assert.equal(result.stdout, expected.stdout);
 	assert.equal(result.stderr, expected.stderr);
@@ -1037,12 +754,14 @@ function parseLabels(labelsText: string): string[] {
 }
 
 async function verifySpecificationExample(
-	example: Example,
+	example: ExampleWithDiagnostics,
 	requirement: "one" | "none" | "all" | "any",
-	expectations: DiagnosticExpectation[],
 ): Promise<void> {
 	const table = tableAt(example, 0);
-	assert.equal(table.rows.length, expectations.length);
+	const diagnosticsByLabels = getDiagnosticExpectations(
+		example,
+		table.rows.map((row) => renderTableText(row[1])),
+	);
 
 	for (const [index, row] of table.rows.entries()) {
 		const criterion = row[0];
@@ -1056,8 +775,12 @@ async function verifySpecificationExample(
 		const labelsText = renderTableText(row[1]);
 		const labels = labelsText === "(none)" ? [] : labelsText.split(", ");
 		const outcome = renderTableText(row[2]);
-		const expected = expectations[index];
-		assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
+		const expectedStatus = interpretSuccessFailureOutcome(outcome);
+		const expected = diagnosticsByLabels[labelsText];
+		assert(
+			expected,
+			`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
+		);
 
 		const result = await runLabelCheck({
 			pullRequestNumber: index + 1,
@@ -1067,8 +790,7 @@ async function verifySpecificationExample(
 			},
 		});
 
-		assert.equal(result.status, expected.status);
-		assert.equal(expected.status, outcome === "Success" ? 0 : 1);
+		assert.equal(result.status, expectedStatus);
 		assert.equal(result.stdout, expected.stdout);
 		assert.equal(result.stderr, expected.stderr);
 		assert.equal(result.output, expected.output);
