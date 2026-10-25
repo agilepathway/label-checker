@@ -6,13 +6,19 @@ import type {
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 
 const oneOfCriterion: ParameterisedText = {
-	template: "Exactly one of {required} is present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} is present.",
+	parameters: {
+		operator: "Exactly one of",
+		required: "major, minor, patch",
+	},
 };
 
 const noneOfCriterion: ParameterisedText = {
-	template: "None of {required} are present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} are present.",
+	parameters: {
+		operator: "None of",
+		required: "major, minor, patch",
+	},
 };
 
 const noneOfPrefixCriterion: ParameterisedText = {
@@ -65,13 +71,24 @@ const allOfMultiplePrefixesCriterion: ParameterisedText = {
 };
 
 const anyOfCriterion: ParameterisedText = {
-	template: "At least one of {required} is present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} is present.",
+	parameters: {
+		operator: "At least one of",
+		required: "major, minor, patch",
+	},
 };
 
 const allOfCriterion: ParameterisedText = {
-	template: "All of {required} are present.",
-	parameters: { required: "major, minor, patch" },
+	template: "{operator} {required} are present.",
+	parameters: {
+		operator: "All of",
+		required: "major, minor, patch",
+	},
+};
+
+const combinedFailureOutcome: ParameterisedText = {
+	template: "{outcome}",
+	parameters: { outcome: "Failure" },
 };
 
 export const labelCheckerSpecification: Specification = {
@@ -370,7 +387,7 @@ export const labelCheckerSpecification: Specification = {
 										"(none)",
 										"Success",
 										"Failure",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -378,7 +395,7 @@ export const labelCheckerSpecification: Specification = {
 										"minor",
 										"Failure",
 										"Success",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -386,7 +403,7 @@ export const labelCheckerSpecification: Specification = {
 										"minor, patch",
 										"Failure",
 										"Failure",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -394,7 +411,7 @@ export const labelCheckerSpecification: Specification = {
 										"major, minor, patch",
 										"Failure",
 										"Failure",
-										"Failure",
+										combinedFailureOutcome,
 									],
 								],
 							},
@@ -433,7 +450,7 @@ export const labelCheckerSpecification: Specification = {
 										"Success",
 										"Failure",
 										"Failure",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -443,7 +460,7 @@ export const labelCheckerSpecification: Specification = {
 										"Failure",
 										"Success",
 										"Failure",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -453,7 +470,7 @@ export const labelCheckerSpecification: Specification = {
 										"Failure",
 										"Failure",
 										"Failure",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -463,7 +480,7 @@ export const labelCheckerSpecification: Specification = {
 										"Failure",
 										"Failure",
 										"Success",
-										"Failure",
+										combinedFailureOutcome,
 									],
 								],
 							},
@@ -506,7 +523,7 @@ export const labelCheckerSpecification: Specification = {
 										"Failure",
 										"Failure",
 										"Failure",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -518,7 +535,7 @@ export const labelCheckerSpecification: Specification = {
 										"Success",
 										"Failure",
 										"Success",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -530,7 +547,7 @@ export const labelCheckerSpecification: Specification = {
 										"Failure",
 										"Failure",
 										"Success",
-										"Failure",
+										combinedFailureOutcome,
 									],
 									[
 										noneOfCriterion,
@@ -542,7 +559,7 @@ export const labelCheckerSpecification: Specification = {
 										"Failure",
 										"Success",
 										"Success",
-										"Failure",
+										combinedFailureOutcome,
 									],
 								],
 							},
