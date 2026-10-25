@@ -898,6 +898,7 @@ async function verifyCombinedChecksSpecificationRow(
 ): Promise<void> {
 	assert.equal(row.length, checkCount * 2 + 2);
 	const criteria = row.slice(0, checkCount);
+	const labels = parseLabels(renderTableText(row[checkCount]));
 	const requiredLabels = getRequiredLabels(criteria[0], "first");
 	const requirements: Requirements = {};
 
@@ -911,10 +912,27 @@ async function verifyCombinedChecksSpecificationRow(
 			requirements[requirement] === undefined,
 			`Duplicate combined-check operator: ${requirement}`,
 		);
-		requirements[requirement] = requiredLabels.replaceAll(", ", ",");
+		const labelsRequirement = requiredLabels.replaceAll(", ", ",");
+		const individualRequirements = { [requirement]: labelsRequirement };
+		requirements[requirement] = labelsRequirement;
+
+		const outcome = renderTableText(row[checkCount + criterionIndex + 1]);
+		assert(
+			outcome === "Success" || outcome === "Failure",
+			`Unexpected outcome for the ${name} criterion: ${outcome}`,
+		);
+		const result = await runLabelCheck({
+			pullRequestNumber: index + 1,
+			labels,
+			requirements: individualRequirements,
+		});
+		assert.equal(
+			result.status,
+			outcome === "Success" ? 0 : 1,
+			`Unexpected ${name} criterion outcome for row ${index + 1}`,
+		);
 	}
 
-	const labels = parseLabels(renderTableText(row[checkCount]));
 	const expected = expectations[index];
 	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
 
