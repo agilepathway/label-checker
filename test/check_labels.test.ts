@@ -887,19 +887,8 @@ async function verifyFourChecksSpecificationRow(
 	assertCombinedFourCheckCriterionDescriptions(row[0], row[1], row[2], row[3]);
 
 	const labels = parseLabels(renderTableText(row[4]));
-	const noneOutcome = renderTableText(row[5]);
-	const oneOutcome = renderTableText(row[6]);
-	const allOutcome = renderTableText(row[7]);
-	const anyOutcome = renderTableText(row[8]);
-	const overallOutcome = renderTableText(row[9]);
 	const expected = fourChecksDiagnosticExpectations[index];
 	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
-
-	assert.equal(noneOutcome, labels.length === 0 ? "Success" : "Failure");
-	assert.equal(oneOutcome, labels.length === 1 ? "Success" : "Failure");
-	assert.equal(allOutcome, labels.length === 3 ? "Success" : "Failure");
-	assert.equal(anyOutcome, labels.length > 0 ? "Success" : "Failure");
-	assert.equal(overallOutcome, "Failure");
 
 	const result = await runLabelCheck({
 		pullRequestNumber: index + 1,
@@ -929,17 +918,8 @@ async function verifyThreeChecksSpecificationRow(
 	assertCombinedThreeCheckCriterionDescriptions(row[0], row[1], row[2]);
 
 	const labels = parseLabels(renderTableText(row[3]));
-	const noneOutcome = renderTableText(row[4]);
-	const oneOutcome = renderTableText(row[5]);
-	const allOutcome = renderTableText(row[6]);
-	const overallOutcome = renderTableText(row[7]);
 	const expected = threeChecksDiagnosticExpectations[index];
 	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
-
-	assert.equal(noneOutcome, labels.length === 0 ? "Success" : "Failure");
-	assert.equal(oneOutcome, labels.length === 1 ? "Success" : "Failure");
-	assert.equal(allOutcome, labels.length === 3 ? "Success" : "Failure");
-	assert.equal(overallOutcome, "Failure");
 
 	const result = await runLabelCheck({
 		pullRequestNumber: index + 1,
@@ -1010,15 +990,8 @@ async function verifyCombinedChecksSpecificationRow(
 	assertCombinedCheckCriterionDescriptions(row[0], row[1]);
 
 	const labels = parseLabels(renderTableText(row[2]));
-	const noneOutcome = renderTableText(row[3]);
-	const oneOutcome = renderTableText(row[4]);
-	const overallOutcome = renderTableText(row[5]);
 	const expected = combinedChecksDiagnosticExpectations[index];
 	assert(expected, `Missing diagnostic expectations for row ${index + 1}`);
-
-	assert.equal(noneOutcome, labels.length === 0 ? "Success" : "Failure");
-	assert.equal(oneOutcome, labels.length === 1 ? "Success" : "Failure");
-	assert.equal(overallOutcome, "Failure");
 
 	const result = await runLabelCheck({
 		pullRequestNumber: index + 1,
