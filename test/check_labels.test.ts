@@ -554,9 +554,7 @@ const combinedChecksDiagnosticExpectations: DiagnosticExpectation[] = [
 
 const requirementByOperator = new Map<string, Requirement>([
 	["none of", "none"],
-	["one of", "one"],
 	["exactly one of", "one"],
-	["any of", "any"],
 	["at least one of", "any"],
 	["all of", "all"],
 ]);
@@ -933,7 +931,7 @@ async function verifyCombinedChecksSpecificationRow(
 	assert.equal(result.output, expected.output);
 }
 
-test("combined-check operators map case-insensitively and reject unsupported values", () => {
+test("combined-check operators accept only canonical phrases case-insensitively", () => {
 	assert.equal(
 		getRequirement(
 			{ template: "{operator}", parameters: { operator: "nOnE Of" } },
@@ -943,33 +941,37 @@ test("combined-check operators map case-insensitively and reject unsupported val
 	);
 	assert.equal(
 		getRequirement(
-			{ template: "{operator}", parameters: { operator: "ONE OF" } },
+			{ template: "{operator}", parameters: { operator: "EXACTLY ONE OF" } },
 			"second",
 		),
 		"one",
 	);
 	assert.equal(
 		getRequirement(
-			{ template: "{operator}", parameters: { operator: "Any of" } },
+			{ template: "{operator}", parameters: { operator: "AT LEAST ONE OF" } },
 			"third",
 		),
 		"any",
 	);
 	assert.equal(
 		getRequirement(
-			{ template: "{operator}", parameters: { operator: "All of" } },
+			{ template: "{operator}", parameters: { operator: "aLl Of" } },
 			"fourth",
 		),
 		"all",
 	);
-	assert.throws(
-		() =>
-			getRequirement(
-				{ template: "{operator}", parameters: { operator: "Some of" } },
-				"first",
+	for (const operator of ["One of", "Any of", "Some of"]) {
+		assert.throws(
+			() =>
+				getRequirement(
+					{ template: "{operator}", parameters: { operator } },
+					"first",
+				),
+			new RegExp(
+				`Unsupported combined-check operator "${operator}" in the first criterion`,
 			),
-		/Unsupported combined-check operator "Some of" in the first criterion/,
-	);
+		);
+	}
 	assert.throws(
 		() => getRequirement({ template: "{operator}", parameters: {} }, "first"),
 		/Expected the first criterion to define an operator/,
