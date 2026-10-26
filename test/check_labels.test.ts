@@ -400,16 +400,16 @@ async function verifyCombinedPrefixChecksSpecificationExample(
 
 	const noneCriterion = getCriterion(row[0], "first");
 	const oneCriterion = getCriterion(row[1], "second");
-	assert.equal(
-		noneCriterion.template,
-		"No labels starting with {prefix} are present.",
-	);
-	assert.deepEqual(noneCriterion.parameters, { prefix: "type:" });
-	assert.equal(
-		oneCriterion.template,
-		"Exactly one label starting with {prefix} is present.",
-	);
-	assert.deepEqual(oneCriterion.parameters, { prefix: "type:" });
+	assert.equal(getRequirement(noneCriterion, "first"), "none");
+	assert.deepEqual(noneCriterion.parameters, {
+		operator: "No",
+		prefix: "type:",
+	});
+	assert.equal(getRequirement(oneCriterion, "second"), "one");
+	assert.deepEqual(oneCriterion.parameters, {
+		operator: "Exactly one",
+		prefix: "type:",
+	});
 
 	const labelsText = renderTableText(row[2]);
 	const labels = parseLabels(labelsText);
