@@ -685,9 +685,7 @@ test("combined-check operators accept only canonical phrases case-insensitively"
 					{ template: "{operator}", parameters: { operator } },
 					"first",
 				),
-			new RegExp(
-				`Unsupported operator "${operator}" in the first criterion`,
-			),
+			new RegExp(`Unsupported operator "${operator}" in the first criterion`),
 		);
 	}
 	assert.throws(
