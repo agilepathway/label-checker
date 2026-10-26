@@ -39,17 +39,17 @@ const noneOfCriterion: ParameterisedText = {
 
 const noneOfPrefixCriterion: ParameterisedText = {
 	template: "No labels starting with {prefix} are present.",
-	parameters: { prefix: "type:" },
+	parameters: { operator: "None of", prefix: "type:" },
 };
 
 const oneOfPrefixCriterion: ParameterisedText = {
 	template: "Exactly one label starting with {prefix} is present.",
-	parameters: { prefix: "type:" },
+	parameters: { operator: "Exactly one of", prefix: "type:" },
 };
 
 const anyOfPrefixCriterion: ParameterisedText = {
 	template: "At least one label starting with {prefix} is present.",
-	parameters: { prefix: "type:" },
+	parameters: { operator: "At least one of", prefix: "type:" },
 };
 
 const allOfPrefixCriterion: ParameterisedText = {
