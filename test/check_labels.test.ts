@@ -293,11 +293,6 @@ const scenarios: Scenario[] = [
 	},
 ];
 
-type TypePrefixSpecificationVerification = {
-	requirement: Extract<Requirement, "none" | "one" | "any">;
-	criterionTemplate: string;
-};
-
 const requirementByOperator = new Map<string, Requirement>([
 	["none of", "none"],
 	["exactly one of", "one"],
@@ -311,18 +306,9 @@ const specificationExampleImplementations: Record<
 > = {
 	none_of_major_minor_patch: (example: Example) =>
 		verifySpecificationExample(example),
-	none_of_type_prefix: createTypePrefixSpecificationImplementation({
-		requirement: "none",
-		criterionTemplate: "No labels starting with {prefix} are present.",
-	}),
-	one_of_type_prefix: createTypePrefixSpecificationImplementation({
-		requirement: "one",
-		criterionTemplate: "Exactly one label starting with {prefix} is present.",
-	}),
-	any_of_type_prefix: createTypePrefixSpecificationImplementation({
-		requirement: "any",
-		criterionTemplate: "At least one label starting with {prefix} is present.",
-	}),
+	none_of_type_prefix: verifyTypePrefixSpecificationExample,
+	one_of_type_prefix: verifyTypePrefixSpecificationExample,
+	any_of_type_prefix: verifyTypePrefixSpecificationExample,
 	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
 	multiple_prefixes_per_check:
 		verifyMultiplePrefixesPerCheckSpecificationExample,
@@ -345,13 +331,6 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 	}
 	await implementation(example);
 });
-
-function createTypePrefixSpecificationImplementation(
-	verification: TypePrefixSpecificationVerification,
-): (example: Example) => Promise<void> {
-	return (example: Example) =>
-		verifyTypePrefixSpecificationExample(example, verification);
-}
 
 async function verifyMultiplePrefixesPerCheckSpecificationExample(
 	example: Example,
@@ -522,7 +501,6 @@ function interpretErrorOutcome(outcome: string): 1 {
 
 async function verifyTypePrefixSpecificationExample(
 	example: ExampleWithDiagnostics,
-	verification: TypePrefixSpecificationVerification,
 ): Promise<void> {
 	const table = tableAt(example, 1);
 	const diagnosticsByLabels = getDiagnosticExpectations(
@@ -537,8 +515,8 @@ async function verifyTypePrefixSpecificationExample(
 			typeof criterion !== "string",
 			"Expected the criterion to use parameterised text",
 		);
-		assert.equal(criterion.template, verification.criterionTemplate);
 		assert.equal(criterion.parameters.prefix, "type:");
+		const requirement = getRequirement(criterion, example.id);
 
 		const labelsText = renderTableText(row[1]);
 		const labels = parseLabels(labelsText);
@@ -559,7 +537,7 @@ async function verifyTypePrefixSpecificationExample(
 			pullRequestNumber,
 			labels,
 			requirements: {
-				[verification.requirement]: criterion.parameters.prefix,
+				[requirement]: criterion.parameters.prefix,
 			},
 			prefixMode: true,
 		});
