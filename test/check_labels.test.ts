@@ -310,7 +310,7 @@ const specificationExampleImplementations: Record<
 	(example: Example) => Promise<void>
 > = {
 	none_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "none"),
+		verifySpecificationExample(example),
 	none_of_type_prefix: createTypePrefixSpecificationImplementation({
 		requirement: "none",
 		criterionTemplate: "No labels starting with {prefix} are present.",
@@ -328,11 +328,11 @@ const specificationExampleImplementations: Record<
 		verifyMultiplePrefixesPerCheckSpecificationExample,
 	two_prefix_checks_combined: verifyCombinedPrefixChecksSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "one"),
+		verifySpecificationExample(example),
 	all_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "all"),
+		verifySpecificationExample(example),
 	any_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "any"),
+		verifySpecificationExample(example),
 	two_checks_combined: verifyCombinedChecksSpecificationExample,
 	three_checks_combined: verifyCombinedChecksSpecificationExample,
 	four_checks_combined: verifyCombinedChecksSpecificationExample,
@@ -685,9 +685,7 @@ test("combined-check operators accept only canonical phrases case-insensitively"
 					{ template: "{operator}", parameters: { operator } },
 					"first",
 				),
-			new RegExp(
-				`Unsupported combined-check operator "${operator}" in the first criterion`,
-			),
+			new RegExp(`Unsupported operator "${operator}" in the first criterion`),
 		);
 	}
 	assert.throws(
@@ -719,7 +717,7 @@ function getRequirement(
 	const requirement = requirementByOperator.get(operator.toLowerCase());
 	assert(
 		requirement,
-		`Unsupported combined-check operator "${operator}" in the ${name} criterion`,
+		`Unsupported operator "${operator}" in the ${name} criterion`,
 	);
 	return requirement;
 }
@@ -754,7 +752,6 @@ function parseLabels(labelsText: string): string[] {
 
 async function verifySpecificationExample(
 	example: ExampleWithDiagnostics,
-	requirement: "one" | "none" | "all" | "any",
 ): Promise<void> {
 	const table = tableAt(example, 0);
 	const diagnosticsByLabels = getDiagnosticExpectations(
@@ -768,6 +765,7 @@ async function verifySpecificationExample(
 			typeof criterion !== "string",
 			"Expected the criterion to use parameterised text",
 		);
+		const requirement = getRequirement(criterion, example.id);
 		const requiredLabels = criterion.parameters.required;
 		assert(requiredLabels, "Expected the criterion to define required labels");
 
