@@ -387,7 +387,7 @@ async function verifyMultiplePrefixesPerCheckSpecificationExample(
 			firstPrefix: "type:",
 			secondPrefix: "visibility/",
 		});
-		assert.equal(renderTableText(row[1]), "Error");
+		const expectedStatus = interpretErrorOutcome(renderTableText(row[1]));
 
 		const result = await runLabelCheck({
 			pullRequestNumber: index + 1,
@@ -396,7 +396,7 @@ async function verifyMultiplePrefixesPerCheckSpecificationExample(
 			prefixMode: true,
 		});
 
-		assert.equal(result.status, 1);
+		assert.equal(result.status, expectedStatus);
 		assert.equal(result.stdout, "Checking GitHub labels ...\n");
 		assert.equal(
 			result.stderr,
@@ -438,6 +438,7 @@ async function verifyCombinedPrefixChecksSpecificationExample(
 	assert.equal(noneOutcome, "Success");
 	assert.equal(oneOutcome, "Failure");
 	assert.equal(overallOutcome, "Failure");
+	const expectedStatus = interpretSuccessFailureOutcome(overallOutcome);
 
 	const result = await runLabelCheck({
 		pullRequestNumber: 1,
@@ -446,8 +447,7 @@ async function verifyCombinedPrefixChecksSpecificationExample(
 		prefixMode: true,
 	});
 
-	assert.equal(result.status, 1);
-	assert.equal(overallOutcome, "Failure");
+	assert.equal(result.status, expectedStatus);
 	const expected = diagnosticsByLabels[labelsText];
 	assert(
 		expected,
@@ -472,7 +472,7 @@ async function verifyAllOfTypePrefixSpecificationExample(
 	);
 	assert.equal(criterion.template, "All labels start with prefix {prefix}");
 	assert.equal(criterion.parameters.prefix, "type:");
-	assert.equal(renderTableText(row[1]), "Error");
+	const expectedStatus = interpretErrorOutcome(renderTableText(row[1]));
 
 	const result = await runLabelCheck({
 		pullRequestNumber: 1,
@@ -481,7 +481,7 @@ async function verifyAllOfTypePrefixSpecificationExample(
 		prefixMode: true,
 	});
 
-	assert.equal(result.status, 1);
+	assert.equal(result.status, expectedStatus);
 	assert.equal(result.stdout, "Checking GitHub labels ...\n");
 	assert.equal(
 		result.stderr,
@@ -513,6 +513,11 @@ function interpretSuccessFailureOutcome(outcome: string): 0 | 1 {
 		`Unexpected check outcome: "${outcome}"`,
 	);
 	return outcome === "Success" ? 0 : 1;
+}
+
+function interpretErrorOutcome(outcome: string): 1 {
+	assert.equal(outcome, "Error");
+	return 1;
 }
 
 async function verifyTypePrefixSpecificationExample(
@@ -577,20 +582,14 @@ async function verifyCombinedChecksSpecificationExample(
 		[2, 3, 4].includes(checkCount),
 		`Unexpected number of combined checks: ${checkCount}`,
 	);
-	const diagnosticsByLabels = example.diagnosticsByLabels;
-	assert(
-		diagnosticsByLabels,
-		`Missing diagnostic expectations for ${example.id}`,
-	);
 	assert.equal(
 		expandText(textAt(example, 0)),
 		`${checkCount} checks combined:`,
 	);
 	assert.equal(table.headers.length, checkCount * 2 + 2);
-	assert.deepEqual(
-		Object.keys(diagnosticsByLabels).sort(),
-		table.rows.map((row) => renderTableText(row[labelsColumn])).sort(),
-		"Diagnostic expectations must correspond exactly to the example's label inputs",
+	const diagnosticsByLabels = getDiagnosticExpectations(
+		example,
+		table.rows.map((row) => renderTableText(row[labelsColumn])),
 	);
 
 	for (const [index, row] of table.rows.entries()) {
@@ -708,7 +707,7 @@ function interpretOverallOutcome(outcome: TableText | undefined): 0 | 1 {
 		`Unexpected combined-check overall outcome: "${declaredOutcome}"`,
 	);
 	assert.equal(expandText(outcome), declaredOutcome);
-	return declaredOutcome === "Success" ? 0 : 1;
+	return interpretSuccessFailureOutcome(declaredOutcome);
 }
 
 function getRequirement(
