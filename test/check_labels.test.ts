@@ -295,8 +295,11 @@ const scenarios: Scenario[] = [
 
 const requirementByOperator = new Map<string, Requirement>([
 	["none of", "none"],
+	["no", "none"],
 	["exactly one of", "one"],
+	["exactly one", "one"],
 	["at least one of", "any"],
+	["at least one", "any"],
 	["all of", "all"],
 ]);
 
