@@ -293,15 +293,13 @@ const scenarios: Scenario[] = [
 	},
 ];
 
-type TypePrefixSpecificationVerification = {
-	requirement: Extract<Requirement, "none" | "one" | "any">;
-	criterionTemplate: string;
-};
-
 const requirementByOperator = new Map<string, Requirement>([
 	["none of", "none"],
+	["no", "none"],
 	["exactly one of", "one"],
+	["exactly one", "one"],
 	["at least one of", "any"],
+	["at least one", "any"],
 	["all of", "all"],
 ]);
 
@@ -310,29 +308,20 @@ const specificationExampleImplementations: Record<
 	(example: Example) => Promise<void>
 > = {
 	none_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "none"),
-	none_of_type_prefix: createTypePrefixSpecificationImplementation({
-		requirement: "none",
-		criterionTemplate: "No labels starting with {prefix} are present.",
-	}),
-	one_of_type_prefix: createTypePrefixSpecificationImplementation({
-		requirement: "one",
-		criterionTemplate: "Exactly one label starting with {prefix} is present.",
-	}),
-	any_of_type_prefix: createTypePrefixSpecificationImplementation({
-		requirement: "any",
-		criterionTemplate: "At least one label starting with {prefix} is present.",
-	}),
+		verifySpecificationExample(example),
+	none_of_type_prefix: verifyTypePrefixSpecificationExample,
+	one_of_type_prefix: verifyTypePrefixSpecificationExample,
+	any_of_type_prefix: verifyTypePrefixSpecificationExample,
 	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
 	multiple_prefixes_per_check:
 		verifyMultiplePrefixesPerCheckSpecificationExample,
 	two_prefix_checks_combined: verifyCombinedPrefixChecksSpecificationExample,
 	one_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "one"),
+		verifySpecificationExample(example),
 	all_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "all"),
+		verifySpecificationExample(example),
 	any_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example, "any"),
+		verifySpecificationExample(example),
 	two_checks_combined: verifyCombinedChecksSpecificationExample,
 	three_checks_combined: verifyCombinedChecksSpecificationExample,
 	four_checks_combined: verifyCombinedChecksSpecificationExample,
@@ -345,13 +334,6 @@ registerSpecificationTests(labelCheckerSpecification, async (example) => {
 	}
 	await implementation(example);
 });
-
-function createTypePrefixSpecificationImplementation(
-	verification: TypePrefixSpecificationVerification,
-): (example: Example) => Promise<void> {
-	return (example: Example) =>
-		verifyTypePrefixSpecificationExample(example, verification);
-}
 
 async function verifyMultiplePrefixesPerCheckSpecificationExample(
 	example: Example,
@@ -418,16 +400,16 @@ async function verifyCombinedPrefixChecksSpecificationExample(
 
 	const noneCriterion = getCriterion(row[0], "first");
 	const oneCriterion = getCriterion(row[1], "second");
-	assert.equal(
-		noneCriterion.template,
-		"No labels starting with {prefix} are present.",
-	);
-	assert.deepEqual(noneCriterion.parameters, { prefix: "type:" });
-	assert.equal(
-		oneCriterion.template,
-		"Exactly one label starting with {prefix} is present.",
-	);
-	assert.deepEqual(oneCriterion.parameters, { prefix: "type:" });
+	assert.equal(getRequirement(noneCriterion, "first"), "none");
+	assert.deepEqual(noneCriterion.parameters, {
+		operator: "No",
+		prefix: "type:",
+	});
+	assert.equal(getRequirement(oneCriterion, "second"), "one");
+	assert.deepEqual(oneCriterion.parameters, {
+		operator: "Exactly one",
+		prefix: "type:",
+	});
 
 	const labelsText = renderTableText(row[2]);
 	const labels = parseLabels(labelsText);
@@ -522,7 +504,6 @@ function interpretErrorOutcome(outcome: string): 1 {
 
 async function verifyTypePrefixSpecificationExample(
 	example: ExampleWithDiagnostics,
-	verification: TypePrefixSpecificationVerification,
 ): Promise<void> {
 	const table = tableAt(example, 1);
 	const diagnosticsByLabels = getDiagnosticExpectations(
@@ -537,8 +518,8 @@ async function verifyTypePrefixSpecificationExample(
 			typeof criterion !== "string",
 			"Expected the criterion to use parameterised text",
 		);
-		assert.equal(criterion.template, verification.criterionTemplate);
 		assert.equal(criterion.parameters.prefix, "type:");
+		const requirement = getRequirement(criterion, example.id);
 
 		const labelsText = renderTableText(row[1]);
 		const labels = parseLabels(labelsText);
@@ -559,7 +540,7 @@ async function verifyTypePrefixSpecificationExample(
 			pullRequestNumber,
 			labels,
 			requirements: {
-				[verification.requirement]: criterion.parameters.prefix,
+				[requirement]: criterion.parameters.prefix,
 			},
 			prefixMode: true,
 		});
@@ -685,9 +666,7 @@ test("combined-check operators accept only canonical phrases case-insensitively"
 					{ template: "{operator}", parameters: { operator } },
 					"first",
 				),
-			new RegExp(
-				`Unsupported combined-check operator "${operator}" in the first criterion`,
-			),
+			new RegExp(`Unsupported operator "${operator}" in the first criterion`),
 		);
 	}
 	assert.throws(
@@ -719,7 +698,7 @@ function getRequirement(
 	const requirement = requirementByOperator.get(operator.toLowerCase());
 	assert(
 		requirement,
-		`Unsupported combined-check operator "${operator}" in the ${name} criterion`,
+		`Unsupported operator "${operator}" in the ${name} criterion`,
 	);
 	return requirement;
 }
@@ -754,7 +733,6 @@ function parseLabels(labelsText: string): string[] {
 
 async function verifySpecificationExample(
 	example: ExampleWithDiagnostics,
-	requirement: "one" | "none" | "all" | "any",
 ): Promise<void> {
 	const table = tableAt(example, 0);
 	const diagnosticsByLabels = getDiagnosticExpectations(
@@ -768,11 +746,12 @@ async function verifySpecificationExample(
 			typeof criterion !== "string",
 			"Expected the criterion to use parameterised text",
 		);
+		const requirement = getRequirement(criterion, example.id);
 		const requiredLabels = criterion.parameters.required;
 		assert(requiredLabels, "Expected the criterion to define required labels");
 
 		const labelsText = renderTableText(row[1]);
-		const labels = labelsText === "(none)" ? [] : labelsText.split(", ");
+		const labels = parseLabels(labelsText);
 		const outcome = renderTableText(row[2]);
 		const expectedStatus = interpretSuccessFailureOutcome(outcome);
 		const expected = diagnosticsByLabels[labelsText];
