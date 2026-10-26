@@ -770,7 +770,7 @@ async function verifySpecificationExample(
 		assert(requiredLabels, "Expected the criterion to define required labels");
 
 		const labelsText = renderTableText(row[1]);
-		const labels = labelsText === "(none)" ? [] : labelsText.split(", ");
+		const labels = parseLabels(labelsText);
 		const outcome = renderTableText(row[2]);
 		const expectedStatus = interpretSuccessFailureOutcome(outcome);
 		const expected = diagnosticsByLabels[labelsText];
