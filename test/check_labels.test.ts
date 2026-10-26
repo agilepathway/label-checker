@@ -582,20 +582,14 @@ async function verifyCombinedChecksSpecificationExample(
 		[2, 3, 4].includes(checkCount),
 		`Unexpected number of combined checks: ${checkCount}`,
 	);
-	const diagnosticsByLabels = example.diagnosticsByLabels;
-	assert(
-		diagnosticsByLabels,
-		`Missing diagnostic expectations for ${example.id}`,
-	);
 	assert.equal(
 		expandText(textAt(example, 0)),
 		`${checkCount} checks combined:`,
 	);
 	assert.equal(table.headers.length, checkCount * 2 + 2);
-	assert.deepEqual(
-		Object.keys(diagnosticsByLabels).sort(),
-		table.rows.map((row) => renderTableText(row[labelsColumn])).sort(),
-		"Diagnostic expectations must correspond exactly to the example's label inputs",
+	const diagnosticsByLabels = getDiagnosticExpectations(
+		example,
+		table.rows.map((row) => renderTableText(row[labelsColumn])),
 	);
 
 	for (const [index, row] of table.rows.entries()) {
@@ -713,7 +707,7 @@ function interpretOverallOutcome(outcome: TableText | undefined): 0 | 1 {
 		`Unexpected combined-check overall outcome: "${declaredOutcome}"`,
 	);
 	assert.equal(expandText(outcome), declaredOutcome);
-	return declaredOutcome === "Success" ? 0 : 1;
+	return interpretSuccessFailureOutcome(declaredOutcome);
 }
 
 function getRequirement(
