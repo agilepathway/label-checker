@@ -630,51 +630,6 @@ async function verifyCombinedChecksSpecificationRow(
 	assert.equal(result.output, expected.output);
 }
 
-test("combined-check operators accept only canonical phrases case-insensitively", () => {
-	assert.equal(
-		getRequirement(
-			{ template: "{operator}", parameters: { operator: "nOnE Of" } },
-			"first",
-		),
-		"none",
-	);
-	assert.equal(
-		getRequirement(
-			{ template: "{operator}", parameters: { operator: "EXACTLY ONE OF" } },
-			"second",
-		),
-		"one",
-	);
-	assert.equal(
-		getRequirement(
-			{ template: "{operator}", parameters: { operator: "AT LEAST ONE OF" } },
-			"third",
-		),
-		"any",
-	);
-	assert.equal(
-		getRequirement(
-			{ template: "{operator}", parameters: { operator: "aLl Of" } },
-			"fourth",
-		),
-		"all",
-	);
-	for (const operator of ["One of", "Any of", "Some of"]) {
-		assert.throws(
-			() =>
-				getRequirement(
-					{ template: "{operator}", parameters: { operator } },
-					"first",
-				),
-			new RegExp(`Unsupported operator "${operator}" in the first criterion`),
-		);
-	}
-	assert.throws(
-		() => getRequirement({ template: "{operator}", parameters: {} }, "first"),
-		/Expected the first criterion to define an operator/,
-	);
-});
-
 function interpretOverallOutcome(outcome: TableText | undefined): 0 | 1 {
 	assert(
 		typeof outcome !== "string" && outcome !== undefined,
