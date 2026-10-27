@@ -14,94 +14,144 @@ export type CombinedDiagnosticExpectation = {
 	output: string;
 };
 
+type Requirement = "none" | "one" | "any" | "all";
+
+export type ExecutableCriterion = ParameterisedText & {
+	execution: {
+		requirement: Requirement;
+		input: string;
+	};
+};
+
+type TestExecution = {
+	kind: "supported" | "unsupported";
+	tableIndex: number;
+	prefixMode?: boolean;
+	pullRequestNumbers?: number[];
+	expectedError?: string;
+};
+
 export type ExampleWithDiagnostics = Example & {
 	diagnosticsByLabels?: Record<string, CombinedDiagnosticExpectation>;
+	testExecution?: TestExecution;
 };
 
 type LabelCheckerSpecification = Omit<Specification, "rules"> & {
 	rules: Array<Omit<Rule, "examples"> & { examples: ExampleWithDiagnostics[] }>;
 };
 
-const oneOfCriterion: ParameterisedText = {
-	template: "{operator} {required} is present.",
-	parameters: {
-		operator: "Exactly one of",
-		required: "major, minor, patch",
-	},
-};
+function criterion(
+	template: string,
+	inputValues: Record<string, string>,
+	requirement: Requirement,
+): ExecutableCriterion {
+	const parameters = { ...inputValues };
+	if (template.includes("{operator}")) {
+		const operatorByRequirement: Record<Requirement, string> = Object.hasOwn(
+			inputValues,
+			"required",
+		)
+			? {
+					none: "None of",
+					one: "Exactly one of",
+					any: "At least one of",
+					all: "All of",
+				}
+			: {
+					none: "No",
+					one: "Exactly one",
+					any: "At least one",
+					all: "All",
+				};
+		parameters.operator = operatorByRequirement[requirement];
+	}
 
-const noneOfCriterion: ParameterisedText = {
-	template: "{operator} {required} are present.",
-	parameters: {
-		operator: "None of",
-		required: "major, minor, patch",
-	},
-};
+	return {
+		template,
+		parameters,
+		execution: {
+			requirement,
+			input: Object.values(inputValues).join(",").replaceAll(", ", ","),
+		},
+	};
+}
 
-const noneOfPrefixCriterion: ParameterisedText = {
-	template: "{operator} labels starting with {prefix} are present.",
-	parameters: { operator: "No", prefix: "type:" },
-};
+const oneOfCriterion = criterion(
+	"{operator} {required} is present.",
+	{ required: "major, minor, patch" },
+	"one",
+);
 
-const oneOfPrefixCriterion: ParameterisedText = {
-	template: "{operator} label starting with {prefix} is present.",
-	parameters: { operator: "Exactly one", prefix: "type:" },
-};
+const noneOfCriterion = criterion(
+	"{operator} {required} are present.",
+	{ required: "major, minor, patch" },
+	"none",
+);
 
-const anyOfPrefixCriterion: ParameterisedText = {
-	template: "{operator} label starting with {prefix} is present.",
-	parameters: { operator: "At least one", prefix: "type:" },
-};
+const noneOfTypePrefixCriterion = criterion(
+	"{operator} labels starting with {prefix} are present.",
+	{ prefix: "type:" },
+	"none",
+);
 
-const allOfPrefixCriterion: ParameterisedText = {
-	template: "All labels start with prefix {prefix}",
-	parameters: { prefix: "type:" },
-};
+const oneOfTypePrefixCriterion = criterion(
+	"{operator} label starting with {prefix} is present.",
+	{ prefix: "type:" },
+	"one",
+);
+
+const anyOfPrefixCriterion = criterion(
+	"{operator} label starting with {prefix} is present.",
+	{ prefix: "type:" },
+	"any",
+);
+
+const allOfPrefixCriterion = criterion(
+	"{operator} labels start with prefix {prefix}",
+	{ prefix: "type:" },
+	"all",
+);
 
 const multiplePrefixes = {
 	firstPrefix: "type:",
 	secondPrefix: "visibility/",
 };
 
-const noneOfMultiplePrefixesCriterion: ParameterisedText = {
-	template:
-		"No labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
-	parameters: multiplePrefixes,
-};
+const noneOfMultiplePrefixesCriterion = criterion(
+	"{operator} labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	multiplePrefixes,
+	"none",
+);
 
-const oneOfMultiplePrefixesCriterion: ParameterisedText = {
-	template:
-		"Exactly one label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
-	parameters: multiplePrefixes,
-};
+const oneOfMultiplePrefixesCriterion = criterion(
+	"{operator} label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	multiplePrefixes,
+	"one",
+);
 
-const anyOfMultiplePrefixesCriterion: ParameterisedText = {
-	template:
-		"At least one label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
-	parameters: multiplePrefixes,
-};
+const anyOfMultiplePrefixesCriterion = criterion(
+	"{operator} label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	multiplePrefixes,
+	"any",
+);
 
-const allOfMultiplePrefixesCriterion: ParameterisedText = {
-	template:
-		"All labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
-	parameters: multiplePrefixes,
-};
+const allOfMultiplePrefixesCriterion = criterion(
+	"{operator} labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
+	multiplePrefixes,
+	"all",
+);
 
-const anyOfCriterion: ParameterisedText = {
-	template: "{operator} {required} is present.",
-	parameters: {
-		operator: "At least one of",
-		required: "major, minor, patch",
-	},
-};
+const anyOfCriterion = criterion(
+	"{operator} {required} is present.",
+	{ required: "major, minor, patch" },
+	"any",
+);
 
-const allOfCriterion: ParameterisedText = {
-	template: "{operator} {required} are present.",
-	parameters: {
-		operator: "All of",
-		required: "major, minor, patch",
-	},
-};
+const allOfCriterion = criterion(
+	"{operator} {required} are present.",
+	{ required: "major, minor, patch" },
+	"all",
+);
 
 const combinedFailureOutcome: ParameterisedText = {
 	template: "{outcome}",
@@ -117,6 +167,10 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "none_of_major_minor_patch",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 0,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout:
@@ -174,6 +228,10 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "one_of_major_minor_patch",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 0,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout: "Checking GitHub labels ...\n",
@@ -231,6 +289,10 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "all_of_major_minor_patch",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 0,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout: "Checking GitHub labels ...\n",
@@ -288,6 +350,10 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "any_of_major_minor_patch",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 0,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout: "Checking GitHub labels ...\n",
@@ -345,6 +411,12 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "none_of_type_prefix",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 1,
+						prefixMode: true,
+						pullRequestNumbers: [1, 5, 6, 7],
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout:
@@ -388,15 +460,19 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 									text("Outcome"),
 								],
 								rows: [
-									[noneOfPrefixCriterion, text("(none)"), text("Success")],
-									[noneOfPrefixCriterion, text("type:fix"), text("Failure")],
+									[noneOfTypePrefixCriterion, text("(none)"), text("Success")],
 									[
-										noneOfPrefixCriterion,
+										noneOfTypePrefixCriterion,
+										text("type:fix"),
+										text("Failure"),
+									],
+									[
+										noneOfTypePrefixCriterion,
 										text("type:fix, type:feature"),
 										text("Failure"),
 									],
 									[
-										noneOfPrefixCriterion,
+										noneOfTypePrefixCriterion,
 										text("type:fix, type:feature, type:documentation"),
 										text("Failure"),
 									],
@@ -407,6 +483,12 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "one_of_type_prefix",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 1,
+						prefixMode: true,
+						pullRequestNumbers: [1, 5, 6, 7],
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout: "Checking GitHub labels ...\n",
@@ -450,15 +532,15 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 									text("Outcome"),
 								],
 								rows: [
-									[oneOfPrefixCriterion, text("(none)"), text("Failure")],
-									[oneOfPrefixCriterion, text("type:fix"), text("Success")],
+									[oneOfTypePrefixCriterion, text("(none)"), text("Failure")],
+									[oneOfTypePrefixCriterion, text("type:fix"), text("Success")],
 									[
-										oneOfPrefixCriterion,
+										oneOfTypePrefixCriterion,
 										text("type:fix, type:feature"),
 										text("Failure"),
 									],
 									[
-										oneOfPrefixCriterion,
+										oneOfTypePrefixCriterion,
 										text("type:fix, type:feature, type:documentation"),
 										text("Failure"),
 									],
@@ -469,6 +551,12 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "any_of_type_prefix",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 1,
+						prefixMode: true,
+						pullRequestNumbers: [1, 5, 6, 7],
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout: "Checking GitHub labels ...\n",
@@ -537,6 +625,13 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "all_of_type_prefix",
+					testExecution: {
+						kind: "unsupported",
+						tableIndex: 1,
+						prefixMode: true,
+						expectedError:
+							"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
+					},
 					content: [
 						{
 							type: "text",
@@ -561,6 +656,13 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "multiple_prefixes_per_check",
+					testExecution: {
+						kind: "unsupported",
+						tableIndex: 0,
+						prefixMode: true,
+						expectedError:
+							"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+					},
 					content: [
 						{
 							type: "table",
@@ -583,6 +685,11 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "two_prefix_checks_combined",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 0,
+						prefixMode: true,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout:
@@ -606,8 +713,8 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 								],
 								rows: [
 									[
-										noneOfPrefixCriterion,
-										oneOfPrefixCriterion,
+										noneOfTypePrefixCriterion,
+										oneOfTypePrefixCriterion,
 										text("(none)"),
 										text("Success"),
 										text("Failure"),
@@ -625,6 +732,10 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "two_checks_combined",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 1,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout:
@@ -712,6 +823,10 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "three_checks_combined",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 1,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout:
@@ -810,6 +925,10 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "four_checks_combined",
+					testExecution: {
+						kind: "supported",
+						tableIndex: 1,
+					},
 					diagnosticsByLabels: {
 						"(none)": {
 							stdout:

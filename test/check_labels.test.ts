@@ -13,10 +13,10 @@ import { registerSpecificationTests } from "../shared/specification-by-example/s
 import {
 	type CombinedDiagnosticExpectation,
 	type ExampleWithDiagnostics,
+	type ExecutableCriterion,
 	labelCheckerSpecification,
 } from "./check_labels_specification.ts";
 import {
-	type Requirement,
 	type Requirements,
 	runLabelCheck,
 } from "./check_labels_test_harness.ts";
@@ -62,186 +62,182 @@ test("prefix examples have captions identifying each check before their tables",
 	}
 });
 
-const requirementByOperator = new Map<string, Requirement>([
-	["none of", "none"],
-	["no", "none"],
-	["exactly one of", "one"],
-	["exactly one", "one"],
-	["at least one of", "any"],
-	["at least one", "any"],
-	["all of", "all"],
-]);
+registerSpecificationTests(
+	labelCheckerSpecification,
+	verifySpecificationExample,
+);
 
-const specificationExampleImplementations: Record<
-	string,
-	(example: Example) => Promise<void>
-> = {
-	none_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example),
-	none_of_type_prefix: verifyTypePrefixSpecificationExample,
-	one_of_type_prefix: verifyTypePrefixSpecificationExample,
-	any_of_type_prefix: verifyTypePrefixSpecificationExample,
-	all_of_type_prefix: verifyAllOfTypePrefixSpecificationExample,
-	multiple_prefixes_per_check:
-		verifyMultiplePrefixesPerCheckSpecificationExample,
-	two_prefix_checks_combined: verifyCombinedPrefixChecksSpecificationExample,
-	one_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example),
-	all_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example),
-	any_of_major_minor_patch: (example: Example) =>
-		verifySpecificationExample(example),
-	two_checks_combined: verifyCombinedChecksSpecificationExample,
-	three_checks_combined: verifyCombinedChecksSpecificationExample,
-	four_checks_combined: verifyCombinedChecksSpecificationExample,
-};
+async function verifySpecificationExample(example: Example): Promise<void> {
+	const specificationExample = asExampleWithDiagnostics(example);
+	const execution = specificationExample.testExecution;
+	assert(execution);
 
-registerSpecificationTests(labelCheckerSpecification, async (example) => {
-	const implementation = specificationExampleImplementations[example.id];
-	if (!implementation) {
-		throw new Error(`Unexpected label-checker example: ${example.id}`);
+	if (execution.kind === "unsupported") {
+		await verifyUnsupportedExample(example, execution);
+		return;
 	}
-	await implementation(example);
-});
 
-async function verifyMultiplePrefixesPerCheckSpecificationExample(
+	await verifySupportedExample(example, specificationExample, execution);
+}
+
+async function verifyUnsupportedExample(
 	example: Example,
+	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
 ): Promise<void> {
-	const table = tableAt(example, 0);
-	assert.equal(table.rows.length, 4);
-	const verifiedRequirements = new Set<Requirement>();
-	const requirementByOpening = new Map<string, Requirement>([
-		["No", "none"],
-		["Exactly", "one"],
-		["At", "any"],
-		["All", "all"],
-	]);
-
+	const table = tableAt(example, execution.tableIndex);
 	for (const [index, row] of table.rows.entries()) {
-		const criterion = row[0];
-		const opening = criterion.template.split(" ")[0];
-		const requirement = requirementByOpening.get(opening);
-		assert(
-			requirement,
-			`Unexpected multiple-prefix criterion: ${criterion.template}`,
-		);
-		assert(
-			!verifiedRequirements.has(requirement),
-			`Duplicate multiple-prefix criterion: ${criterion.template}`,
-		);
-		verifiedRequirements.add(requirement);
-		assert.deepEqual(criterion.parameters, {
-			firstPrefix: "type:",
-			secondPrefix: "visibility/",
-		});
-		const expectedStatus = interpretErrorOutcome(renderTableText(row[1]));
+		const criterion = asExecutableCriterion(row[0]);
+		assert.equal(renderTableText(row[row.length - 1]), "Error");
 
 		const result = await runLabelCheck({
-			pullRequestNumber: index + 1,
+			pullRequestNumber: execution.pullRequestNumbers?.[index] ?? index + 1,
 			labels: [],
-			requirements: { [requirement]: "type:,visibility/" },
-			prefixMode: true,
+			requirements: {
+				[criterion.execution.requirement]: criterion.execution.input,
+			},
+			prefixMode: execution.prefixMode,
+		});
+
+		assert.equal(result.status, 1);
+		assert.equal(result.stdout, "Checking GitHub labels ...\n");
+		assert.equal(result.stderr, execution.expectedError);
+		assert.equal(result.output, "label_check=failure");
+	}
+}
+
+async function verifySupportedExample(
+	example: Example,
+	specificationExample: ExampleWithDiagnostics,
+	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
+): Promise<void> {
+	const table = tableAt(example, execution.tableIndex);
+	const labelsColumn = table.headers.findIndex(
+		(header) => renderTableText(header) === "Labels on the pull request",
+	);
+	assert(labelsColumn >= 1);
+
+	const diagnosticsByLabels = getDiagnosticExpectations(
+		specificationExample,
+		table.rows.map((row) => renderTableText(row[labelsColumn])),
+	);
+
+	for (const [index, row] of table.rows.entries()) {
+		const labelsText = renderTableText(row[labelsColumn]);
+		const labels = parseLabels(labelsText);
+		const requirements: Requirements = {};
+		const criteria = row.slice(0, labelsColumn).map(asExecutableCriterion);
+
+		for (const criterion of criteria) {
+			requirements[criterion.execution.requirement] = criterion.execution.input;
+		}
+
+		const outcome = renderTableText(row[row.length - 1]);
+		const expectedStatus = interpretSuccessFailureOutcome(outcome);
+		const expected = diagnosticsByLabels[labelsText];
+		assert(expected);
+
+		const result = await runLabelCheck({
+			pullRequestNumber: execution.pullRequestNumbers?.[index] ?? index + 1,
+			labels,
+			requirements,
+			prefixMode: execution.prefixMode,
 		});
 
 		assert.equal(result.status, expectedStatus);
-		assert.equal(result.stdout, "Checking GitHub labels ...\n");
-		assert.equal(
-			result.stderr,
-			"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
-		);
-		assert.equal(result.output, "label_check=failure");
+		assert.equal(result.stdout, expected.stdout);
+		assert.equal(result.stderr, expected.stderr);
+		assert.equal(result.output, expected.output);
+	}
+}
+
+function asExampleWithDiagnostics(example: Example): ExampleWithDiagnostics {
+	if (
+		!("testExecution" in example) ||
+		!isTestExecution(example.testExecution)
+	) {
+		throw new TypeError("Expected an example with execution metadata");
 	}
 
-	assert.equal(verifiedRequirements.size, 4);
+	return {
+		...example,
+		testExecution: example.testExecution,
+	};
 }
 
-async function verifyCombinedPrefixChecksSpecificationExample(
-	example: ExampleWithDiagnostics,
-): Promise<void> {
-	const table = tableAt(example, 0);
-	assert.equal(table.rows.length, 1);
-	const row = table.rows[0];
-	assert(row, "Missing the combined-prefix-check example row");
+function isTestExecution(
+	value: unknown,
+): value is NonNullable<ExampleWithDiagnostics["testExecution"]> {
+	if (!isRecord(value)) return false;
 
-	const noneCriterion = getCriterion(row[0], "first");
-	const oneCriterion = getCriterion(row[1], "second");
-	assert.equal(getRequirement(noneCriterion, "first"), "none");
-	assert.deepEqual(noneCriterion.parameters, {
-		operator: "No",
-		prefix: "type:",
-	});
-	assert.equal(getRequirement(oneCriterion, "second"), "one");
-	assert.deepEqual(oneCriterion.parameters, {
-		operator: "Exactly one",
-		prefix: "type:",
-	});
-
-	const labelsText = renderTableText(row[2]);
-	const labels = parseLabels(labelsText);
-	const diagnosticsByLabels = getDiagnosticExpectations(example, [labelsText]);
-	const noneOutcome = renderTableText(row[3]);
-	const oneOutcome = renderTableText(row[4]);
-	const overallOutcome = renderTableText(row[5]);
-	assert.equal(noneOutcome, "Success");
-	assert.equal(oneOutcome, "Failure");
-	assert.equal(overallOutcome, "Failure");
-	const expectedStatus = interpretSuccessFailureOutcome(overallOutcome);
-
-	const result = await runLabelCheck({
-		pullRequestNumber: 1,
-		labels,
-		requirements: { none: "type:", one: "type:" },
-		prefixMode: true,
-	});
-
-	assert.equal(result.status, expectedStatus);
-	const expected = diagnosticsByLabels[labelsText];
-	assert(
-		expected,
-		`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
+	return (
+		isExecutionKind(value.kind) &&
+		typeof value.tableIndex === "number" &&
+		isOptionalBoolean(value.prefixMode) &&
+		isOptionalString(value.expectedError) &&
+		isOptionalPullRequestNumbers(value.pullRequestNumbers)
 	);
-	assert.equal(result.stdout, expected.stdout);
-	assert.equal(result.stderr, expected.stderr);
-	assert.equal(result.output, expected.output);
 }
 
-async function verifyAllOfTypePrefixSpecificationExample(
-	example: Example,
-): Promise<void> {
-	const table = tableAt(example, 1);
-	assert.equal(table.rows.length, 1);
-	const row = table.rows[0];
-	assert(row, "Missing the all_of prefix example row");
-	const criterion = row[0];
-	assert.equal(criterion.template, "All labels start with prefix {prefix}");
-	assert.equal(criterion.parameters.prefix, "type:");
-	const expectedStatus = interpretErrorOutcome(renderTableText(row[1]));
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
 
-	const result = await runLabelCheck({
-		pullRequestNumber: 1,
-		labels: [],
-		requirements: { all: criterion.parameters.prefix },
-		prefixMode: true,
-	});
+function isExecutionKind(value: unknown): boolean {
+	return value === "supported" || value === "unsupported";
+}
 
-	assert.equal(result.status, expectedStatus);
-	assert.equal(result.stdout, "Checking GitHub labels ...\n");
-	assert.equal(
-		result.stderr,
-		"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
+function isOptionalBoolean(value: unknown): boolean {
+	return value === undefined || typeof value === "boolean";
+}
+
+function isOptionalString(value: unknown): boolean {
+	return value === undefined || typeof value === "string";
+}
+
+function isOptionalPullRequestNumbers(value: unknown): boolean {
+	return (
+		value === undefined ||
+		(Array.isArray(value) &&
+			value.every((pullRequestNumber) => typeof pullRequestNumber === "number"))
 	);
-	assert.equal(result.output, "label_check=failure");
 }
 
+function asExecutableCriterion(
+	value: ParameterisedText | undefined,
+): ExecutableCriterion {
+	if (value === undefined || !("execution" in value)) {
+		throw new TypeError("Expected an executable criterion");
+	}
+	if (!isCriterionExecution(value.execution)) {
+		throw new TypeError("Expected an executable criterion");
+	}
+	return {
+		template: value.template,
+		parameters: value.parameters,
+		execution: value.execution,
+	};
+}
+
+function isCriterionExecution(
+	value: unknown,
+): value is ExecutableCriterion["execution"] {
+	if (!isRecord(value)) return false;
+	return isRequirement(value.requirement) && typeof value.input === "string";
+}
+
+function isRequirement(
+	value: unknown,
+): value is ExecutableCriterion["execution"]["requirement"] {
+	return (
+		value === "none" || value === "one" || value === "any" || value === "all"
+	);
+}
 function getDiagnosticExpectations(
 	example: ExampleWithDiagnostics,
 	labelsInputs: string[],
 ): Record<string, CombinedDiagnosticExpectation> {
 	const diagnosticsByLabels = example.diagnosticsByLabels;
-	assert(
-		diagnosticsByLabels,
-		`Missing diagnostic expectations for ${example.id}`,
-	);
+	assert(diagnosticsByLabels);
 	assert.deepEqual(
 		Object.keys(diagnosticsByLabels).sort(),
 		labelsInputs.sort(),
@@ -251,235 +247,12 @@ function getDiagnosticExpectations(
 }
 
 function interpretSuccessFailureOutcome(outcome: string): 0 | 1 {
-	assert(
-		outcome === "Success" || outcome === "Failure",
-		`Unexpected check outcome: "${outcome}"`,
-	);
+	assert(outcome === "Success" || outcome === "Failure");
 	return outcome === "Success" ? 0 : 1;
-}
-
-function interpretErrorOutcome(outcome: string): 1 {
-	assert.equal(outcome, "Error");
-	return 1;
-}
-
-async function verifyTypePrefixSpecificationExample(
-	example: ExampleWithDiagnostics,
-): Promise<void> {
-	const table = tableAt(example, 1);
-	const diagnosticsByLabels = getDiagnosticExpectations(
-		example,
-		table.rows.map((row) => renderTableText(row[1])),
-	);
-	const pullRequestNumbers = [1, 5, 6, 7];
-
-	for (const [index, row] of table.rows.entries()) {
-		const criterion = row[0];
-		assert.equal(criterion.parameters.prefix, "type:");
-		const requirement = getRequirement(criterion, example.id);
-
-		const labelsText = renderTableText(row[1]);
-		const labels = parseLabels(labelsText);
-		const outcome = renderTableText(row[2]);
-		const expectedStatus = interpretSuccessFailureOutcome(outcome);
-		const expected = diagnosticsByLabels[labelsText];
-		assert(
-			expected,
-			`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
-		);
-		const pullRequestNumber = pullRequestNumbers[index];
-		assert(
-			pullRequestNumber,
-			`Missing pull request number for row ${index + 1}`,
-		);
-
-		const result = await runLabelCheck({
-			pullRequestNumber,
-			labels,
-			requirements: {
-				[requirement]: criterion.parameters.prefix,
-			},
-			prefixMode: true,
-		});
-
-		assert.equal(result.status, expectedStatus);
-		assert.equal(result.stdout, expected.stdout);
-		assert.equal(result.stderr, expected.stderr);
-		assert.equal(result.output, expected.output);
-	}
-}
-
-async function verifyCombinedChecksSpecificationExample(
-	example: ExampleWithDiagnostics,
-): Promise<void> {
-	const table = tableAt(example, 1);
-	const labelsColumn = table.headers.findIndex(
-		(header) => renderTableText(header) === "Labels on the pull request",
-	);
-	assert(labelsColumn >= 2, "Missing combined-check criterion columns");
-	const checkCount = labelsColumn;
-	assert(
-		[2, 3, 4].includes(checkCount),
-		`Unexpected number of combined checks: ${checkCount}`,
-	);
-	assert.equal(
-		expandText(textAt(example, 0)),
-		`${checkCount} checks combined:`,
-	);
-	assert.equal(table.headers.length, checkCount * 2 + 2);
-	const diagnosticsByLabels = getDiagnosticExpectations(
-		example,
-		table.rows.map((row) => renderTableText(row[labelsColumn])),
-	);
-
-	for (const [index, row] of table.rows.entries()) {
-		await verifyCombinedChecksSpecificationRow(
-			example,
-			row,
-			index,
-			checkCount,
-			diagnosticsByLabels,
-		);
-	}
-}
-
-async function verifyCombinedChecksSpecificationRow(
-	example: Example,
-	row: ParameterisedText[],
-	index: number,
-	checkCount: number,
-	diagnosticsByLabels: Record<string, CombinedDiagnosticExpectation>,
-): Promise<void> {
-	assert.equal(row.length, checkCount * 2 + 2);
-	const criteria = row.slice(0, checkCount);
-	const requiredLabels = getRequiredLabels(criteria[0], "first");
-	const requirements: Requirements = {};
-
-	for (const [criterionIndex, criterion] of criteria.entries()) {
-		const name = ["first", "second", "third", "fourth"][criterionIndex];
-		assert(name, `Unexpected criterion index: ${criterionIndex}`);
-		assert.equal(getRequiredLabels(criterion, name), requiredLabels);
-
-		const requirement = getRequirement(criterion, name);
-		assert(
-			requirements[requirement] === undefined,
-			`Duplicate combined-check operator: ${requirement}`,
-		);
-		requirements[requirement] = requiredLabels.replaceAll(", ", ",");
-	}
-
-	const labelsText = renderTableText(row[checkCount]);
-	const labels = parseLabels(labelsText);
-	const overallStatus = interpretOverallOutcome(row[checkCount * 2 + 1]);
-	const expected = diagnosticsByLabels[labelsText];
-	assert(
-		expected,
-		`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
-	);
-
-	const result = await runLabelCheck({
-		pullRequestNumber: index + 1,
-		labels,
-		requirements,
-	});
-
-	assert.equal(result.status, overallStatus);
-	assert.equal(result.stdout, expected.stdout);
-	assert.equal(result.stderr, expected.stderr);
-	assert.equal(result.output, expected.output);
-}
-
-function interpretOverallOutcome(
-	outcome: ParameterisedText | undefined,
-): 0 | 1 {
-	assert(outcome !== undefined, "Expected the overall outcome to be present");
-	const declaredOutcome = outcome.parameters.outcome;
-	assert(
-		declaredOutcome === "Success" || declaredOutcome === "Failure",
-		`Unexpected combined-check overall outcome: "${declaredOutcome}"`,
-	);
-	assert.equal(expandText(outcome), declaredOutcome);
-	return interpretSuccessFailureOutcome(declaredOutcome);
-}
-
-function getRequirement(
-	criterion: ParameterisedText | undefined,
-	name: string,
-): Requirement {
-	const operator = getCriterion(criterion, name).parameters.operator;
-	assert(operator, `Expected the ${name} criterion to define an operator`);
-	const requirement = requirementByOperator.get(operator.toLowerCase());
-	assert(
-		requirement,
-		`Unsupported operator "${operator}" in the ${name} criterion`,
-	);
-	return requirement;
-}
-
-function getRequiredLabels(
-	criterion: ParameterisedText | undefined,
-	name: string,
-): string {
-	const criterionText = getCriterion(criterion, name);
-	const requiredLabels = criterionText.parameters.required;
-	assert(
-		requiredLabels,
-		`Expected the ${name} criterion to define required labels`,
-	);
-	return requiredLabels;
-}
-
-function getCriterion(
-	criterion: ParameterisedText | undefined,
-	name: string,
-): ParameterisedText {
-	assert(criterion !== undefined, `Expected the ${name} criterion to exist`);
-	return criterion;
 }
 
 function parseLabels(labelsText: string): string[] {
 	return labelsText === "(none)" ? [] : labelsText.split(", ");
-}
-
-async function verifySpecificationExample(
-	example: ExampleWithDiagnostics,
-): Promise<void> {
-	const table = tableAt(example, 0);
-	const diagnosticsByLabels = getDiagnosticExpectations(
-		example,
-		table.rows.map((row) => renderTableText(row[1])),
-	);
-
-	for (const [index, row] of table.rows.entries()) {
-		const criterion = row[0];
-		assert(criterion !== undefined, "Expected the criterion to exist");
-		const requirement = getRequirement(criterion, example.id);
-		const requiredLabels = criterion.parameters.required;
-		assert(requiredLabels, "Expected the criterion to define required labels");
-
-		const labelsText = renderTableText(row[1]);
-		const labels = parseLabels(labelsText);
-		const outcome = renderTableText(row[2]);
-		const expectedStatus = interpretSuccessFailureOutcome(outcome);
-		const expected = diagnosticsByLabels[labelsText];
-		assert(
-			expected,
-			`Missing diagnostic expectations for labels "${labelsText}" in ${example.id}`,
-		);
-
-		const result = await runLabelCheck({
-			pullRequestNumber: index + 1,
-			labels,
-			requirements: {
-				[requirement]: requiredLabels.replaceAll(", ", ","),
-			},
-		});
-
-		assert.equal(result.status, expectedStatus);
-		assert.equal(result.stdout, expected.stdout);
-		assert.equal(result.stderr, expected.stderr);
-		assert.equal(result.output, expected.output);
-	}
 }
 
 function renderTableText(value: ParameterisedText | undefined): string {
