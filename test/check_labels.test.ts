@@ -6,7 +6,6 @@ import {
 	type Example,
 	expandText,
 	type ParameterisedText,
-	type TableText,
 	tableAt,
 	textAt,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
@@ -120,10 +119,6 @@ async function verifyMultiplePrefixesPerCheckSpecificationExample(
 
 	for (const [index, row] of table.rows.entries()) {
 		const criterion = row[0];
-		assert(
-			typeof criterion !== "string",
-			"Expected the criterion to use parameterised text",
-		);
 		const opening = criterion.template.split(" ")[0];
 		const requirement = requirementByOpening.get(opening);
 		assert(
@@ -218,10 +213,6 @@ async function verifyAllOfTypePrefixSpecificationExample(
 	const row = table.rows[0];
 	assert(row, "Missing the all_of prefix example row");
 	const criterion = row[0];
-	assert(
-		typeof criterion !== "string",
-		"Expected the criterion to use parameterised text",
-	);
 	assert.equal(criterion.template, "All labels start with prefix {prefix}");
 	assert.equal(criterion.parameters.prefix, "type:");
 	const expectedStatus = interpretErrorOutcome(renderTableText(row[1]));
@@ -284,10 +275,6 @@ async function verifyTypePrefixSpecificationExample(
 
 	for (const [index, row] of table.rows.entries()) {
 		const criterion = row[0];
-		assert(
-			typeof criterion !== "string",
-			"Expected the criterion to use parameterised text",
-		);
 		assert.equal(criterion.parameters.prefix, "type:");
 		const requirement = getRequirement(criterion, example.id);
 
@@ -326,7 +313,9 @@ async function verifyCombinedChecksSpecificationExample(
 	example: ExampleWithDiagnostics,
 ): Promise<void> {
 	const table = tableAt(example, 1);
-	const labelsColumn = table.headers.indexOf("Labels on the pull request");
+	const labelsColumn = table.headers.findIndex(
+		(header) => renderTableText(header) === "Labels on the pull request",
+	);
 	assert(labelsColumn >= 2, "Missing combined-check criterion columns");
 	const checkCount = labelsColumn;
 	assert(
@@ -356,7 +345,7 @@ async function verifyCombinedChecksSpecificationExample(
 
 async function verifyCombinedChecksSpecificationRow(
 	example: Example,
-	row: TableText[],
+	row: ParameterisedText[],
 	index: number,
 	checkCount: number,
 	diagnosticsByLabels: Record<string, CombinedDiagnosticExpectation>,
@@ -400,11 +389,10 @@ async function verifyCombinedChecksSpecificationRow(
 	assert.equal(result.output, expected.output);
 }
 
-function interpretOverallOutcome(outcome: TableText | undefined): 0 | 1 {
-	assert(
-		typeof outcome !== "string" && outcome !== undefined,
-		"Expected the overall outcome to use parameterised text",
-	);
+function interpretOverallOutcome(
+	outcome: ParameterisedText | undefined,
+): 0 | 1 {
+	assert(outcome !== undefined, "Expected the overall outcome to be present");
 	const declaredOutcome = outcome.parameters.outcome;
 	assert(
 		declaredOutcome === "Success" || declaredOutcome === "Failure",
@@ -415,7 +403,7 @@ function interpretOverallOutcome(outcome: TableText | undefined): 0 | 1 {
 }
 
 function getRequirement(
-	criterion: TableText | undefined,
+	criterion: ParameterisedText | undefined,
 	name: string,
 ): Requirement {
 	const operator = getCriterion(criterion, name).parameters.operator;
@@ -429,7 +417,7 @@ function getRequirement(
 }
 
 function getRequiredLabels(
-	criterion: TableText | undefined,
+	criterion: ParameterisedText | undefined,
 	name: string,
 ): string {
 	const criterionText = getCriterion(criterion, name);
@@ -442,13 +430,10 @@ function getRequiredLabels(
 }
 
 function getCriterion(
-	criterion: TableText | undefined,
+	criterion: ParameterisedText | undefined,
 	name: string,
 ): ParameterisedText {
-	assert(
-		typeof criterion !== "string" && criterion !== undefined,
-		`Expected the ${name} criterion to use parameterised text`,
-	);
+	assert(criterion !== undefined, `Expected the ${name} criterion to exist`);
 	return criterion;
 }
 
@@ -467,10 +452,7 @@ async function verifySpecificationExample(
 
 	for (const [index, row] of table.rows.entries()) {
 		const criterion = row[0];
-		assert(
-			typeof criterion !== "string",
-			"Expected the criterion to use parameterised text",
-		);
+		assert(criterion !== undefined, "Expected the criterion to exist");
 		const requirement = getRequirement(criterion, example.id);
 		const requiredLabels = criterion.parameters.required;
 		assert(requiredLabels, "Expected the criterion to define required labels");
@@ -500,6 +482,7 @@ async function verifySpecificationExample(
 	}
 }
 
-function renderTableText(value: TableText): string {
-	return typeof value === "string" ? value : expandText(value);
+function renderTableText(value: ParameterisedText | undefined): string {
+	assert(value !== undefined, "Expected table text to be present");
+	return expandText(value);
 }

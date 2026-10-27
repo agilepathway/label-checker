@@ -9,7 +9,6 @@ import { renderSpecification } from "../../../../shared/specification-by-example
 import type {
 	Example,
 	Table,
-	TableText,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import {
 	expandText,
@@ -55,10 +54,7 @@ test("uses plain text in specification table cells", () => {
 	);
 
 	for (const cell of cells) {
-		assert.doesNotMatch(
-			typeof cell === "string" ? cell : expandText(cell),
-			/[`*]/,
-		);
+		assert.doesNotMatch(expandText(cell), /[`*]/);
 	}
 });
 
@@ -121,18 +117,17 @@ async function runTaggingExample(example: Example): Promise<void> {
 	}
 }
 
-function plainTable(table: Table): Table<string> {
-	const plainText = (value: TableText): string =>
-		typeof value === "string" ? value : expandText(value);
+type PlainTable = { headers: string[]; rows: string[][] };
 
+function plainTable(table: Table): PlainTable {
 	return {
-		headers: table.headers.map(plainText),
-		rows: table.rows.map((row) => row.map(plainText)),
+		headers: table.headers.map(expandText),
+		rows: table.rows.map((row) => row.map(expandText)),
 	};
 }
 
 function tagState(
-	table: Table<string>,
+	table: PlainTable,
 	column: "Before" | "After",
 ): Map<string, string> {
 	const tagIndex = table.headers.indexOf("Tag");

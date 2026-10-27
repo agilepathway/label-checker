@@ -3,11 +3,9 @@ export type ParameterisedText = {
 	parameters: Record<string, string>;
 };
 
-export type TableText = string | ParameterisedText;
-
-export type Table<T extends TableText = TableText> = {
-	headers: T[];
-	rows: T[][];
+export type Table = {
+	headers: ParameterisedText[];
+	rows: ParameterisedText[][];
 };
 
 export type ContentItem =
@@ -30,6 +28,13 @@ export type Specification = {
 	title: string;
 	rules: Rule[];
 };
+
+export function text(
+	template: string,
+	parameters: Record<string, string> = {},
+): ParameterisedText {
+	return { template, parameters };
+}
 
 export function expandText(text: ParameterisedText): string {
 	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {

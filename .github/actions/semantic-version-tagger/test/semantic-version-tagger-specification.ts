@@ -4,6 +4,7 @@ import type {
 	Rule,
 	Specification,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
+import { text } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 
 export const patchLevelSemanticVersionRule: Rule = {
 	definition:
@@ -28,28 +29,32 @@ export const patchLevelSemanticVersionRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After"],
+						headers: [text("Tag"), text("Before"), text("After")],
 						rows: [
 							[
-								"v2",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.0.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+								text("v2.0.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
 							],
-							["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							[
-								"latest",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0.1"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("latest"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 						],
 					},
@@ -82,34 +87,42 @@ export const minorLevelSemanticVersionRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After"],
+						headers: [text("Tag"), text("Before"), text("After")],
 						rows: [
 							[
-								"v2",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
+								text("v2"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
 							],
 							[
-								"v2.0",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.0.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+								text("v2.0.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
 							],
 							[
-								"v2.0.1",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0.1"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
-							["v2.1", "—", "b2c3d4e5f67890abcdef1234567890abcdef123"],
-							["v2.1.0", "—", "b2c3d4e5f67890abcdef1234567890abcdef123"],
 							[
-								"latest",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
+								text("v2.1"),
+								text("—"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
+							],
+							[
+								text("v2.1.0"),
+								text("—"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
+							],
+							[
+								text("latest"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
 							],
 						],
 					},
@@ -140,45 +153,57 @@ export const majorLevelSemanticVersionRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After"],
+						headers: [text("Tag"), text("Before"), text("After")],
 						rows: [
 							[
-								"v2",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
+								text("v2"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
 							],
 							[
-								"v2.0",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.1",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
+								text("v2.1"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
 							],
 							[
-								"v2.0.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+								text("v2.0.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
 							],
 							[
-								"v2.0.1",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0.1"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.1.0",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
+								text("v2.1.0"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
 							],
-							["v3", "—", "c3d4e5f67890abcdef1234567890abcdef1234"],
-							["v3.0", "—", "c3d4e5f67890abcdef1234567890abcdef1234"],
-							["v3.0.0", "—", "c3d4e5f67890abcdef1234567890abcdef1234"],
 							[
-								"latest",
-								"b2c3d4e5f67890abcdef1234567890abcdef123",
-								"c3d4e5f67890abcdef1234567890abcdef1234",
+								text("v3"),
+								text("—"),
+								text("c3d4e5f67890abcdef1234567890abcdef1234"),
+							],
+							[
+								text("v3.0"),
+								text("—"),
+								text("c3d4e5f67890abcdef1234567890abcdef1234"),
+							],
+							[
+								text("v3.0.0"),
+								text("—"),
+								text("c3d4e5f67890abcdef1234567890abcdef1234"),
+							],
+							[
+								text("latest"),
+								text("b2c3d4e5f67890abcdef1234567890abcdef123"),
+								text("c3d4e5f67890abcdef1234567890abcdef1234"),
 							],
 						],
 					},
@@ -209,17 +234,33 @@ export const missingSemanticVersionTagsRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After"],
+						headers: [text("Tag"), text("Before"), text("After")],
 						rows: [
-							["v2", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
-							["v2.0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							[
-								"v2.0.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+								text("v2"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
-							["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
-							["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+							[
+								text("v2.0"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("v2.0.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+							],
+							[
+								text("v2.0.1"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("latest"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
 						],
 					},
 				},
@@ -242,12 +283,28 @@ export const missingSemanticVersionTagsRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After"],
+						headers: [text("Tag"), text("Before"), text("After")],
 						rows: [
-							["v0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
-							["v0.0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
-							["v0.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
-							["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+							[
+								text("v0"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("v0.0"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("v0.0.1"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("latest"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
 						],
 					},
 				},
@@ -270,25 +327,33 @@ export const missingSemanticVersionTagsRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After"],
+						headers: [text("Tag"), text("Before"), text("After")],
 						rows: [
 							[
-								"v2",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.0.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+								text("v2.0.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
 							],
-							["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
-							["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
+							[
+								text("v2.0.1"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("latest"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
 						],
 					},
 				},
@@ -317,13 +382,18 @@ export const existingSemanticVersionTagRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After", "Result"],
+						headers: [
+							text("Tag"),
+							text("Before"),
+							text("After"),
+							text("Result"),
+						],
 						rows: [
 							[
-								"v2.0.1",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"Error",
+								text("v2.0.1"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("Error"),
 							],
 						],
 					},
@@ -354,33 +424,37 @@ export const existingAliasSemanticVersionTagRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: ["Tag", "Before", "After"],
+						headers: [text("Tag"), text("Before"), text("After")],
 						rows: [
 							[
-								"v1.0.0",
-								"9e8d7c6b5a4f3210fedcba9876543210fedcba98",
-								"9e8d7c6b5a4f3210fedcba9876543210fedcba98",
+								text("v1.0.0"),
+								text("9e8d7c6b5a4f3210fedcba9876543210fedcba98"),
+								text("9e8d7c6b5a4f3210fedcba9876543210fedcba98"),
 							],
 							[
-								"v2",
-								"9e8d7c6b5a4f3210fedcba9876543210fedcba98",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2"),
+								text("9e8d7c6b5a4f3210fedcba9876543210fedcba98"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 							[
-								"v2.0.0",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
+								text("v2.0.0"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
 							],
-							["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							[
-								"latest",
-								"7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b",
-								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
+								text("v2.0.1"),
+								text("—"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
+							],
+							[
+								text("latest"),
+								text("7f8c9b2a5d4e1f0a3b6c8e9f2a1b4c5d6e7f8a9b"),
+								text("a1b2c3d4e5f67890abcdef1234567890abcdef12"),
 							],
 						],
 					},
