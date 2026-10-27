@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { renderSpecification } from "../src/markdown-renderer.ts";
-import type {
-	ContentItem,
-	Specification,
+import {
+	type ContentItem,
+	type Specification,
+	text,
 } from "../src/specification-by-example.ts";
 
 test("renderSpecification expands parameterised text", () => {
@@ -67,10 +68,10 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 							{
 								type: "table",
 								table: {
-									headers: ["Name", "Value"],
+									headers: [text("Name"), text("Value")],
 									rows: [
-										["first", "one"],
-										["second", "two"],
+										[text("first"), text("one")],
+										[text("second"), text("two")],
 									],
 								},
 							},
@@ -100,8 +101,8 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 							{
 								type: "table",
 								table: {
-									headers: ["Only heading"],
-									rows: [["only row"]],
+									headers: [text("Only heading")],
+									rows: [[text("only row")]],
 								},
 							},
 							{
@@ -176,8 +177,8 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 							{
 								type: "table",
 								table: {
-									headers: ["Name | label", "Value"],
-									rows: [["first", "one | two"]],
+									headers: [text("Name | label"), text("Value")],
+									rows: [[text("first"), text("one | two")]],
 								},
 							},
 						],
@@ -287,7 +288,7 @@ test("renderSpecification rejects unknown placeholders in table headers and cell
 				tableSpecification({
 					type: "table",
 					table: {
-						headers: ["Heading"],
+						headers: [text("Heading")],
 						rows: [[{ template: "{missing}", parameters: {} }]],
 					},
 				}),

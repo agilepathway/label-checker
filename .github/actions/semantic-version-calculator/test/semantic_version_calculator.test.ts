@@ -10,7 +10,6 @@ import { renderSpecification } from "../../../../shared/specification-by-example
 import type {
 	Example,
 	Table,
-	TableText,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import {
 	expandText,
@@ -85,17 +84,16 @@ async function runCalculatorExample(example: Example): Promise<void> {
 	}
 }
 
-function plainTable(table: Table): Table<string> {
-	const plainText = (value: TableText): string =>
-		typeof value === "string" ? value : expandText(value);
+type PlainTable = { headers: string[]; rows: string[][] };
 
+function plainTable(table: Table): PlainTable {
 	return {
-		headers: table.headers.map(plainText),
-		rows: table.rows.map((row) => row.map(plainText)),
+		headers: table.headers.map(expandText),
+		rows: table.rows.map((row) => row.map(expandText)),
 	};
 }
 
-function rejectedTags(table: Table<string>): string[] {
+function rejectedTags(table: PlainTable): string[] {
 	return table.rows.flatMap((row) => {
 		const tag = row[0];
 		const accepted = row[1];
@@ -105,7 +103,7 @@ function rejectedTags(table: Table<string>): string[] {
 	});
 }
 
-async function testRequestedIncrements(table: Table<string>): Promise<void> {
+async function testRequestedIncrements(table: PlainTable): Promise<void> {
 	for (const row of table.rows) {
 		await testRequestedIncrement(row);
 	}
@@ -136,7 +134,7 @@ async function testRequestedIncrement(row: string[]): Promise<void> {
 	assert.equal(result.status, 1);
 	assert.equal(result.output, "");
 }
-async function testTagFormats(table: Table<string>): Promise<void> {
+async function testTagFormats(table: PlainTable): Promise<void> {
 	for (const row of table.rows) {
 		const tag = row[0];
 		const accepted = row[1];
@@ -156,7 +154,7 @@ async function testTagFormats(table: Table<string>): Promise<void> {
 	}
 }
 
-async function testRejectedTagFormats(table: Table<string>): Promise<void> {
+async function testRejectedTagFormats(table: PlainTable): Promise<void> {
 	for (const tag of rejectedTags(table)) {
 		const result = await runAction(new Map([[tag, "invalid-tag"]]), "patch");
 
@@ -166,7 +164,7 @@ async function testRejectedTagFormats(table: Table<string>): Promise<void> {
 	}
 }
 
-async function testAllInvalidTags(table: Table<string>): Promise<void> {
+async function testAllInvalidTags(table: PlainTable): Promise<void> {
 	const tags = new Map(
 		rejectedTags(table).map((tag) => [tag, "invalid-tag"] as const),
 	);
@@ -179,7 +177,7 @@ async function testAllInvalidTags(table: Table<string>): Promise<void> {
 	assert.equal(result.output, "");
 }
 
-async function testHighestTags(table: Table<string>): Promise<void> {
+async function testHighestTags(table: PlainTable): Promise<void> {
 	for (const row of table.rows) {
 		const existingTags = row[0];
 		const highestTag = row[1];
@@ -198,7 +196,7 @@ async function testHighestTags(table: Table<string>): Promise<void> {
 	}
 }
 
-async function testNoExistingTags(table: Table<string>): Promise<void> {
+async function testNoExistingTags(table: PlainTable): Promise<void> {
 	for (const row of table.rows) {
 		assert.equal(row[0], "None");
 		const result = await runAction(new Map(), "patch");
@@ -208,7 +206,7 @@ async function testNoExistingTags(table: Table<string>): Promise<void> {
 	}
 }
 
-async function testNextVersions(table: Table<string>): Promise<void> {
+async function testNextVersions(table: PlainTable): Promise<void> {
 	for (const row of table.rows) {
 		const startingVersion = row[0];
 		const increment = row[1];
