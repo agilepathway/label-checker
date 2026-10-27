@@ -163,8 +163,10 @@ async function verifyCombinedPrefixChecksSpecificationExample(
 	const row = table.rows[0];
 	assert(row, "Missing the combined-prefix-check example row");
 
-	const noneCriterion = getCriterion(row[0], "first");
-	const oneCriterion = getCriterion(row[1], "second");
+	const noneCriterion = row[0];
+	const oneCriterion = row[1];
+	assert(noneCriterion);
+	assert(oneCriterion);
 	assert.equal(getRequirement(noneCriterion, "first"), "none");
 	assert.deepEqual(noneCriterion.parameters, {
 		operator: "No",
@@ -403,10 +405,10 @@ function interpretOverallOutcome(
 }
 
 function getRequirement(
-	criterion: ParameterisedText | undefined,
+	criterion: ParameterisedText,
 	name: string,
 ): Requirement {
-	const operator = getCriterion(criterion, name).parameters.operator;
+	const operator = criterion.parameters.operator;
 	assert(operator, `Expected the ${name} criterion to define an operator`);
 	const requirement = requirementByOperator.get(operator.toLowerCase());
 	assert(
@@ -416,25 +418,13 @@ function getRequirement(
 	return requirement;
 }
 
-function getRequiredLabels(
-	criterion: ParameterisedText | undefined,
-	name: string,
-): string {
-	const criterionText = getCriterion(criterion, name);
-	const requiredLabels = criterionText.parameters.required;
+function getRequiredLabels(criterion: ParameterisedText, name: string): string {
+	const requiredLabels = criterion.parameters.required;
 	assert(
 		requiredLabels,
 		`Expected the ${name} criterion to define required labels`,
 	);
 	return requiredLabels;
-}
-
-function getCriterion(
-	criterion: ParameterisedText | undefined,
-	name: string,
-): ParameterisedText {
-	assert(criterion !== undefined, `Expected the ${name} criterion to exist`);
-	return criterion;
 }
 
 function parseLabels(labelsText: string): string[] {
