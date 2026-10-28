@@ -15,7 +15,7 @@ jobs:
     name: Check for semantic version label
     runs-on: ubuntu-22.04
     steps:
-      - uses: agilepathway/label-checker@ca6a0a663cbcf80bb9c7a10d000d7b6a54495ce0  # v1.6.115
+      - uses: agilepathway/label-checker@98f8929c5388bbfbf3959da9f0ff953bf522897f  # v2.0.59
         with:
           one_of: major,minor,patch
           repo_token: ${{ secrets.GITHUB_TOKEN }}
