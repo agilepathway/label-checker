@@ -439,15 +439,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					},
 					content: [
 						{
-							type: "text",
-							text: {
-								template: "**`none_of`**",
-								parameters: {},
-							},
-						},
-						{
 							type: "table",
 							table: {
+								caption: text("**`none_of`**"),
 								headers: [
 									text("Criterion"),
 									text("Labels on the pull request"),
@@ -510,15 +504,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					},
 					content: [
 						{
-							type: "text",
-							text: {
-								template: "**`one_of`**",
-								parameters: {},
-							},
-						},
-						{
 							type: "table",
 							table: {
+								caption: text("**`one_of`**"),
 								headers: [
 									text("Criterion"),
 									text("Labels on the pull request"),
@@ -577,15 +565,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					},
 					content: [
 						{
-							type: "text",
-							text: {
-								template: "**`any_of`**",
-								parameters: {},
-							},
-						},
-						{
 							type: "table",
 							table: {
+								caption: text("**`any_of`**"),
 								headers: [
 									text("Criterion"),
 									text("Labels on the pull request"),
@@ -625,15 +607,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					},
 					content: [
 						{
-							type: "text",
-							text: {
-								template: "**`all_of`**",
-								parameters: {},
-							},
-						},
-						{
 							type: "table",
 							table: {
+								caption: text("**`all_of`**"),
 								headers: [text("Criterion"), text("Outcome")],
 								rows: [[allOfPrefixCriterion, text("Error")]],
 							},
@@ -754,15 +730,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					},
 					content: [
 						{
-							type: "text",
-							text: {
-								template: "2 checks combined:",
-								parameters: {},
-							},
-						},
-						{
 							type: "table",
 							table: {
+								caption: text("2 checks combined:"),
 								headers: [
 									text("Criterion 1"),
 									text("Criterion 2"),
@@ -845,15 +815,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					},
 					content: [
 						{
-							type: "text",
-							text: {
-								template: "3 checks combined:",
-								parameters: {},
-							},
-						},
-						{
 							type: "table",
 							table: {
+								caption: text("3 checks combined:"),
 								headers: [
 									text("Criterion 1"),
 									text("Criterion 2"),
@@ -947,15 +911,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					},
 					content: [
 						{
-							type: "text",
-							text: {
-								template: "4 checks combined:",
-								parameters: {},
-							},
-						},
-						{
 							type: "table",
 							table: {
+								caption: text("4 checks combined:"),
 								headers: [
 									text("Criterion 1"),
 									text("Criterion 2"),

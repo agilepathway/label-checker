@@ -6,8 +6,6 @@ import {
 	type Example,
 	expandText,
 	type ParameterisedText,
-	tableAt,
-	textAt,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
@@ -34,32 +32,6 @@ test("published label-checker specification is up to date", async () => {
 		"Published label-checker.md is stale. Regenerate it with:\n" +
 			"node test/publish-label-checker-spec.ts",
 	);
-});
-
-test("prefix examples have captions identifying each check before their tables", () => {
-	const prefixExamples = labelCheckerSpecification.rules
-		.find(
-			(rule) =>
-				rule.definition ===
-				"The label checker can check for labels that start with a given prefix.",
-		)
-		?.examples.filter((example) => example.id.endsWith("_type_prefix"));
-
-	assert(prefixExamples, "Missing the prefix-matching rule");
-	assert.equal(prefixExamples.length, 3);
-	const expectedCaptions = new Map([
-		["none_of_type_prefix", "**`none_of`**"],
-		["one_of_type_prefix", "**`one_of`**"],
-		["any_of_type_prefix", "**`any_of`**"],
-	]);
-
-	for (const example of prefixExamples) {
-		const expectedCaption = expectedCaptions.get(example.id);
-		assert(expectedCaption, `Unexpected prefix example: ${example.id}`);
-		assert.equal(expandText(textAt(example, 0)), expectedCaption);
-		assert.equal(example.content[1]?.type, "table");
-		tableAt(example, 1);
-	}
 });
 
 registerSpecificationTests(

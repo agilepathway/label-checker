@@ -68,6 +68,7 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 							{
 								type: "table",
 								table: {
+									caption: text("A {kind} caption.", { kind: "table" }),
 									headers: [text("Name"), text("Value")],
 									rows: [
 										[text("first"), text("one")],
@@ -133,6 +134,8 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 			"### Example",
 			"",
 			"Before the table.",
+			"",
+			"A table caption.",
 			"",
 			"| Name | Value |",
 			"|---|---|",
