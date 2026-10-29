@@ -25,7 +25,6 @@ export type ExecutableCriterion = ParameterisedText & {
 
 type TestExecution = {
 	kind: "supported" | "unsupported";
-	tableIndex: number;
 	prefixMode?: boolean;
 	pullRequestNumbers?: number[];
 	expectedError?: string;
@@ -169,7 +168,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "none_of_major_minor_patch",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 0,
 					},
 					diagnosticsByLabels: {
 						"(none)": {
@@ -230,7 +228,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "one_of_major_minor_patch",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 0,
 					},
 					diagnosticsByLabels: {
 						"(none)": {
@@ -291,7 +288,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "all_of_major_minor_patch",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 0,
 					},
 					diagnosticsByLabels: {
 						"(none)": {
@@ -352,7 +348,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "any_of_major_minor_patch",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 0,
 					},
 					diagnosticsByLabels: {
 						"(none)": {
@@ -413,7 +408,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "none_of_type_prefix",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 1,
 						prefixMode: true,
 						pullRequestNumbers: [1, 5, 6, 7],
 					},
@@ -485,7 +479,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "one_of_type_prefix",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 1,
 						prefixMode: true,
 						pullRequestNumbers: [1, 5, 6, 7],
 					},
@@ -553,7 +546,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "any_of_type_prefix",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 1,
 						prefixMode: true,
 						pullRequestNumbers: [1, 5, 6, 7],
 					},
@@ -627,7 +619,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "all_of_type_prefix",
 					testExecution: {
 						kind: "unsupported",
-						tableIndex: 1,
 						prefixMode: true,
 						expectedError:
 							"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
@@ -658,7 +649,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "multiple_prefixes_per_check",
 					testExecution: {
 						kind: "unsupported",
-						tableIndex: 0,
 						prefixMode: true,
 						expectedError:
 							"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
@@ -687,7 +677,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "two_prefix_checks_combined",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 0,
 						prefixMode: true,
 					},
 					diagnosticsByLabels: {
@@ -734,7 +723,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "two_checks_combined",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 1,
 					},
 					diagnosticsByLabels: {
 						"(none)": {
@@ -825,7 +813,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "three_checks_combined",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 1,
 					},
 					diagnosticsByLabels: {
 						"(none)": {
@@ -927,7 +914,6 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					id: "four_checks_combined",
 					testExecution: {
 						kind: "supported",
-						tableIndex: 1,
 					},
 					diagnosticsByLabels: {
 						"(none)": {

@@ -84,7 +84,9 @@ async function verifyUnsupportedExample(
 	example: Example,
 	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
 ): Promise<void> {
-	const table = tableAt(example, execution.tableIndex);
+	const tableContent = example.content.find((item) => item.type === "table");
+	assert(tableContent);
+	const table = tableContent.table;
 	for (const [index, row] of table.rows.entries()) {
 		const criterion = asExecutableCriterion(row[0]);
 		assert.equal(renderTableText(row[row.length - 1]), "Error");
@@ -110,7 +112,9 @@ async function verifySupportedExample(
 	specificationExample: ExampleWithDiagnostics,
 	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
 ): Promise<void> {
-	const table = tableAt(example, execution.tableIndex);
+	const tableContent = example.content.find((item) => item.type === "table");
+	assert(tableContent);
+	const table = tableContent.table;
 	const labelsColumn = table.headers.findIndex(
 		(header) => renderTableText(header) === "Labels on the pull request",
 	);
@@ -170,7 +174,6 @@ function isTestExecution(
 
 	return (
 		isExecutionKind(value.kind) &&
-		typeof value.tableIndex === "number" &&
 		isOptionalBoolean(value.prefixMode) &&
 		isOptionalString(value.expectedError) &&
 		isOptionalPullRequestNumbers(value.pullRequestNumbers)
