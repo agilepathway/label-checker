@@ -4,6 +4,7 @@ export type ParameterisedText = {
 };
 
 export type Table = {
+	caption?: ParameterisedText;
 	headers: ParameterisedText[];
 	rows: ParameterisedText[][];
 };

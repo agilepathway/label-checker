@@ -7,7 +7,6 @@ import {
 	expandText,
 	type ParameterisedText,
 	tableAt,
-	textAt,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
@@ -36,30 +35,36 @@ test("published label-checker specification is up to date", async () => {
 	);
 });
 
-test("prefix examples have captions identifying each check before their tables", () => {
-	const prefixExamples = labelCheckerSpecification.rules
-		.find(
-			(rule) =>
-				rule.definition ===
-				"The label checker can check for labels that start with a given prefix.",
-		)
-		?.examples.filter((example) => example.id.endsWith("_type_prefix"));
-
-	assert(prefixExamples, "Missing the prefix-matching rule");
-	assert.equal(prefixExamples.length, 3);
+test("captioned examples attach their captions to the corresponding tables", () => {
+	const examples = labelCheckerSpecification.rules.flatMap(
+		(rule) => rule.examples,
+	);
 	const expectedCaptions = new Map([
 		["none_of_type_prefix", "**`none_of`**"],
 		["one_of_type_prefix", "**`one_of`**"],
 		["any_of_type_prefix", "**`any_of`**"],
+		["all_of_type_prefix", "**`all_of`**"],
+		["two_checks_combined", "2 checks combined:"],
+		["three_checks_combined", "3 checks combined:"],
+		["four_checks_combined", "4 checks combined:"],
 	]);
 
-	for (const example of prefixExamples) {
+	for (const example of examples.filter((item) =>
+		expectedCaptions.has(item.id),
+	)) {
 		const expectedCaption = expectedCaptions.get(example.id);
-		assert(expectedCaption, `Unexpected prefix example: ${example.id}`);
-		assert.equal(expandText(textAt(example, 0)), expectedCaption);
-		assert.equal(example.content[1]?.type, "table");
-		tableAt(example, 1);
+		assert(expectedCaption, `Unexpected captioned example: ${example.id}`);
+		assert.equal(example.content.length, 1);
+		assert.equal(example.content[0]?.type, "table");
+		assert.equal(tableAt(example, 0).caption?.template, expectedCaption);
+		assert.deepEqual(tableAt(example, 0).caption?.parameters, {});
 	}
+
+	assert.equal(
+		examples.filter((example) => expectedCaptions.has(example.id)).length,
+		expectedCaptions.size,
+		"Missing a captioned example",
+	);
 });
 
 registerSpecificationTests(

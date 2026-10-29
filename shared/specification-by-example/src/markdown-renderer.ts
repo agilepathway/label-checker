@@ -11,13 +11,17 @@ function escapePipes(value: string): string {
 }
 
 function renderTable(table: Table): string {
-	return [
+	const renderedTable = [
 		`| ${table.headers.map(expandText).map(escapePipes).join(" | ")} |`,
 		`|${table.headers.map(() => "---").join("|")}|`,
 		...table.rows.map(
 			(row) => `| ${row.map(expandText).map(escapePipes).join(" | ")} |`,
 		),
 	].join("\n");
+
+	return table.caption
+		? `${expandText(table.caption)}\n\n${renderedTable}`
+		: renderedTable;
 }
 
 function renderExample(example: Example): string {
