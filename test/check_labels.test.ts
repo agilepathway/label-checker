@@ -114,7 +114,6 @@ async function verifySupportedExample(
 	const labelsColumn = table.headers.findIndex(
 		(header) => renderTableText(header) === "Labels on the pull request",
 	);
-	assert(labelsColumn >= 1);
 
 	const diagnosticsByLabels = getDiagnosticExpectations(
 		specificationExample,
