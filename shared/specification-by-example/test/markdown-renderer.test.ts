@@ -68,7 +68,7 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 							{
 								type: "table",
 								table: {
-									caption: text("A table caption."),
+									caption: text("A {kind} caption.", { kind: "table" }),
 									headers: [text("Name"), text("Value")],
 									rows: [
 										[text("first"), text("one")],
