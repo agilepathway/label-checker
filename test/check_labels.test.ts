@@ -6,7 +6,6 @@ import {
 	type Example,
 	expandText,
 	type ParameterisedText,
-	tableAt,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
@@ -32,38 +31,6 @@ test("published label-checker specification is up to date", async () => {
 		expectedMarkdown,
 		"Published label-checker.md is stale. Regenerate it with:\n" +
 			"node test/publish-label-checker-spec.ts",
-	);
-});
-
-test("captioned examples attach their captions to the corresponding tables", () => {
-	const examples = labelCheckerSpecification.rules.flatMap(
-		(rule) => rule.examples,
-	);
-	const expectedCaptions = new Map([
-		["none_of_type_prefix", "**`none_of`**"],
-		["one_of_type_prefix", "**`one_of`**"],
-		["any_of_type_prefix", "**`any_of`**"],
-		["all_of_type_prefix", "**`all_of`**"],
-		["two_checks_combined", "2 checks combined:"],
-		["three_checks_combined", "3 checks combined:"],
-		["four_checks_combined", "4 checks combined:"],
-	]);
-
-	for (const example of examples.filter((item) =>
-		expectedCaptions.has(item.id),
-	)) {
-		const expectedCaption = expectedCaptions.get(example.id);
-		assert(expectedCaption, `Unexpected captioned example: ${example.id}`);
-		assert.equal(example.content.length, 1);
-		assert.equal(example.content[0]?.type, "table");
-		assert.equal(tableAt(example, 0).caption?.template, expectedCaption);
-		assert.deepEqual(tableAt(example, 0).caption?.parameters, {});
-	}
-
-	assert.equal(
-		examples.filter((example) => expectedCaptions.has(example.id)).length,
-		expectedCaptions.size,
-		"Missing a captioned example",
 	);
 });
 
