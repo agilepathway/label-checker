@@ -95,7 +95,7 @@ async function verifySupportedExample(
 	assert.equal(
 		inputsAndExpectedResults.length,
 		table.rows.length,
-		"Diagnostic expectations must correspond to every table row",
+		"Inputs and expected results must correspond to every table row",
 	);
 
 	for (const [index, row] of table.rows.entries()) {
