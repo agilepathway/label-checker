@@ -32,7 +32,7 @@ type TestExecution = {
 
 export type ExampleWithDiagnostics = Example & {
 	expectedDiagnostics?: CombinedDiagnosticExpectation[];
-	testExecution?: TestExecution;
+	testExecution: TestExecution;
 };
 
 type LabelCheckerSpecification = Omit<Specification, "rules"> & {

@@ -35,14 +35,14 @@ test("published label-checker specification is up to date", async () => {
 
 registerSpecificationTests(
 	labelCheckerSpecification,
-	verifySpecificationExample,
+	// biome-ignore lint/nursery/noUnsafeTypeAssertion: The label-checker specification adds required metadata to shared examples.
+	(example) => verifySpecificationExample(example as ExampleWithDiagnostics),
 );
 
 async function verifySpecificationExample(
 	example: ExampleWithDiagnostics,
 ): Promise<void> {
 	const execution = example.testExecution;
-	assert(execution);
 
 	if (execution.kind === "unsupported") {
 		await verifyUnsupportedExample(example, execution);
