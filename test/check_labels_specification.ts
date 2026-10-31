@@ -31,7 +31,7 @@ type TestExecution = {
 };
 
 export type ExampleWithDiagnostics = Example & {
-	diagnosticsByLabels?: Record<string, CombinedDiagnosticExpectation>;
+	expectedDiagnostics?: CombinedDiagnosticExpectation[];
 	testExecution?: TestExecution;
 };
 
@@ -169,32 +169,32 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						minor: {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
 							output: "label_check=failure",
 						},
-						"minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-						"major, minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -229,32 +229,32 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
 							output: "label_check=failure",
 						},
-						minor: {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						"minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-						"major, minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -289,32 +289,32 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
 							output: "label_check=failure",
 						},
-						minor: {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
 							output: "label_check=failure",
 						},
-						"minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-						"major, minor, patch": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -349,32 +349,32 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
 							output: "label_check=failure",
 						},
-						minor: {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						"minor, patch": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						"major, minor, patch": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -411,32 +411,32 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 						prefixMode: true,
 						pullRequestNumbers: [1, 5, 6, 7],
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						"type:fix": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
 							output: "label_check=failure",
 						},
-						"type:fix, type:feature": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
 							output: "label_check=failure",
 						},
-						"type:fix, type:feature, type:documentation": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -476,32 +476,32 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 						prefixMode: true,
 						pullRequestNumbers: [1, 5, 6, 7],
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
 							output: "label_check=failure",
 						},
-						"type:fix": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						"type:fix, type:feature": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
 							output: "label_check=failure",
 						},
-						"type:fix, type:feature, type:documentation": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -537,32 +537,32 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 						prefixMode: true,
 						pullRequestNumbers: [1, 5, 6, 7],
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
 							output: "label_check=failure",
 						},
-						"type:fix": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						"type:fix, type:feature": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-						"type:fix, type:feature, type:documentation": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 							stderr: "",
 							output: "label_check=success",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -655,15 +655,15 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 						kind: "supported",
 						prefixMode: true,
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -700,34 +700,34 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
 							output: "label_check=failure",
 						},
-						minor: {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
 							stderr:
 								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
 							output: "label_check=failure",
 						},
-						"minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-						"major, minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -784,35 +784,35 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
 							output: "label_check=failure",
 						},
-						minor: {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
 							stderr:
 								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
 							output: "label_check=failure",
 						},
-						"minor, patch": {
+						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-						"major, minor, patch": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
@@ -879,36 +879,36 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					diagnosticsByLabels: {
-						"(none)": {
+					expectedDiagnostics: [
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
 							output: "label_check=failure",
 						},
-						minor: {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
 							stderr:
 								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
 							output: "label_check=failure",
 						},
-						"minor, patch": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-						"major, minor, patch": {
+						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
 							stderr:
 								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
 							output: "label_check=failure",
 						},
-					},
+					],
 					content: [
 						{
 							type: "table",
