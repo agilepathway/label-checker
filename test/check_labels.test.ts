@@ -8,9 +8,9 @@ import {
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
-	type CombinedDiagnosticExpectation,
 	type ExampleWithDiagnostics,
 	type ExecutableCriterion,
+	type LabelCheckerInputsAndExpectedResults,
 	labelCheckerSpecification,
 } from "./check_labels_specification.ts";
 import {
@@ -65,7 +65,7 @@ async function verifyUnsupportedExample(
 		assert.equal(renderTableText(row[row.length - 1]), "Error");
 
 		const result = await runLabelCheck({
-			pullRequestNumber: execution.pullRequestNumbers?.[index] ?? index + 1,
+			pullRequestNumber: index + 1,
 			labels: [],
 			requirements: {
 				[criterion.execution.requirement]: criterion.execution.input,
@@ -90,10 +90,10 @@ async function verifySupportedExample(
 	const labelsColumn = table.headers.findIndex(
 		(header) => renderTableText(header) === "Labels on the pull request",
 	);
-	const expectedDiagnostics = example.expectedDiagnostics;
-	assert(expectedDiagnostics);
+	const inputsAndExpectedResults = example.inputsAndExpectedResults;
+	assert(inputsAndExpectedResults);
 	assert.equal(
-		expectedDiagnostics.length,
+		inputsAndExpectedResults.length,
 		table.rows.length,
 		"Diagnostic expectations must correspond to every table row",
 	);
@@ -113,12 +113,12 @@ async function verifySupportedExample(
 
 		const outcome = renderTableText(row[row.length - 1]);
 		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
-		const expected: CombinedDiagnosticExpectation | undefined =
-			expectedDiagnostics[index];
+		const expected: LabelCheckerInputsAndExpectedResults | undefined =
+			inputsAndExpectedResults[index];
 		assert(expected);
 
 		const result = await runLabelCheck({
-			pullRequestNumber: execution.pullRequestNumbers?.[index] ?? index + 1,
+			pullRequestNumber: expected.pullRequestNumber ?? index + 1,
 			labels,
 			requirements,
 			prefixMode: execution.prefixMode,
