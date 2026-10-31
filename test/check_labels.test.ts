@@ -112,7 +112,7 @@ async function verifySupportedExample(
 		}
 
 		const outcome = renderTableText(row[row.length - 1]);
-		const expectedStatus = interpretSuccessFailureOutcome(outcome);
+		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
 		const expected: CombinedDiagnosticExpectation | undefined =
 			expectedDiagnostics[index];
 		assert(expected);
@@ -124,16 +124,23 @@ async function verifySupportedExample(
 			prefixMode: execution.prefixMode,
 		});
 
-		assert.equal(result.status, expectedStatus);
+		assert.equal(result.status, expectedOutcome.status);
 		assert.equal(result.stdout, expected.stdout);
 		assert.equal(result.stderr, expected.stderr);
-		assert.equal(result.output, expected.output);
+		assert.equal(result.output, expectedOutcome.output);
 	}
 }
 
-function interpretSuccessFailureOutcome(outcome: string): 0 | 1 {
+function interpretSuccessFailureOutcome(outcome: string):
+	| { status: 0; output: "label_check=success" }
+	| {
+			status: 1;
+			output: "label_check=failure";
+	  } {
 	assert(outcome === "Success" || outcome === "Failure");
-	return outcome === "Success" ? 0 : 1;
+	return outcome === "Success"
+		? { status: 0, output: "label_check=success" }
+		: { status: 1, output: "label_check=failure" };
 }
 
 function parseLabels(labelsText: string): string[] {
