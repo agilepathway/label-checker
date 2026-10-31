@@ -8,7 +8,8 @@ import type {
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { text } from "../shared/specification-by-example/src/specification-by-example.ts";
 
-export type CombinedDiagnosticExpectation = {
+export type LabelCheckerInputsAndExpectedResults = {
+	pullRequestNumber?: number;
 	stdout: string;
 	stderr: string;
 };
@@ -25,12 +26,11 @@ export type ExecutableCriterion = ParameterisedText & {
 type TestExecution = {
 	kind: "supported" | "unsupported";
 	prefixMode?: boolean;
-	pullRequestNumbers?: number[];
 	expectedError?: string;
 };
 
 export type ExampleWithDiagnostics = Example & {
-	expectedDiagnostics?: CombinedDiagnosticExpectation[];
+	inputsAndExpectedResults?: LabelCheckerInputsAndExpectedResults[];
 	testExecution: TestExecution;
 };
 
@@ -168,7 +168,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
@@ -224,7 +224,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
@@ -280,7 +280,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
@@ -336,7 +336,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
@@ -392,25 +392,28 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 						prefixMode: true,
-						pullRequestNumbers: [1, 5, 6, 7],
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
+							pullRequestNumber: 1,
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
 							stderr: "",
 						},
 						{
+							pullRequestNumber: 5,
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
 						},
 						{
+							pullRequestNumber: 6,
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
 						},
 						{
+							pullRequestNumber: 7,
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
@@ -453,25 +456,28 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 						prefixMode: true,
-						pullRequestNumbers: [1, 5, 6, 7],
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
+							pullRequestNumber: 1,
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
 						},
 						{
+							pullRequestNumber: 5,
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
 							stderr: "",
 						},
 						{
+							pullRequestNumber: 6,
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
 						},
 						{
+							pullRequestNumber: 7,
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
@@ -510,25 +516,28 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 						prefixMode: true,
-						pullRequestNumbers: [1, 5, 6, 7],
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
+							pullRequestNumber: 1,
 							stdout: "Checking GitHub labels ...\n",
 							stderr:
 								"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
 						},
 						{
+							pullRequestNumber: 5,
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
 							stderr: "",
 						},
 						{
+							pullRequestNumber: 6,
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
 							stderr: "",
 						},
 						{
+							pullRequestNumber: 7,
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 							stderr: "",
@@ -626,7 +635,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 						kind: "supported",
 						prefixMode: true,
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
@@ -670,7 +679,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
@@ -750,7 +759,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
@@ -841,7 +850,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					testExecution: {
 						kind: "supported",
 					},
-					expectedDiagnostics: [
+					inputsAndExpectedResults: [
 						{
 							stdout:
 								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
