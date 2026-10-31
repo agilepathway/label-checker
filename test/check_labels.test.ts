@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { renderSpecification } from "../shared/specification-by-example/src/markdown-renderer.ts";
 import {
-	type Example,
 	expandText,
 	type ParameterisedText,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
@@ -36,31 +35,33 @@ test("published label-checker specification is up to date", async () => {
 
 registerSpecificationTests(
 	labelCheckerSpecification,
-	verifySpecificationExample,
+	// biome-ignore lint/nursery/noUnsafeTypeAssertion: The label-checker specification adds required metadata to shared examples.
+	(example) => verifySpecificationExample(example as ExampleWithDiagnostics),
 );
 
-async function verifySpecificationExample(example: Example): Promise<void> {
-	const specificationExample = asExampleWithDiagnostics(example);
-	const execution = specificationExample.testExecution;
-	assert(execution);
+async function verifySpecificationExample(
+	example: ExampleWithDiagnostics,
+): Promise<void> {
+	const execution = example.testExecution;
 
 	if (execution.kind === "unsupported") {
 		await verifyUnsupportedExample(example, execution);
 		return;
 	}
 
-	await verifySupportedExample(example, specificationExample, execution);
+	await verifySupportedExample(example, execution);
 }
 
 async function verifyUnsupportedExample(
-	example: Example,
+	example: ExampleWithDiagnostics,
 	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
 ): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
 	const table = tableContent.table;
 	for (const [index, row] of table.rows.entries()) {
-		const criterion = asExecutableCriterion(row[0]);
+		// biome-ignore lint/nursery/noUnsafeTypeAssertion: Specification rows contain executable criteria.
+		const criterion = row[0] as ExecutableCriterion;
 		assert.equal(renderTableText(row[row.length - 1]), "Error");
 
 		const result = await runLabelCheck({
@@ -80,8 +81,7 @@ async function verifyUnsupportedExample(
 }
 
 async function verifySupportedExample(
-	example: Example,
-	specificationExample: ExampleWithDiagnostics,
+	example: ExampleWithDiagnostics,
 	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
 ): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
@@ -90,7 +90,7 @@ async function verifySupportedExample(
 	const labelsColumn = table.headers.findIndex(
 		(header) => renderTableText(header) === "Labels on the pull request",
 	);
-	const expectedDiagnostics = specificationExample.expectedDiagnostics;
+	const expectedDiagnostics = example.expectedDiagnostics;
 	assert(expectedDiagnostics);
 	assert.equal(
 		expectedDiagnostics.length,
@@ -102,7 +102,10 @@ async function verifySupportedExample(
 		const labelsText = renderTableText(row[labelsColumn]);
 		const labels = parseLabels(labelsText);
 		const requirements: Requirements = {};
-		const criteria = row.slice(0, labelsColumn).map(asExecutableCriterion);
+		const criteria = row
+			.slice(0, labelsColumn)
+			// biome-ignore lint/nursery/noUnsafeTypeAssertion: Specification rows contain executable criteria.
+			.map((criterion) => criterion as ExecutableCriterion);
 
 		for (const criterion of criteria) {
 			requirements[criterion.execution.requirement] = criterion.execution.input;
@@ -128,87 +131,6 @@ async function verifySupportedExample(
 	}
 }
 
-function asExampleWithDiagnostics(example: Example): ExampleWithDiagnostics {
-	if (
-		!("testExecution" in example) ||
-		!isTestExecution(example.testExecution)
-	) {
-		throw new TypeError("Expected an example with execution metadata");
-	}
-
-	return {
-		...example,
-		testExecution: example.testExecution,
-	};
-}
-
-function isTestExecution(
-	value: unknown,
-): value is NonNullable<ExampleWithDiagnostics["testExecution"]> {
-	if (!isRecord(value)) return false;
-
-	return (
-		isExecutionKind(value.kind) &&
-		isOptionalBoolean(value.prefixMode) &&
-		isOptionalString(value.expectedError) &&
-		isOptionalPullRequestNumbers(value.pullRequestNumbers)
-	);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
-
-function isExecutionKind(value: unknown): boolean {
-	return value === "supported" || value === "unsupported";
-}
-
-function isOptionalBoolean(value: unknown): boolean {
-	return value === undefined || typeof value === "boolean";
-}
-
-function isOptionalString(value: unknown): boolean {
-	return value === undefined || typeof value === "string";
-}
-
-function isOptionalPullRequestNumbers(value: unknown): boolean {
-	return (
-		value === undefined ||
-		(Array.isArray(value) &&
-			value.every((pullRequestNumber) => typeof pullRequestNumber === "number"))
-	);
-}
-
-function asExecutableCriterion(
-	value: ParameterisedText | undefined,
-): ExecutableCriterion {
-	if (value === undefined || !("execution" in value)) {
-		throw new TypeError("Expected an executable criterion");
-	}
-	if (!isCriterionExecution(value.execution)) {
-		throw new TypeError("Expected an executable criterion");
-	}
-	return {
-		template: value.template,
-		parameters: value.parameters,
-		execution: value.execution,
-	};
-}
-
-function isCriterionExecution(
-	value: unknown,
-): value is ExecutableCriterion["execution"] {
-	if (!isRecord(value)) return false;
-	return isRequirement(value.requirement) && typeof value.input === "string";
-}
-
-function isRequirement(
-	value: unknown,
-): value is ExecutableCriterion["execution"]["requirement"] {
-	return (
-		value === "none" || value === "one" || value === "any" || value === "all"
-	);
-}
 function interpretSuccessFailureOutcome(outcome: string): 0 | 1 {
 	assert(outcome === "Success" || outcome === "Failure");
 	return outcome === "Success" ? 0 : 1;
