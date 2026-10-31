@@ -90,10 +90,12 @@ async function verifySupportedExample(
 	const labelsColumn = table.headers.findIndex(
 		(header) => renderTableText(header) === "Labels on the pull request",
 	);
-
-	const diagnosticsByLabels = getDiagnosticExpectations(
-		specificationExample,
-		table.rows.map((row) => renderTableText(row[labelsColumn])),
+	const expectedDiagnostics = specificationExample.expectedDiagnostics;
+	assert(expectedDiagnostics);
+	assert.equal(
+		expectedDiagnostics.length,
+		table.rows.length,
+		"Diagnostic expectations must correspond to every table row",
 	);
 
 	for (const [index, row] of table.rows.entries()) {
@@ -108,7 +110,8 @@ async function verifySupportedExample(
 
 		const outcome = renderTableText(row[row.length - 1]);
 		const expectedStatus = interpretSuccessFailureOutcome(outcome);
-		const expected = diagnosticsByLabels[labelsText];
+		const expected: CombinedDiagnosticExpectation | undefined =
+			expectedDiagnostics[index];
 		assert(expected);
 
 		const result = await runLabelCheck({
@@ -206,20 +209,6 @@ function isRequirement(
 		value === "none" || value === "one" || value === "any" || value === "all"
 	);
 }
-function getDiagnosticExpectations(
-	example: ExampleWithDiagnostics,
-	labelsInputs: string[],
-): Record<string, CombinedDiagnosticExpectation> {
-	const diagnosticsByLabels = example.diagnosticsByLabels;
-	assert(diagnosticsByLabels);
-	assert.deepEqual(
-		Object.keys(diagnosticsByLabels).sort(),
-		labelsInputs.sort(),
-		"Diagnostic expectations must correspond exactly to the example's label inputs",
-	);
-	return diagnosticsByLabels;
-}
-
 function interpretSuccessFailureOutcome(outcome: string): 0 | 1 {
 	assert(outcome === "Success" || outcome === "Failure");
 	return outcome === "Success" ? 0 : 1;
