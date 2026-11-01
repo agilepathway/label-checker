@@ -23,19 +23,27 @@ export type ExecutableCriterion = ParameterisedText & {
 	};
 };
 
-type TestExecution = {
-	kind: "supported" | "unsupported";
-	prefixMode?: boolean;
-	expectedError?: string;
-};
-
-export type ExampleWithDiagnostics = Example & {
-	inputsAndExpectedResults?: LabelCheckerInputsAndExpectedResults[];
-	testExecution: TestExecution;
-};
+export type LabelCheckerExample = Example &
+	(
+		| {
+				testExecution: {
+					kind: "supported";
+					prefixMode?: boolean;
+				};
+				inputsAndExpectedResults: LabelCheckerInputsAndExpectedResults[];
+		  }
+		| {
+				testExecution: {
+					kind: "unsupported";
+					prefixMode?: boolean;
+					expectedError: string;
+				};
+				inputsAndExpectedResults?: never;
+		  }
+	);
 
 type LabelCheckerSpecification = Omit<Specification, "rules"> & {
-	rules: Array<Omit<Rule, "examples"> & { examples: ExampleWithDiagnostics[] }>;
+	rules: Array<Omit<Rule, "examples"> & { examples: LabelCheckerExample[] }>;
 };
 
 function criterion(
