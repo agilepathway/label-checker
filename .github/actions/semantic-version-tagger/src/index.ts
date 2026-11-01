@@ -110,7 +110,7 @@ class GitHubClient {
 		return fetch(`${this.baseURL}${path}`, {
 			method,
 			headers: this.headers,
-			body: body ? JSON.stringify(body) : undefined,
+			...(body ? { body: JSON.stringify(body) } : {}),
 		});
 	}
 

@@ -8,9 +8,8 @@ import {
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
-	type ExampleWithDiagnostics,
 	type ExecutableCriterion,
-	type LabelCheckerInputsAndExpectedResults,
+	type LabelCheckerExample,
 	labelCheckerSpecification,
 } from "./check_labels_specification.ts";
 import {
@@ -36,25 +35,34 @@ test("published label-checker specification is up to date", async () => {
 registerSpecificationTests(
 	labelCheckerSpecification,
 	// biome-ignore lint/nursery/noUnsafeTypeAssertion: The label-checker specification adds required metadata to shared examples.
-	(example) => verifySpecificationExample(example as ExampleWithDiagnostics),
+	(example) => verifySpecificationExample(example as LabelCheckerExample),
 );
 
 async function verifySpecificationExample(
-	example: ExampleWithDiagnostics,
+	example: LabelCheckerExample,
 ): Promise<void> {
-	const execution = example.testExecution;
-
-	if (execution.kind === "unsupported") {
-		await verifyUnsupportedExample(example, execution);
+	if (isUnsupportedExample(example)) {
+		await verifyUnsupportedExample(example);
 		return;
 	}
 
-	await verifySupportedExample(example, execution);
+	await verifySupportedExample(example);
+}
+
+function isUnsupportedExample(
+	example: LabelCheckerExample,
+): example is Extract<
+	LabelCheckerExample,
+	{ testExecution: { kind: "unsupported" } }
+> {
+	return example.testExecution.kind === "unsupported";
 }
 
 async function verifyUnsupportedExample(
-	example: ExampleWithDiagnostics,
-	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
+	example: Extract<
+		LabelCheckerExample,
+		{ testExecution: { kind: "unsupported" } }
+	>,
 ): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
@@ -70,19 +78,21 @@ async function verifyUnsupportedExample(
 			requirements: {
 				[criterion.execution.requirement]: criterion.execution.input,
 			},
-			prefixMode: execution.prefixMode,
+			prefixMode: example.testExecution.prefixMode ?? false,
 		});
 
 		assert.equal(result.status, 1);
 		assert.equal(result.stdout, "Checking GitHub labels ...\n");
-		assert.equal(result.stderr, execution.expectedError);
+		assert.equal(result.stderr, example.testExecution.expectedError);
 		assert.equal(result.output, "label_check=failure");
 	}
 }
 
 async function verifySupportedExample(
-	example: ExampleWithDiagnostics,
-	execution: NonNullable<ExampleWithDiagnostics["testExecution"]>,
+	example: Extract<
+		LabelCheckerExample,
+		{ testExecution: { kind: "supported" } }
+	>,
 ): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
@@ -90,10 +100,8 @@ async function verifySupportedExample(
 	const labelsColumn = table.headers.findIndex(
 		(header) => renderTableText(header) === "Labels on the pull request",
 	);
-	const inputsAndExpectedResults = example.inputsAndExpectedResults;
-	assert(inputsAndExpectedResults);
 	assert.equal(
-		inputsAndExpectedResults.length,
+		example.inputsAndExpectedResults.length,
 		table.rows.length,
 		"Inputs and expected results must correspond to every table row",
 	);
@@ -113,15 +121,13 @@ async function verifySupportedExample(
 
 		const outcome = renderTableText(row[row.length - 1]);
 		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
-		const expected: LabelCheckerInputsAndExpectedResults | undefined =
-			inputsAndExpectedResults[index];
-		assert(expected);
+		const expected = example.inputsAndExpectedResults[index];
 
 		const result = await runLabelCheck({
 			pullRequestNumber: expected.pullRequestNumber ?? index + 1,
 			labels,
 			requirements,
-			prefixMode: execution.prefixMode,
+			prefixMode: example.testExecution.prefixMode ?? false,
 		});
 
 		assert.equal(result.status, expectedOutcome.status);
