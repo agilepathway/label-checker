@@ -87,7 +87,7 @@ The label checker can check for labels that start with a given prefix.
 | Exactly one label starting with type: is present. | type:fix | Success |
 | Exactly one label starting with type: is present. | type:fix, type:feature | Failure |
 | Exactly one label starting with type: is present. | type:fix, type:feature, type:documentation | Failure |
-| Exactly one label starting with team- is present. | team-platform | Success |
+| Exactly one label starting with type is present. | type:fix | Success |
 
 ### Example
 
