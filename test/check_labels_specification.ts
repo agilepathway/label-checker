@@ -106,6 +106,12 @@ const oneOfTypePrefixCriterion = criterion(
 	"one",
 );
 
+const oneOfArbitraryPrefixCriterion = criterion(
+	"{operator} label starting with {prefix} is present.",
+	{ prefix: "type" },
+	"one",
+);
+
 const anyOfPrefixCriterion = criterion(
 	"{operator} label starting with {prefix} is present.",
 	{ prefix: "type:" },
@@ -490,6 +496,12 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							stderr:
 								"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 						},
+						{
+							pullRequestNumber: 5,
+							stdout:
+								"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type', and found 1: 'type:fix'\n",
+							stderr: "",
+						},
 					],
 					content: [
 						{
@@ -513,6 +525,11 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										oneOfTypePrefixCriterion,
 										text("type:fix, type:feature, type:documentation"),
 										text("Failure"),
+									],
+									[
+										oneOfArbitraryPrefixCriterion,
+										text("type:fix"),
+										text("Success"),
 									],
 								],
 							},
