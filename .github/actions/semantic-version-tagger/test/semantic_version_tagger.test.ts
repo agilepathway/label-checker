@@ -91,14 +91,16 @@ test("prints updated tags with short commit SHAs", async () => {
 
 async function runTaggingExample(example: Example): Promise<void> {
 	const table = plainTable(tableAt(example, 1));
+	const inputText = textAt(example, 0);
+	assert(typeof inputText !== "string", "Expected parameterised input text");
 	const fakeGitHubApi = new FakeGitHubApi(tagState(table, "Before"));
 	const apiUrl = await fakeGitHubApi.start();
 
 	try {
 		const result = await runAction(
 			apiUrl,
-			textAt(example, 0).parameters.semanticVersion,
-			textAt(example, 0).parameters.commit,
+			inputText.parameters.semanticVersion,
+			inputText.parameters.commit,
 		);
 
 		if (example.id === "rejects-existing-version-tag") {

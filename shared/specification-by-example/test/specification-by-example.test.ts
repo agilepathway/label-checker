@@ -7,7 +7,6 @@ import {
 	expandText,
 	type Specification,
 	tableAt,
-	text,
 	textAt,
 } from "../src/specification-by-example.ts";
 
@@ -20,7 +19,7 @@ const example: Example = {
 		},
 		{
 			type: "table",
-			table: { headers: [text("Heading")], rows: [[text("value")]] },
+			table: { headers: ["Heading"], rows: [["value"]] },
 		},
 	],
 };
@@ -30,7 +29,7 @@ const tableFirstExample: Example = {
 	content: [
 		{
 			type: "table",
-			table: { headers: [text("Heading")], rows: [[text("value")]] },
+			table: { headers: ["Heading"], rows: [["value"]] },
 		},
 	],
 };
@@ -94,15 +93,9 @@ test("expandText expands known Example text parameters", () => {
 	assert.equal(expandText(text), "A one value and a two value");
 });
 
-test("text constructs literal and parameterised values", () => {
-	assert.deepEqual(text("A literal value"), {
-		template: "A literal value",
-		parameters: {},
-	});
-	assert.deepEqual(text("A {value}", { value: "parameterised" }), {
-		template: "A {value}",
-		parameters: { value: "parameterised" },
-	});
+test("expandText returns literal strings unchanged", () => {
+	assert.equal(expandText("A literal value"), "A literal value");
+	assert.equal(expandText("Use {value} literally"), "Use {value} literally");
 });
 
 test("expandText rejects unknown Example text parameters", () => {
@@ -137,15 +130,15 @@ test("textAt reports a content-type mismatch", () => {
 
 test("tableAt returns the table payload at the requested index", () => {
 	assert.deepEqual(tableAt(example, 1), {
-		headers: [text("Heading")],
-		rows: [[text("value")]],
+		headers: ["Heading"],
+		rows: [["value"]],
 	});
 });
 
 test("tableAt returns a table at the start of an example", () => {
 	assert.deepEqual(tableAt(tableFirstExample, 0), {
-		headers: [text("Heading")],
-		rows: [[text("value")]],
+		headers: ["Heading"],
+		rows: [["value"]],
 	});
 });
 
