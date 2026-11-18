@@ -7,7 +7,6 @@ import {
 	expandText,
 	type Specification,
 	tableAt,
-	text,
 	textAt,
 } from "../src/specification-by-example.ts";
 
@@ -20,9 +19,14 @@ const example: Example = {
 		},
 		{
 			type: "table",
-			table: { headers: [text("Heading")], rows: [[text("value")]] },
+			table: { headers: ["Heading"], rows: [["value"]] },
 		},
 	],
+};
+
+const literalExample: Example = {
+	id: "literal",
+	content: [{ type: "text", text: "A literal value" }],
 };
 
 const tableFirstExample: Example = {
@@ -30,7 +34,7 @@ const tableFirstExample: Example = {
 	content: [
 		{
 			type: "table",
-			table: { headers: [text("Heading")], rows: [[text("value")]] },
+			table: { headers: ["Heading"], rows: [["value"]] },
 		},
 	],
 };
@@ -94,15 +98,9 @@ test("expandText expands known Example text parameters", () => {
 	assert.equal(expandText(text), "A one value and a two value");
 });
 
-test("text constructs literal and parameterised values", () => {
-	assert.deepEqual(text("A literal value"), {
-		template: "A literal value",
-		parameters: {},
-	});
-	assert.deepEqual(text("A {value}", { value: "parameterised" }), {
-		template: "A {value}",
-		parameters: { value: "parameterised" },
-	});
+test("expandText returns literal strings unchanged", () => {
+	assert.equal(expandText("A literal value"), "A literal value");
+	assert.equal(expandText("Use {value} literally"), "Use {value} literally");
 });
 
 test("expandText rejects unknown Example text parameters", () => {
@@ -123,6 +121,10 @@ test("textAt returns the text payload at the requested index", () => {
 	});
 });
 
+test("textAt returns literal text", () => {
+	assert.equal(textAt(literalExample, 0), "A literal value");
+});
+
 test("textAt reports an out-of-range index", () => {
 	assert.throws(() => textAt(example, 2), {
 		message: "Expected text content at index 2, but found no content.",
@@ -137,15 +139,15 @@ test("textAt reports a content-type mismatch", () => {
 
 test("tableAt returns the table payload at the requested index", () => {
 	assert.deepEqual(tableAt(example, 1), {
-		headers: [text("Heading")],
-		rows: [[text("value")]],
+		headers: ["Heading"],
+		rows: [["value"]],
 	});
 });
 
 test("tableAt returns a table at the start of an example", () => {
 	assert.deepEqual(tableAt(tableFirstExample, 0), {
-		headers: [text("Heading")],
-		rows: [[text("value")]],
+		headers: ["Heading"],
+		rows: [["value"]],
 	});
 });
 

@@ -3,14 +3,16 @@ export type ParameterisedText = {
 	parameters: Record<string, string>;
 };
 
+export type Text = string | ParameterisedText;
+
 export type Table = {
-	caption?: ParameterisedText;
-	headers: ParameterisedText[];
-	rows: ParameterisedText[][];
+	caption?: Text;
+	headers: Text[];
+	rows: Text[][];
 };
 
 export type ContentItem =
-	| { type: "text"; text: ParameterisedText }
+	| { type: "text"; text: Text }
 	| { type: "table"; table: Table };
 
 export type NonEmptyArray<T> = [T, ...T[]];
@@ -30,14 +32,11 @@ export type Specification = {
 	rules: Rule[];
 };
 
-export function text(
-	template: string,
-	parameters: Record<string, string> = {},
-): ParameterisedText {
-	return { template, parameters };
-}
+export function expandText(text: Text): string {
+	if (typeof text === "string") {
+		return text;
+	}
 
-export function expandText(text: ParameterisedText): string {
 	return text.template.replace(/\{(\w+)\}/g, (_match, name: string) => {
 		const value = text.parameters[name];
 
@@ -49,7 +48,7 @@ export function expandText(text: ParameterisedText): string {
 	});
 }
 
-export function textAt(example: Example, index: number): ParameterisedText {
+export function textAt(example: Example, index: number): Text {
 	const item = example.content[index];
 	if (item?.type !== "text") {
 		const found = item ? `"${item.type}" content` : "no content";

@@ -2,7 +2,6 @@ import type {
 	Rule,
 	Specification,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
-import { text } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 
 const requestedIncrementRule: Rule = {
 	definition:
@@ -14,20 +13,20 @@ const requestedIncrementRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: [text("Input"), text("Outcome")],
+						headers: ["Input", "Outcome"],
 						rows: [
-							[text("major"), text("Accepted")],
-							[text("minor"), text("Accepted")],
-							[text("patch"), text("Accepted")],
-							[text("MAJOR"), text("Accepted")],
-							[text("Minor"), text("Accepted")],
-							[text("PATCH"), text("Accepted")],
-							[text("banana"), text("Error")],
-							[text("v-major"), text("Error")],
-							[text("semver-minor"), text("Error")],
-							[text("patch-version"), text("Error")],
-							[text("Empty string"), text("Error")],
-							[text("Missing input"), text("Error")],
+							["major", "Accepted"],
+							["minor", "Accepted"],
+							["patch", "Accepted"],
+							["MAJOR", "Accepted"],
+							["Minor", "Accepted"],
+							["PATCH", "Accepted"],
+							["banana", "Error"],
+							["v-major", "Error"],
+							["semver-minor", "Error"],
+							["patch-version", "Error"],
+							["Empty string", "Error"],
+							["Missing input", "Error"],
 						],
 					},
 				},
@@ -46,29 +45,25 @@ const versionTagFormatRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: [text("Existing tag"), text("Accepted?"), text("Notes")],
+						headers: ["Existing tag", "Accepted?", "Notes"],
 						rows: [
-							[text("v2.0.0"), text("Yes"), text("")],
-							[text("v2.10.3"), text("Yes"), text("")],
-							[text("2.0.0"), text("No"), text("")],
-							[text("v02.0.0"), text("No"), text("")],
-							[text("v2.00.0"), text("No"), text("")],
-							[text("v2.0.03"), text("No"), text("")],
-							[text("v-1.0.0"), text("No"), text("")],
-							[text("v2.0"), text("No"), text("")],
+							["v2.0.0", "Yes", ""],
+							["v2.10.3", "Yes", ""],
+							["2.0.0", "No", ""],
+							["v02.0.0", "No", ""],
+							["v2.00.0", "No", ""],
+							["v2.0.03", "No", ""],
+							["v-1.0.0", "No", ""],
+							["v2.0", "No", ""],
 							[
-								text("v2.0.0-rc.1"),
-								text("No"),
-								text(
-									"Pre-release versions may be considered in the future, but are not accepted now.",
-								),
+								"v2.0.0-rc.1",
+								"No",
+								"Pre-release versions may be considered in the future, but are not accepted now.",
 							],
 							[
-								text("v2.0.0+build.1"),
-								text("No"),
-								text(
-									"Build metadata may be considered in the future, but are not accepted now.",
-								),
+								"v2.0.0+build.1",
+								"No",
+								"Build metadata may be considered in the future, but are not accepted now.",
 							],
 						],
 					},
@@ -89,21 +84,19 @@ const highestExistingSemanticVersionTagRule: Rule = {
 					type: "table",
 					table: {
 						headers: [
-							text("Existing tags"),
-							text("Highest existing semantic version tag"),
-							text("Notes"),
+							"Existing tags",
+							"Highest existing semantic version tag",
+							"Notes",
 						],
 						rows: [
-							[text("v2.0.0, v2.0.1, v2.1.0"), text("v2.1.0"), text("")],
-							[text("v2.1.0, v2.0.9, v2.1.1"), text("v2.1.1"), text("")],
-							[text("v3.0.0, v2.9.9, v3.0.1"), text("v3.0.1"), text("")],
-							[text("v2.10.0, v2.9.0, v2.8.0"), text("v2.10.0"), text("")],
+							["v2.0.0, v2.0.1, v2.1.0", "v2.1.0", ""],
+							["v2.1.0, v2.0.9, v2.1.1", "v2.1.1", ""],
+							["v3.0.0, v2.9.9, v3.0.1", "v3.0.1", ""],
+							["v2.10.0, v2.9.0, v2.8.0", "v2.10.0", ""],
 							[
-								text("v2.4.9, v2.4.10, 2.5.0"),
-								text("v2.4.10"),
-								text(
-									"2.5.0 is ignored because it is not a valid semantic version tag.",
-								),
+								"v2.4.9, v2.4.10, 2.5.0",
+								"v2.4.10",
+								"2.5.0 is ignored because it is not a valid semantic version tag.",
 							],
 						],
 					},
@@ -123,17 +116,13 @@ const requiresExistingSemanticVersionTagRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: [text("Existing tags"), text("Outcome")],
-						rows: [[text("None"), text("Error")]],
+						headers: ["Existing tags", "Outcome"],
+						rows: [["None", "Error"]],
 					},
 				},
 				{
 					type: "text",
-					text: {
-						template:
-							"This behaviour is acceptable for `label-checker`, which already has valid SemVer tags. Before making the calculator available to other repositories, we will need to amend this rule to support repositories with no existing SemVer tags. See #787.",
-						parameters: {},
-					},
+					text: "This behaviour is acceptable for `label-checker`, which already has valid SemVer tags. Before making the calculator available to other repositories, we will need to amend this rule to support repositories with no existing SemVer tags. See #787.",
 				},
 			],
 		},
@@ -150,24 +139,20 @@ const calculatingNextVersionRule: Rule = {
 				{
 					type: "table",
 					table: {
-						headers: [
-							text("Starting version"),
-							text("Increment"),
-							text("Result"),
-						],
+						headers: ["Starting version", "Increment", "Result"],
 						rows: [
-							[text("v2.4.7"), text("patch"), text("v2.4.8")],
-							[text("v2.4.7"), text("minor"), text("v2.5.0")],
-							[text("v2.4.7"), text("major"), text("v3.0.0")],
-							[text("v2.0.0"), text("patch"), text("v2.0.1")],
-							[text("v2.0.0"), text("minor"), text("v2.1.0")],
-							[text("v2.0.0"), text("major"), text("v3.0.0")],
-							[text("v2.4.17"), text("patch"), text("v2.4.18")],
-							[text("v2.4.17"), text("minor"), text("v2.5.0")],
-							[text("v2.4.17"), text("major"), text("v3.0.0")],
-							[text("v2.4.9"), text("patch"), text("v2.4.10")],
-							[text("v2.4.9"), text("minor"), text("v2.5.0")],
-							[text("v2.4.9"), text("major"), text("v3.0.0")],
+							["v2.4.7", "patch", "v2.4.8"],
+							["v2.4.7", "minor", "v2.5.0"],
+							["v2.4.7", "major", "v3.0.0"],
+							["v2.0.0", "patch", "v2.0.1"],
+							["v2.0.0", "minor", "v2.1.0"],
+							["v2.0.0", "major", "v3.0.0"],
+							["v2.4.17", "patch", "v2.4.18"],
+							["v2.4.17", "minor", "v2.5.0"],
+							["v2.4.17", "major", "v3.0.0"],
+							["v2.4.9", "patch", "v2.4.10"],
+							["v2.4.9", "minor", "v2.5.0"],
+							["v2.4.9", "major", "v3.0.0"],
 						],
 					},
 				},

@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { renderSpecification } from "../shared/specification-by-example/src/markdown-renderer.ts";
 import {
 	expandText,
-	type ParameterisedText,
+	type Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
@@ -153,7 +153,7 @@ function parseLabels(labelsText: string): string[] {
 	return labelsText === "(none)" ? [] : labelsText.split(", ");
 }
 
-function renderTableText(value: ParameterisedText | undefined): string {
+function renderTableText(value: Text | undefined): string {
 	assert(value !== undefined, "Expected table text to be present");
 	return expandText(value);
 }

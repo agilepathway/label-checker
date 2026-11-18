@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { renderSpecification } from "../src/markdown-renderer.ts";
-import {
-	type ContentItem,
-	type Specification,
-	text,
+import type {
+	ContentItem,
+	Specification,
 } from "../src/specification-by-example.ts";
 
 test("renderSpecification expands parameterised text", () => {
@@ -63,22 +62,25 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 						content: [
 							{
 								type: "text",
-								text: { template: "Before the table.", parameters: {} },
+								text: "Before the table.",
 							},
 							{
 								type: "table",
 								table: {
-									caption: text("A {kind} caption.", { kind: "table" }),
-									headers: [text("Name"), text("Value")],
+									caption: {
+										template: "A {kind} caption.",
+										parameters: { kind: "table" },
+									},
+									headers: ["Name", "Value"],
 									rows: [
-										[text("first"), text("one")],
-										[text("second"), text("two")],
+										["first", "one"],
+										["second", "two"],
 									],
 								},
 							},
 							{
 								type: "text",
-								text: { template: "After the table.", parameters: {} },
+								text: "After the table.",
 							},
 						],
 					},
@@ -87,7 +89,7 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 						content: [
 							{
 								type: "text",
-								text: { template: "A second example.", parameters: {} },
+								text: "A second example.",
 							},
 						],
 					},
@@ -102,16 +104,13 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 							{
 								type: "table",
 								table: {
-									headers: [text("Only heading")],
-									rows: [[text("only row")]],
+									headers: ["Only heading"],
+									rows: [["only row"]],
 								},
 							},
 							{
 								type: "text",
-								text: {
-									template: "A table with a different shape.",
-									parameters: {},
-								},
+								text: "A table with a different shape.",
 							},
 						],
 					},
@@ -180,8 +179,8 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 							{
 								type: "table",
 								table: {
-									headers: [text("Name | label"), text("Value")],
-									rows: [[text("first"), text("one | two")]],
+									headers: ["Name | label", "Value"],
+									rows: [["first", "one | two"]],
 								},
 							},
 						],
@@ -210,6 +209,38 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 			"",
 			"---",
 		].join("\n"),
+	);
+});
+
+test("renderSpecification preserves braces in literal text and table values", () => {
+	const specification: Specification = {
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "literal-braces",
+						content: [
+							{ type: "text", text: "Use {name} literally." },
+							{
+								type: "table",
+								table: {
+									caption: "Caption {name}",
+									headers: ["Header {name}"],
+									rows: [["Cell {name}"]],
+								},
+							},
+						],
+					},
+				],
+			},
+		],
+	};
+
+	assert.match(
+		renderSpecification(specification),
+		/Use \{name\} literally\.\n\nCaption \{name\}\n\n\| Header \{name\} \|\n\|---\|\n\| Cell \{name\} \|/,
 	);
 });
 
@@ -291,7 +322,7 @@ test("renderSpecification rejects unknown placeholders in table headers and cell
 				tableSpecification({
 					type: "table",
 					table: {
-						headers: [text("Heading")],
+						headers: ["Heading"],
 						rows: [[{ template: "{missing}", parameters: {} }]],
 					},
 				}),
