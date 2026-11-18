@@ -24,6 +24,11 @@ const example: Example = {
 	],
 };
 
+const literalExample: Example = {
+	id: "literal",
+	content: [{ type: "text", text: "A literal value" }],
+};
+
 const tableFirstExample: Example = {
 	id: "table-first",
 	content: [
@@ -114,6 +119,10 @@ test("textAt returns the text payload at the requested index", () => {
 		template: "A {value}",
 		parameters: { value: "test" },
 	});
+});
+
+test("textAt returns literal text", () => {
+	assert.equal(textAt(literalExample, 0), "A literal value");
 });
 
 test("textAt reports an out-of-range index", () => {
