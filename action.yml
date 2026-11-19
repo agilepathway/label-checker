@@ -57,6 +57,12 @@ inputs:
       examples.
     required: false
     default: ''
+outputs:
+  label_check:
+    description: >
+      The label-check result: `success` when all configured checks pass, or `failure` when
+      one or more checks fail. This reports the check result independently of `allow_failure`,
+      which can allow the action step to complete successfully when the output is `failure`.
 runs:
   using: 'node24'
   main: 'src/index.ts'
