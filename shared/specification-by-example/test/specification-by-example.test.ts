@@ -277,6 +277,19 @@ test("AnyOf lookups use the first matching alternative heading and expand the va
 	});
 });
 
+test("AnyOf lookups fall back when the preferred heading is absent", () => {
+	const row = table({
+		headings: ["Fallback"],
+		rows: [[{ template: "Fallback {value}", parameters: { value: "cell" } }]],
+	}).rows[0];
+
+	assert.equal(cellAtAnyOf(row, "Preferred", "Fallback"), "Fallback cell");
+	assert.deepEqual(rawCellAtAnyOf(row, "Preferred", "Fallback"), {
+		template: "Fallback {value}",
+		parameters: { value: "cell" },
+	});
+});
+
 test("AnyOf lookups report when none of the requested headings exist", () => {
 	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
 	assert.throws(() => cellAtAnyOf(row, "Missing", "Also missing"), {
