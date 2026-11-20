@@ -60,6 +60,8 @@ test("ExecutableCriterion runtime validation checks the complete shape", () => {
 		{ template: criterion.template, parameters: criterion.parameters },
 		{ ...criterion, execution: null },
 		{ ...criterion, execution: [] },
+		{ ...criterion, execution: { input: "bug" } },
+		{ ...criterion, execution: { requirement: "one" } },
 		{
 			...criterion,
 			execution: { requirement: "something-else", input: "bug" },
