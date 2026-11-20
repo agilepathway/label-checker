@@ -115,7 +115,20 @@ export function hasColumn(table: Table, heading: string): boolean {
 	return table.rows[0].some((cell) => expandText(cell.heading) === heading);
 }
 
-export function rawCellAt(row: Row, ...headings: string[]): Text {
+export function rawCellAt(row: Row, heading: string): Text {
+	const cell = row.find(
+		(candidate) => expandText(candidate.heading) === heading,
+	);
+	if (cell === undefined) {
+		throw new Error(
+			`Could not find a table cell with the heading: "${heading}".`,
+		);
+	}
+
+	return cell.value;
+}
+
+export function rawCellAtAnyOf(row: Row, ...headings: string[]): Text {
 	const cell = headings
 		.map((heading) =>
 			row.find((candidate) => expandText(candidate.heading) === heading),
@@ -130,8 +143,12 @@ export function rawCellAt(row: Row, ...headings: string[]): Text {
 	return cell.value;
 }
 
-export function cellAt(row: Row, ...headings: string[]): string {
-	return expandText(rawCellAt(row, ...headings));
+export function cellAt(row: Row, heading: string): string {
+	return expandText(rawCellAt(row, heading));
+}
+
+export function cellAtAnyOf(row: Row, ...headings: string[]): string {
+	return expandText(rawCellAtAnyOf(row, ...headings));
 }
 
 export function textAt(example: Example, index: number): Text {
