@@ -1,6 +1,6 @@
 export type ParameterisedText = {
-	template: string;
-	parameters: Record<string, string>;
+	readonly template: string;
+	readonly parameters: Readonly<Record<string, string>>;
 };
 
 export type Text = string | ParameterisedText;

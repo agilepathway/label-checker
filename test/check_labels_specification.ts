@@ -17,9 +17,9 @@ export type LabelCheckerInputsAndExpectedResults = {
 type Requirement = "none" | "one" | "any" | "all";
 
 export type ExecutableCriterion = ParameterisedText & {
-	execution: {
-		requirement: Requirement;
-		input: string;
+	readonly execution: {
+		readonly requirement: Requirement;
+		readonly input: string;
 	};
 };
 

@@ -20,6 +20,18 @@ import {
 	runLabelCheck,
 } from "./check_labels_test_harness.ts";
 
+test("ExecutableCriterion execution metadata is readonly", () => {
+	const verifyReadonlyTypes = (criterion: ExecutableCriterion): void => {
+		// @ts-expect-error Executable criterion execution metadata is readonly.
+		criterion.execution = { requirement: "all", input: "" };
+		// @ts-expect-error Executable criterion requirements are readonly.
+		criterion.execution.requirement = "all";
+		// @ts-expect-error Executable criterion input is readonly.
+		criterion.execution.input = "";
+	};
+	void verifyReadonlyTypes;
+});
+
 test("published label-checker specification is up to date", async () => {
 	const publishedMarkdown = await readFile(
 		new URL("../spec/label-checker.md", import.meta.url),

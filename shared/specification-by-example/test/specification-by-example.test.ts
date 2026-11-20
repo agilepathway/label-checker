@@ -7,6 +7,7 @@ import {
 	type Example,
 	expandText,
 	hasColumn,
+	type ParameterisedText,
 	rawCellAt,
 	type Specification,
 	type Table,
@@ -211,6 +212,18 @@ test("Table requires factory construction and is readonly", () => {
 		validated.rows.push([]);
 		// @ts-expect-error Validated cell properties are readonly.
 		validated.rows[0][0].value = "changed";
+	};
+	void verifyReadonlyTypes;
+});
+
+test("ParameterisedText properties and parameters are readonly", () => {
+	const verifyReadonlyTypes = (text: ParameterisedText): void => {
+		// @ts-expect-error Parameterised text templates are readonly.
+		text.template = "changed";
+		// @ts-expect-error Parameterised text parameters are readonly.
+		text.parameters = {};
+		// @ts-expect-error Individual parameter values are readonly.
+		text.parameters.name = "changed";
 	};
 	void verifyReadonlyTypes;
 });
