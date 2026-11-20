@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { renderSpecification } from "../shared/specification-by-example/src/markdown-renderer.ts";
 import {
 	cellAt,
+	cellAtAnyOf,
 	expandText,
 	type Row,
 	rawCellAt,
@@ -84,7 +85,7 @@ async function verifyUnsupportedExample(
 	const table = tableContent.table;
 	for (const [index, row] of table.rows.entries()) {
 		const criterion = executableCriterionAt(row, "Criterion");
-		assert.equal(cellAt(row, "Outcome", "Overall outcome"), "Error");
+		assert.equal(cellAtAnyOf(row, "Outcome", "Overall outcome"), "Error");
 
 		const result = await runLabelCheck({
 			pullRequestNumber: index + 1,
@@ -129,7 +130,7 @@ async function verifySupportedExample(
 			requirements[criterion.execution.requirement] = criterion.execution.input;
 		}
 
-		const outcome = cellAt(row, "Outcome", "Overall outcome");
+		const outcome = cellAtAnyOf(row, "Outcome", "Overall outcome");
 		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
 		const expected = example.inputsAndExpectedResults[index];
 

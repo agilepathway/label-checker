@@ -4,11 +4,14 @@ import { test } from "node:test";
 import {
 	assertUniqueExampleIds,
 	cellAt,
+	cellAtAnyOf,
 	type Example,
 	expandText,
 	hasColumn,
 	type ParameterisedText,
+	type Row,
 	rawCellAt,
+	rawCellAtAnyOf,
 	type Specification,
 	type Table,
 	table,
@@ -228,7 +231,7 @@ test("ParameterisedText properties and parameters are readonly", () => {
 	void verifyReadonlyTypes;
 });
 
-test("cellAt uses the first matching alternative heading and expands the value", () => {
+test("cellAt looks up an exact heading and expands the value", () => {
 	const row = table({
 		headings: ["Fallback", "Preferred"],
 		rows: [
@@ -239,19 +242,66 @@ test("cellAt uses the first matching alternative heading and expands the value",
 		],
 	}).rows[0];
 
-	assert.equal(cellAt(row, "Preferred", "Fallback"), "Second cell");
-	assert.deepEqual(rawCellAt(row, "Preferred", "Fallback"), {
+	assert.equal(cellAt(row, "Preferred"), "Second cell");
+	assert.deepEqual(rawCellAt(row, "Preferred"), {
 		template: "Second {value}",
 		parameters: { value: "cell" },
 	});
 });
 
-test("cellAt reports when none of the requested headings exists", () => {
+test("cellAt reports when the exact heading does not exist", () => {
 	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
-	assert.throws(() => cellAt(row, "Missing", "Also missing"), {
+	assert.throws(() => cellAt(row, "Missing"), {
+		message: 'Could not find a table cell with the heading: "Missing".',
+	});
+	assert.throws(() => rawCellAt(row, "Missing"), {
+		message: 'Could not find a table cell with the heading: "Missing".',
+	});
+});
+
+test("AnyOf lookups use the first matching alternative heading and expand the value", () => {
+	const row = table({
+		headings: ["Fallback", "Preferred"],
+		rows: [
+			[
+				{ template: "First {value}", parameters: { value: "cell" } },
+				{ template: "Second {value}", parameters: { value: "cell" } },
+			],
+		],
+	}).rows[0];
+
+	assert.equal(cellAtAnyOf(row, "Preferred", "Fallback"), "Second cell");
+	assert.deepEqual(rawCellAtAnyOf(row, "Preferred", "Fallback"), {
+		template: "Second {value}",
+		parameters: { value: "cell" },
+	});
+});
+
+test("AnyOf lookups report when none of the requested headings exist", () => {
+	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
+	assert.throws(() => cellAtAnyOf(row, "Missing", "Also missing"), {
 		message:
 			'Could not find a table cell with any of the headings: "Missing", "Also missing".',
 	});
+	assert.throws(() => rawCellAtAnyOf(row, "Missing", "Also missing"), {
+		message:
+			'Could not find a table cell with any of the headings: "Missing", "Also missing".',
+	});
+});
+
+test("exact and AnyOf lookup APIs have distinct TypeScript signatures", () => {
+	const verifyLookupTypes = (row: Row): void => {
+		cellAt(row, "Heading");
+		cellAtAnyOf(row, "Preferred", "Fallback");
+		rawCellAt(row, "Heading");
+		rawCellAtAnyOf(row, "Preferred", "Fallback");
+
+		// @ts-expect-error Exact-heading lookups accept only one heading.
+		cellAt(row, "Preferred", "Fallback");
+		// @ts-expect-error Exact-heading lookups accept only one heading.
+		rawCellAt(row, "Preferred", "Fallback");
+	};
+	void verifyLookupTypes;
 });
 
 test("textAt returns the text payload at the requested index", () => {
