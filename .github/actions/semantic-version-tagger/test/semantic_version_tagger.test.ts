@@ -13,6 +13,7 @@ import type {
 import {
 	cellAt,
 	expandText,
+	hasColumn,
 	tableAt,
 	textAt,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
@@ -105,9 +106,7 @@ async function runTaggingExample(example: Example): Promise<void> {
 			inputText.parameters.semanticVersion,
 			inputText.parameters.commit,
 		);
-		const hasResultColumn = table.rows[0].some(
-			(cell) => expandText(cell.heading) === "Result",
-		);
+		const hasResultColumn = hasColumn(table, "Result");
 		const expectedStatus = !hasResultColumn
 			? 0
 			: table.rows.some((row) => cellAt(row, "Result") === "Error")

@@ -7,17 +7,22 @@ export type Text = string | ParameterisedText;
 
 export type NonEmptyArray<T> = [T, ...T[]];
 
+export type ReadonlyNonEmptyArray<T> = readonly [T, ...T[]];
+
 export type Cell = {
-	heading: Text;
-	value: Text;
+	readonly heading: Text;
+	readonly value: Text;
 };
 
-export type Row = Cell[];
+export type Row = readonly Cell[];
 
 export type Table = {
-	caption?: Text;
-	rows: NonEmptyArray<Row>;
+	readonly caption?: Text;
+	readonly rows: ReadonlyNonEmptyArray<Row>;
+	readonly [validatedTable]: true;
 };
+
+declare const validatedTable: unique symbol;
 
 export type ContentItem =
 	| { type: "text"; text: Text }
@@ -61,6 +66,10 @@ export function expandText(text: Text): string {
 }
 
 export function table({ caption, headings, rows }: TableInput): Table {
+	if (headings.length === 0) {
+		throw new Error("A table must contain at least one heading.");
+	}
+
 	const expandedHeadings = headings.map(expandText);
 	if (new Set(expandedHeadings).size !== expandedHeadings.length) {
 		throw new Error("Table headings must be unique.");
@@ -94,10 +103,16 @@ export function table({ caption, headings, rows }: TableInput): Table {
 		throw new Error("A table must contain at least one data row.");
 	}
 
-	return {
+	const result = {
 		...(caption === undefined ? {} : { caption }),
 		rows: [firstRow, ...remainingRows],
 	};
+	// biome-ignore lint/nursery/noUnsafeTypeAssertion: The private brand is compile-time-only and is created only after validation.
+	return result as unknown as Table;
+}
+
+export function hasColumn(table: Table, heading: string): boolean {
+	return table.rows[0].some((cell) => expandText(cell.heading) === heading);
 }
 
 export function rawCellAt(row: Row, ...headings: string[]): Text {

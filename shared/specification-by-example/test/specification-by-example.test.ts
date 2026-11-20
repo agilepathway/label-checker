@@ -6,8 +6,10 @@ import {
 	cellAt,
 	type Example,
 	expandText,
+	hasColumn,
 	rawCellAt,
 	type Specification,
+	type Table,
 	table,
 	tableAt,
 	textAt,
@@ -167,12 +169,50 @@ test("table rejects duplicate expanded headings", () => {
 	);
 });
 
+test("table rejects empty headings", () => {
+	assert.throws(() => table({ headings: [], rows: [[]] }), {
+		message: "A table must contain at least one heading.",
+	});
+});
+
 test("table requires at least one data row", () => {
 	assert.throws(
 		// @ts-expect-error The table factory requires at least one row.
 		() => table({ headings: ["Heading"], rows: [] }),
 		{ message: "A table must contain at least one data row." },
 	);
+});
+
+test("hasColumn finds literal headings", () => {
+	const result = table({ headings: ["Heading"], rows: [["value"]] });
+	assert.equal(hasColumn(result, "Heading"), true);
+	assert.equal(hasColumn(result, "Missing"), false);
+});
+
+test("hasColumn matches expanded parameterised headings", () => {
+	const result = table({
+		headings: [{ template: "Heading {name}", parameters: { name: "one" } }],
+		rows: [["value"]],
+	});
+
+	assert.equal(hasColumn(result, "Heading one"), true);
+	assert.equal(hasColumn(result, "Heading {name}"), false);
+});
+
+test("Table requires factory construction and is readonly", () => {
+	const verifyReadonlyTypes = (validated: Table): void => {
+		// @ts-expect-error Tables must be constructed through the factory.
+		const unvalidated: Table = { rows: validated.rows };
+		void unvalidated;
+
+		// @ts-expect-error Validated table properties are readonly.
+		validated.rows = [];
+		// @ts-expect-error Validated row collections are readonly.
+		validated.rows.push([]);
+		// @ts-expect-error Validated cell properties are readonly.
+		validated.rows[0][0].value = "changed";
+	};
+	void verifyReadonlyTypes;
 });
 
 test("cellAt uses the first matching alternative heading and expands the value", () => {
