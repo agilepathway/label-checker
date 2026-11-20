@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { renderSpecification } from "../shared/specification-by-example/src/markdown-renderer.ts";
 import {
+	type Cell,
 	cellAt,
 	cellAtAnyOf,
 	expandText,
@@ -124,7 +125,7 @@ async function verifySupportedExample(
 		const requirements: Requirements = {};
 		const criteria = row
 			.filter((cell) => /^Criterion(?: \d+)?$/.test(expandText(cell.heading)))
-			.map((cell) => executableCriterionAt(row, expandText(cell.heading)));
+			.map(executableCriterionFromCell);
 
 		for (const criterion of criteria) {
 			requirements[criterion.execution.requirement] = criterion.execution.input;
@@ -165,7 +166,18 @@ function parseLabels(labelsText: string): string[] {
 }
 
 function executableCriterionAt(row: Row, heading: string): ExecutableCriterion {
-	const criterion = rawCellAt(row, heading);
+	return executableCriterion(rawCellAt(row, heading), heading);
+}
+
+function executableCriterionFromCell(cell: Cell): ExecutableCriterion {
+	const heading = expandText(cell.heading);
+	return executableCriterion(cell.value, heading);
+}
+
+function executableCriterion(
+	criterion: Text,
+	heading: string,
+): ExecutableCriterion {
 	assert(isExecutableCriterion(criterion), `Expected executable ${heading}`);
 	return criterion;
 }
