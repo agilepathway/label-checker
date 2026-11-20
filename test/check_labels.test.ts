@@ -3,7 +3,10 @@ import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { renderSpecification } from "../shared/specification-by-example/src/markdown-renderer.ts";
 import {
+	cellAt,
 	expandText,
+	type Row,
+	rawCellAt,
 	type Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
@@ -16,6 +19,18 @@ import {
 	type Requirements,
 	runLabelCheck,
 } from "./check_labels_test_harness.ts";
+
+test("ExecutableCriterion execution metadata is readonly", () => {
+	const verifyReadonlyTypes = (criterion: ExecutableCriterion): void => {
+		// @ts-expect-error Executable criterion execution metadata is readonly.
+		criterion.execution = { requirement: "all", input: "" };
+		// @ts-expect-error Executable criterion requirements are readonly.
+		criterion.execution.requirement = "all";
+		// @ts-expect-error Executable criterion input is readonly.
+		criterion.execution.input = "";
+	};
+	void verifyReadonlyTypes;
+});
 
 test("published label-checker specification is up to date", async () => {
 	const publishedMarkdown = await readFile(
@@ -68,9 +83,8 @@ async function verifyUnsupportedExample(
 	assert(tableContent);
 	const table = tableContent.table;
 	for (const [index, row] of table.rows.entries()) {
-		// biome-ignore lint/nursery/noUnsafeTypeAssertion: Specification rows contain executable criteria.
-		const criterion = row[0] as ExecutableCriterion;
-		assert.equal(renderTableText(row[row.length - 1]), "Error");
+		const criterion = executableCriterionAt(row, "Criterion");
+		assert.equal(cellAt(row, "Outcome", "Overall outcome"), "Error");
 
 		const result = await runLabelCheck({
 			pullRequestNumber: index + 1,
@@ -97,9 +111,6 @@ async function verifySupportedExample(
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
 	const table = tableContent.table;
-	const labelsColumn = table.headers.findIndex(
-		(header) => renderTableText(header) === "Labels on the pull request",
-	);
 	assert.equal(
 		example.inputsAndExpectedResults.length,
 		table.rows.length,
@@ -107,19 +118,18 @@ async function verifySupportedExample(
 	);
 
 	for (const [index, row] of table.rows.entries()) {
-		const labelsText = renderTableText(row[labelsColumn]);
+		const labelsText = cellAt(row, "Labels on the pull request");
 		const labels = parseLabels(labelsText);
 		const requirements: Requirements = {};
 		const criteria = row
-			.slice(0, labelsColumn)
-			// biome-ignore lint/nursery/noUnsafeTypeAssertion: Specification rows contain executable criteria.
-			.map((criterion) => criterion as ExecutableCriterion);
+			.filter((cell) => /^Criterion(?: \d+)?$/.test(expandText(cell.heading)))
+			.map((cell) => executableCriterionAt(row, expandText(cell.heading)));
 
 		for (const criterion of criteria) {
 			requirements[criterion.execution.requirement] = criterion.execution.input;
 		}
 
-		const outcome = renderTableText(row[row.length - 1]);
+		const outcome = cellAt(row, "Outcome", "Overall outcome");
 		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
 		const expected = example.inputsAndExpectedResults[index];
 
@@ -153,7 +163,21 @@ function parseLabels(labelsText: string): string[] {
 	return labelsText === "(none)" ? [] : labelsText.split(", ");
 }
 
-function renderTableText(value: Text | undefined): string {
-	assert(value !== undefined, "Expected table text to be present");
-	return expandText(value);
+function executableCriterionAt(row: Row, heading: string): ExecutableCriterion {
+	const criterion = rawCellAt(row, heading);
+	assert(isExecutableCriterion(criterion), `Expected executable ${heading}`);
+	return criterion;
+}
+
+function isExecutableCriterion(text: Text): text is ExecutableCriterion {
+	return (
+		typeof text !== "string" &&
+		"execution" in text &&
+		typeof text.execution === "object" &&
+		text.execution !== null &&
+		"requirement" in text.execution &&
+		"input" in text.execution &&
+		typeof text.execution.requirement === "string" &&
+		typeof text.execution.input === "string"
+	);
 }

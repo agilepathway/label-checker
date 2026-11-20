@@ -3,9 +3,15 @@ import { test } from "node:test";
 
 import {
 	assertUniqueExampleIds,
+	cellAt,
 	type Example,
 	expandText,
+	hasColumn,
+	type ParameterisedText,
+	rawCellAt,
 	type Specification,
+	type Table,
+	table,
 	tableAt,
 	textAt,
 } from "../src/specification-by-example.ts";
@@ -19,7 +25,7 @@ const example: Example = {
 		},
 		{
 			type: "table",
-			table: { headers: ["Heading"], rows: [["value"]] },
+			table: table({ headings: ["Heading"], rows: [["value"]] }),
 		},
 	],
 };
@@ -34,7 +40,7 @@ const tableFirstExample: Example = {
 	content: [
 		{
 			type: "table",
-			table: { headers: ["Heading"], rows: [["value"]] },
+			table: table({ headings: ["Heading"], rows: [["value"]] }),
 		},
 	],
 };
@@ -44,10 +50,10 @@ const parameterisedTableExample: Example = {
 	content: [
 		{
 			type: "table",
-			table: {
-				headers: [{ template: "Heading {name}", parameters: { name: "one" } }],
+			table: table({
+				headings: [{ template: "Heading {name}", parameters: { name: "one" } }],
 				rows: [[{ template: "Value {name}", parameters: { name: "two" } }]],
-			},
+			}),
 		},
 	],
 };
@@ -114,6 +120,140 @@ test("expandText rejects unknown Example text parameters", () => {
 	);
 });
 
+test("table pairs values with expanded, unique headings", () => {
+	const heading = {
+		template: "Heading {name}",
+		parameters: { name: "one" },
+	};
+	const value = { template: "Value {name}", parameters: { name: "two" } };
+	const result = table({
+		headings: [heading, "Second"],
+		rows: [[value, "other"]],
+	});
+
+	assert.deepEqual(result, {
+		rows: [
+			[
+				{ heading, value },
+				{ heading: "Second", value: "other" },
+			],
+		],
+	});
+});
+
+test("table rejects rows with too few or too many values", () => {
+	assert.throws(
+		() => table({ headings: ["First", "Second"], rows: [["only one"]] }),
+		{
+			message: "Table row 1 has 1 values, but there are 2 headings.",
+		},
+	);
+	assert.throws(
+		() => table({ headings: ["Only"], rows: [["one", "too many"]] }),
+		{
+			message: "Table row 1 has 2 values, but there are 1 headings.",
+		},
+	);
+});
+
+test("table rejects duplicate expanded headings", () => {
+	assert.throws(
+		() =>
+			table({
+				headings: [
+					"Outcome",
+					{ template: "{name}", parameters: { name: "Outcome" } },
+				],
+				rows: [["Success", "Failure"]],
+			}),
+		{ message: "Table headings must be unique." },
+	);
+});
+
+test("table rejects empty headings", () => {
+	assert.throws(() => table({ headings: [], rows: [[]] }), {
+		message: "A table must contain at least one heading.",
+	});
+});
+
+test("table requires at least one data row", () => {
+	assert.throws(
+		// @ts-expect-error The table factory requires at least one row.
+		() => table({ headings: ["Heading"], rows: [] }),
+		{ message: "A table must contain at least one data row." },
+	);
+});
+
+test("hasColumn finds literal headings", () => {
+	const result = table({ headings: ["Heading"], rows: [["value"]] });
+	assert.equal(hasColumn(result, "Heading"), true);
+	assert.equal(hasColumn(result, "Missing"), false);
+});
+
+test("hasColumn matches expanded parameterised headings", () => {
+	const result = table({
+		headings: [{ template: "Heading {name}", parameters: { name: "one" } }],
+		rows: [["value"]],
+	});
+
+	assert.equal(hasColumn(result, "Heading one"), true);
+	assert.equal(hasColumn(result, "Heading {name}"), false);
+});
+
+test("Table requires factory construction and is readonly", () => {
+	const verifyReadonlyTypes = (validated: Table): void => {
+		// @ts-expect-error Tables must be constructed through the factory.
+		const unvalidated: Table = { rows: validated.rows };
+		void unvalidated;
+
+		// @ts-expect-error Validated table properties are readonly.
+		validated.rows = [];
+		// @ts-expect-error Validated row collections are readonly.
+		validated.rows.push([]);
+		// @ts-expect-error Validated cell properties are readonly.
+		validated.rows[0][0].value = "changed";
+	};
+	void verifyReadonlyTypes;
+});
+
+test("ParameterisedText properties and parameters are readonly", () => {
+	const verifyReadonlyTypes = (text: ParameterisedText): void => {
+		// @ts-expect-error Parameterised text templates are readonly.
+		text.template = "changed";
+		// @ts-expect-error Parameterised text parameters are readonly.
+		text.parameters = {};
+		// @ts-expect-error Individual parameter values are readonly.
+		text.parameters.name = "changed";
+	};
+	void verifyReadonlyTypes;
+});
+
+test("cellAt uses the first matching alternative heading and expands the value", () => {
+	const row = table({
+		headings: ["Fallback", "Preferred"],
+		rows: [
+			[
+				{ template: "First {value}", parameters: { value: "cell" } },
+				{ template: "Second {value}", parameters: { value: "cell" } },
+			],
+		],
+	}).rows[0];
+
+	assert.equal(cellAt(row, "Preferred", "Fallback"), "Second cell");
+	assert.deepEqual(rawCellAt(row, "Preferred", "Fallback"), {
+		template: "Second {value}",
+		parameters: { value: "cell" },
+	});
+});
+
+test("cellAt reports when none of the requested headings exists", () => {
+	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
+	assert.throws(() => cellAt(row, "Missing", "Also missing"), {
+		message:
+			'Could not find a table cell with any of the headings: "Missing", "Also missing".',
+	});
+});
+
 test("textAt returns the text payload at the requested index", () => {
 	assert.deepEqual(textAt(example, 0), {
 		template: "A {value}",
@@ -139,22 +279,29 @@ test("textAt reports a content-type mismatch", () => {
 
 test("tableAt returns the table payload at the requested index", () => {
 	assert.deepEqual(tableAt(example, 1), {
-		headers: ["Heading"],
-		rows: [["value"]],
+		rows: [[{ heading: "Heading", value: "value" }]],
 	});
 });
 
 test("tableAt returns a table at the start of an example", () => {
 	assert.deepEqual(tableAt(tableFirstExample, 0), {
-		headers: ["Heading"],
-		rows: [["value"]],
+		rows: [[{ heading: "Heading", value: "value" }]],
 	});
 });
 
 test("tableAt returns parameterised headers and cells", () => {
 	assert.deepEqual(tableAt(parameterisedTableExample, 0), {
-		headers: [{ template: "Heading {name}", parameters: { name: "one" } }],
-		rows: [[{ template: "Value {name}", parameters: { name: "two" } }]],
+		rows: [
+			[
+				{
+					heading: {
+						template: "Heading {name}",
+						parameters: { name: "one" },
+					},
+					value: { template: "Value {name}", parameters: { name: "two" } },
+				},
+			],
+		],
 	});
 });
 

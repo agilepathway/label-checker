@@ -4,6 +4,7 @@ import type {
 	Rule,
 	Specification,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
+import { table } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 
 export const patchLevelSemanticVersionRule: Rule = {
 	definition:
@@ -27,8 +28,8 @@ export const patchLevelSemanticVersionRule: Rule = {
 
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After"],
+					table: table({
+						headings: ["Tag", "Before", "After"],
 						rows: [
 							[
 								"v2",
@@ -52,7 +53,7 @@ export const patchLevelSemanticVersionRule: Rule = {
 								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 							],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -81,8 +82,8 @@ export const minorLevelSemanticVersionRule: Rule = {
 
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After"],
+					table: table({
+						headings: ["Tag", "Before", "After"],
 						rows: [
 							[
 								"v2",
@@ -112,7 +113,7 @@ export const minorLevelSemanticVersionRule: Rule = {
 								"b2c3d4e5f67890abcdef1234567890abcdef123",
 							],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -139,8 +140,8 @@ export const majorLevelSemanticVersionRule: Rule = {
 				},
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After"],
+					table: table({
+						headings: ["Tag", "Before", "After"],
 						rows: [
 							[
 								"v2",
@@ -181,7 +182,7 @@ export const majorLevelSemanticVersionRule: Rule = {
 								"c3d4e5f67890abcdef1234567890abcdef1234",
 							],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -208,8 +209,8 @@ export const missingSemanticVersionTagsRule: Rule = {
 				},
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After"],
+					table: table({
+						headings: ["Tag", "Before", "After"],
 						rows: [
 							["v2", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							["v2.0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
@@ -221,7 +222,7 @@ export const missingSemanticVersionTagsRule: Rule = {
 							["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -241,15 +242,15 @@ export const missingSemanticVersionTagsRule: Rule = {
 				},
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After"],
+					table: table({
+						headings: ["Tag", "Before", "After"],
 						rows: [
 							["v0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							["v0.0", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							["v0.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -269,8 +270,8 @@ export const missingSemanticVersionTagsRule: Rule = {
 				},
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After"],
+					table: table({
+						headings: ["Tag", "Before", "After"],
 						rows: [
 							[
 								"v2",
@@ -290,7 +291,7 @@ export const missingSemanticVersionTagsRule: Rule = {
 							["v2.0.1", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 							["latest", "—", "a1b2c3d4e5f67890abcdef1234567890abcdef12"],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -316,8 +317,8 @@ export const existingSemanticVersionTagRule: Rule = {
 				},
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After", "Result"],
+					table: table({
+						headings: ["Tag", "Before", "After", "Result"],
 						rows: [
 							[
 								"v2.0.1",
@@ -326,7 +327,7 @@ export const existingSemanticVersionTagRule: Rule = {
 								"Error",
 							],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -353,8 +354,8 @@ export const existingAliasSemanticVersionTagRule: Rule = {
 				},
 				{
 					type: "table",
-					table: {
-						headers: ["Tag", "Before", "After"],
+					table: table({
+						headings: ["Tag", "Before", "After"],
 						rows: [
 							[
 								"v1.0.0",
@@ -383,7 +384,7 @@ export const existingAliasSemanticVersionTagRule: Rule = {
 								"a1b2c3d4e5f67890abcdef1234567890abcdef12",
 							],
 						],
-					},
+					}),
 				},
 			],
 		},

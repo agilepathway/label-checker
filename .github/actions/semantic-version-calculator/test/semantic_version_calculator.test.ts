@@ -9,10 +9,11 @@ import { fileURLToPath } from "node:url";
 import { renderSpecification } from "../../../../shared/specification-by-example/src/markdown-renderer.ts";
 import type {
 	Example,
+	Row,
 	Table,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import {
-	expandText,
+	cellAt,
 	tableAt,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
@@ -61,59 +62,46 @@ test("retrieves tags across GitHub API pages", async () => {
 async function runCalculatorExample(example: Example): Promise<void> {
 	switch (example.id) {
 		case "requested-increment-values":
-			await testRequestedIncrements(plainTable(tableAt(example, 0)));
+			await testRequestedIncrements(tableAt(example, 0));
 			return;
 		case "version-tag-format": {
-			const tagFormats = plainTable(tableAt(example, 0));
+			const tagFormats = tableAt(example, 0);
 			await testTagFormats(tagFormats);
 			await testRejectedTagFormats(tagFormats);
 			await testAllInvalidTags(tagFormats);
 			return;
 		}
 		case "highest-existing-semantic-version-tag":
-			await testHighestTags(plainTable(tableAt(example, 0)));
+			await testHighestTags(tableAt(example, 0));
 			return;
 		case "no-existing-semantic-version-tags":
-			await testNoExistingTags(plainTable(tableAt(example, 0)));
+			await testNoExistingTags(tableAt(example, 0));
 			return;
 		case "calculating-next-version":
-			await testNextVersions(plainTable(tableAt(example, 0)));
+			await testNextVersions(tableAt(example, 0));
 			return;
 		default:
 			throw new Error(`Unexpected semantic-version example: ${example.id}`);
 	}
 }
 
-type PlainTable = { headers: string[]; rows: string[][] };
-
-function plainTable(table: Table): PlainTable {
-	return {
-		headers: table.headers.map(expandText),
-		rows: table.rows.map((row) => row.map(expandText)),
-	};
-}
-
-function rejectedTags(table: PlainTable): string[] {
+function rejectedTags(table: Table): string[] {
 	return table.rows.flatMap((row) => {
-		const tag = row[0];
-		const accepted = row[1];
-		assert(tag !== undefined);
-		assert(accepted !== undefined);
-		return accepted === "No" ? [tag] : [];
+		return cellAt(row, "Accepted?") === "No"
+			? [cellAt(row, "Existing tag")]
+			: [];
 	});
 }
 
-async function testRequestedIncrements(table: PlainTable): Promise<void> {
+async function testRequestedIncrements(table: Table): Promise<void> {
 	for (const row of table.rows) {
 		await testRequestedIncrement(row);
 	}
 }
 
-async function testRequestedIncrement(row: string[]): Promise<void> {
-	const input = row[0];
-	const outcome = row[1];
-	assert(input !== undefined);
-	assert(outcome !== undefined);
+async function testRequestedIncrement(row: Row): Promise<void> {
+	const input = cellAt(row, "Input");
+	const outcome = cellAt(row, "Outcome");
 	const increment =
 		input === "Empty string"
 			? ""
@@ -134,12 +122,10 @@ async function testRequestedIncrement(row: string[]): Promise<void> {
 	assert.equal(result.status, 1);
 	assert.equal(result.output, "");
 }
-async function testTagFormats(table: PlainTable): Promise<void> {
+async function testTagFormats(table: Table): Promise<void> {
 	for (const row of table.rows) {
-		const tag = row[0];
-		const accepted = row[1];
-		assert(tag !== undefined);
-		assert(accepted !== undefined);
+		const tag = cellAt(row, "Existing tag");
+		const accepted = cellAt(row, "Accepted?");
 		const tags = new Map<string, string>();
 		if (accepted === "No") tags.set("v2.0.0", "baseline");
 		tags.set(tag, "candidate");
@@ -154,7 +140,7 @@ async function testTagFormats(table: PlainTable): Promise<void> {
 	}
 }
 
-async function testRejectedTagFormats(table: PlainTable): Promise<void> {
+async function testRejectedTagFormats(table: Table): Promise<void> {
 	for (const tag of rejectedTags(table)) {
 		const result = await runAction(new Map([[tag, "invalid-tag"]]), "patch");
 
@@ -164,7 +150,7 @@ async function testRejectedTagFormats(table: PlainTable): Promise<void> {
 	}
 }
 
-async function testAllInvalidTags(table: PlainTable): Promise<void> {
+async function testAllInvalidTags(table: Table): Promise<void> {
 	const tags = new Map(
 		rejectedTags(table).map((tag) => [tag, "invalid-tag"] as const),
 	);
@@ -177,12 +163,10 @@ async function testAllInvalidTags(table: PlainTable): Promise<void> {
 	assert.equal(result.output, "");
 }
 
-async function testHighestTags(table: PlainTable): Promise<void> {
+async function testHighestTags(table: Table): Promise<void> {
 	for (const row of table.rows) {
-		const existingTags = row[0];
-		const highestTag = row[1];
-		assert(existingTags !== undefined);
-		assert(highestTag !== undefined);
+		const existingTags = cellAt(row, "Existing tags");
+		const highestTag = cellAt(row, "Highest existing semantic version tag");
 		const tags = new Map(
 			existingTags.split(", ").map((tag) => [tag, "commit"] as const),
 		);
@@ -196,9 +180,9 @@ async function testHighestTags(table: PlainTable): Promise<void> {
 	}
 }
 
-async function testNoExistingTags(table: PlainTable): Promise<void> {
+async function testNoExistingTags(table: Table): Promise<void> {
 	for (const row of table.rows) {
-		assert.equal(row[0], "None");
+		assert.equal(cellAt(row, "Existing tags"), "None");
 		const result = await runAction(new Map(), "patch");
 		assert.equal(result.status, 1);
 		assert.match(result.stderr, /No valid semantic version tags exist/);
@@ -206,14 +190,11 @@ async function testNoExistingTags(table: PlainTable): Promise<void> {
 	}
 }
 
-async function testNextVersions(table: PlainTable): Promise<void> {
+async function testNextVersions(table: Table): Promise<void> {
 	for (const row of table.rows) {
-		const startingVersion = row[0];
-		const increment = row[1];
-		const expectedVersion = row[2];
-		assert(startingVersion !== undefined);
-		assert(increment !== undefined);
-		assert(expectedVersion !== undefined);
+		const startingVersion = cellAt(row, "Starting version");
+		const increment = cellAt(row, "Increment");
+		const expectedVersion = cellAt(row, "Result");
 		const result = await runAction(
 			new Map([[startingVersion, "commit"]]),
 			increment,

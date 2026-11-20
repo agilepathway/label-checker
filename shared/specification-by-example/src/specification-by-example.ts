@@ -1,21 +1,38 @@
 export type ParameterisedText = {
-	template: string;
-	parameters: Record<string, string>;
+	readonly template: string;
+	readonly parameters: Readonly<Record<string, string>>;
 };
 
 export type Text = string | ParameterisedText;
 
-export type Table = {
-	caption?: Text;
-	headers: Text[];
-	rows: Text[][];
+export type NonEmptyArray<T> = [T, ...T[]];
+
+export type ReadonlyNonEmptyArray<T> = readonly [T, ...T[]];
+
+export type Cell = {
+	readonly heading: Text;
+	readonly value: Text;
 };
+
+export type Row = readonly Cell[];
+
+export type Table = {
+	readonly caption?: Text;
+	readonly rows: ReadonlyNonEmptyArray<Row>;
+	readonly [validatedTable]: true;
+};
+
+declare const validatedTable: unique symbol;
 
 export type ContentItem =
 	| { type: "text"; text: Text }
 	| { type: "table"; table: Table };
 
-export type NonEmptyArray<T> = [T, ...T[]];
+export type TableInput = {
+	caption?: Text;
+	headings: Text[];
+	rows: NonEmptyArray<Text[]>;
+};
 
 export type Example = {
 	id: string;
@@ -46,6 +63,75 @@ export function expandText(text: Text): string {
 
 		return value;
 	});
+}
+
+export function table({ caption, headings, rows }: TableInput): Table {
+	if (headings.length === 0) {
+		throw new Error("A table must contain at least one heading.");
+	}
+
+	const expandedHeadings = headings.map(expandText);
+	if (new Set(expandedHeadings).size !== expandedHeadings.length) {
+		throw new Error("Table headings must be unique.");
+	}
+
+	const pairedRows = rows.map((row, rowIndex) => {
+		if (row.length !== headings.length) {
+			throw new Error(
+				`Table row ${rowIndex + 1} has ${row.length} values, but there are ${headings.length} headings.`,
+			);
+		}
+
+		return headings.map((heading, index) => {
+			const value = row[index];
+			if (value === undefined) {
+				throw new Error(
+					`Table row ${rowIndex + 1} is missing a value for heading "${expandText(heading)}".`,
+				);
+			}
+
+			return { heading, value };
+		});
+	});
+
+	if (pairedRows.length === 0) {
+		throw new Error("A table must contain at least one data row.");
+	}
+
+	const [firstRow, ...remainingRows] = pairedRows;
+	if (firstRow === undefined) {
+		throw new Error("A table must contain at least one data row.");
+	}
+
+	const result = {
+		...(caption === undefined ? {} : { caption }),
+		rows: [firstRow, ...remainingRows],
+	};
+	// biome-ignore lint/nursery/noUnsafeTypeAssertion: The private brand is compile-time-only and is created only after validation.
+	return result as unknown as Table;
+}
+
+export function hasColumn(table: Table, heading: string): boolean {
+	return table.rows[0].some((cell) => expandText(cell.heading) === heading);
+}
+
+export function rawCellAt(row: Row, ...headings: string[]): Text {
+	const cell = headings
+		.map((heading) =>
+			row.find((candidate) => expandText(candidate.heading) === heading),
+		)
+		.find((candidate) => candidate !== undefined);
+	if (cell === undefined) {
+		throw new Error(
+			`Could not find a table cell with any of the headings: ${headings.map((heading) => `"${heading}"`).join(", ")}.`,
+		);
+	}
+
+	return cell.value;
+}
+
+export function cellAt(row: Row, ...headings: string[]): string {
+	return expandText(rawCellAt(row, ...headings));
 }
 
 export function textAt(example: Example, index: number): Text {
