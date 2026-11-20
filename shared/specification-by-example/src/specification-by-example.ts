@@ -5,17 +5,29 @@ export type ParameterisedText = {
 
 export type Text = string | ParameterisedText;
 
+export type NonEmptyArray<T> = [T, ...T[]];
+
+export type Cell = {
+	heading: Text;
+	value: Text;
+};
+
+export type Row = Cell[];
+
 export type Table = {
 	caption?: Text;
-	headers: Text[];
-	rows: Text[][];
+	rows: NonEmptyArray<Row>;
 };
 
 export type ContentItem =
 	| { type: "text"; text: Text }
 	| { type: "table"; table: Table };
 
-export type NonEmptyArray<T> = [T, ...T[]];
+export type TableInput = {
+	caption?: Text;
+	headings: Text[];
+	rows: NonEmptyArray<Text[]>;
+};
 
 export type Example = {
 	id: string;
@@ -46,6 +58,65 @@ export function expandText(text: Text): string {
 
 		return value;
 	});
+}
+
+export function table({ caption, headings, rows }: TableInput): Table {
+	const expandedHeadings = headings.map(expandText);
+	if (new Set(expandedHeadings).size !== expandedHeadings.length) {
+		throw new Error("Table headings must be unique.");
+	}
+
+	const pairedRows = rows.map((row, rowIndex) => {
+		if (row.length !== headings.length) {
+			throw new Error(
+				`Table row ${rowIndex + 1} has ${row.length} values, but there are ${headings.length} headings.`,
+			);
+		}
+
+		return headings.map((heading, index) => {
+			const value = row[index];
+			if (value === undefined) {
+				throw new Error(
+					`Table row ${rowIndex + 1} is missing a value for heading "${expandText(heading)}".`,
+				);
+			}
+
+			return { heading, value };
+		});
+	});
+
+	if (pairedRows.length === 0) {
+		throw new Error("A table must contain at least one data row.");
+	}
+
+	const [firstRow, ...remainingRows] = pairedRows;
+	if (firstRow === undefined) {
+		throw new Error("A table must contain at least one data row.");
+	}
+
+	return {
+		...(caption === undefined ? {} : { caption }),
+		rows: [firstRow, ...remainingRows],
+	};
+}
+
+export function rawCellAt(row: Row, ...headings: string[]): Text {
+	const cell = headings
+		.map((heading) =>
+			row.find((candidate) => expandText(candidate.heading) === heading),
+		)
+		.find((candidate) => candidate !== undefined);
+	if (cell === undefined) {
+		throw new Error(
+			`Could not find a table cell with any of the headings: ${headings.map((heading) => `"${heading}"`).join(", ")}.`,
+		);
+	}
+
+	return cell.value;
+}
+
+export function cellAt(row: Row, ...headings: string[]): string {
+	return expandText(rawCellAt(row, ...headings));
 }
 
 export function textAt(example: Example, index: number): Text {

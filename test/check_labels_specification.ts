@@ -6,6 +6,7 @@ import type {
 	Rule,
 	Specification,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
+import { table } from "../shared/specification-by-example/src/specification-by-example.ts";
 
 export type LabelCheckerInputsAndExpectedResults = {
 	pullRequestNumber?: number;
@@ -197,15 +198,19 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+							table: table({
+								headings: [
+									"Criterion",
+									"Labels on the pull request",
+									"Outcome",
+								],
 								rows: [
 									[noneOfCriterion, "(none)", "Success"],
 									[noneOfCriterion, "minor", "Failure"],
 									[noneOfCriterion, "minor, patch", "Failure"],
 									[noneOfCriterion, "major, minor, patch", "Failure"],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -245,15 +250,19 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+							table: table({
+								headings: [
+									"Criterion",
+									"Labels on the pull request",
+									"Outcome",
+								],
 								rows: [
 									[oneOfCriterion, "(none)", "Failure"],
 									[oneOfCriterion, "minor", "Success"],
 									[oneOfCriterion, "minor, patch", "Failure"],
 									[oneOfCriterion, "major, minor, patch", "Failure"],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -293,15 +302,19 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+							table: table({
+								headings: [
+									"Criterion",
+									"Labels on the pull request",
+									"Outcome",
+								],
 								rows: [
 									[allOfCriterion, "(none)", "Failure"],
 									[allOfCriterion, "minor", "Failure"],
 									[allOfCriterion, "minor, patch", "Failure"],
 									[allOfCriterion, "major, minor, patch", "Success"],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -341,15 +354,19 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+							table: table({
+								headings: [
+									"Criterion",
+									"Labels on the pull request",
+									"Outcome",
+								],
 								rows: [
 									[anyOfCriterion, "(none)", "Failure"],
 									[anyOfCriterion, "minor", "Success"],
 									[anyOfCriterion, "minor, patch", "Success"],
 									[anyOfCriterion, "major, minor, patch", "Success"],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -394,9 +411,13 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
+							table: table({
 								caption: "**`none_of`**",
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+								headings: [
+									"Criterion",
+									"Labels on the pull request",
+									"Outcome",
+								],
 								rows: [
 									[noneOfTypePrefixCriterion, "(none)", "Success"],
 									[noneOfTypePrefixCriterion, "type:fix", "Failure"],
@@ -411,7 +432,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										"Failure",
 									],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -450,9 +471,13 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
+							table: table({
 								caption: "**`one_of`**",
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+								headings: [
+									"Criterion",
+									"Labels on the pull request",
+									"Outcome",
+								],
 								rows: [
 									[oneOfTypePrefixCriterion, "(none)", "Failure"],
 									[oneOfTypePrefixCriterion, "type:fix", "Success"],
@@ -467,7 +492,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										"Failure",
 									],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -506,9 +531,13 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
+							table: table({
 								caption: "**`any_of`**",
-								headers: ["Criterion", "Labels on the pull request", "Outcome"],
+								headings: [
+									"Criterion",
+									"Labels on the pull request",
+									"Outcome",
+								],
 								rows: [
 									[anyOfPrefixCriterion, "(none)", "Failure"],
 									[anyOfPrefixCriterion, "type:fix", "Success"],
@@ -519,7 +548,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										"Success",
 									],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -540,11 +569,11 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
+							table: table({
 								caption: "**`all_of`**",
-								headers: ["Criterion", "Outcome"],
+								headings: ["Criterion", "Outcome"],
 								rows: [[allOfPrefixCriterion, "Error"]],
-							},
+							}),
 						},
 					],
 				},
@@ -564,15 +593,15 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
-								headers: ["Criterion", "Outcome"],
+							table: table({
+								headings: ["Criterion", "Outcome"],
 								rows: [
 									[noneOfMultiplePrefixesCriterion, "Error"],
 									[oneOfMultiplePrefixesCriterion, "Error"],
 									[anyOfMultiplePrefixesCriterion, "Error"],
 									[allOfMultiplePrefixesCriterion, "Error"],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -598,8 +627,8 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
-								headers: [
+							table: table({
+								headings: [
 									"Criterion 1",
 									"Criterion 2",
 									"Labels on the pull request",
@@ -617,7 +646,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										"Failure",
 									],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -658,9 +687,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
+							table: table({
 								caption: "2 checks combined:",
-								headers: [
+								headings: [
 									"Criterion 1",
 									"Criterion 2",
 									"Labels on the pull request",
@@ -702,7 +731,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										combinedFailureOutcome,
 									],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -739,9 +768,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
+							table: table({
 								caption: "3 checks combined:",
-								headers: [
+								headings: [
 									"Criterion 1",
 									"Criterion 2",
 									"Criterion 3",
@@ -793,7 +822,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										combinedFailureOutcome,
 									],
 								],
-							},
+							}),
 						},
 					],
 				},
@@ -831,9 +860,9 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 					content: [
 						{
 							type: "table",
-							table: {
+							table: table({
 								caption: "4 checks combined:",
-								headers: [
+								headings: [
 									"Criterion 1",
 									"Criterion 2",
 									"Criterion 3",
@@ -895,7 +924,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 										combinedFailureOutcome,
 									],
 								],
-							},
+							}),
 						},
 					],
 				},

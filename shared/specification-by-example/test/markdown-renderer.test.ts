@@ -5,6 +5,7 @@ import type {
 	ContentItem,
 	Specification,
 } from "../src/specification-by-example.ts";
+import { table } from "../src/specification-by-example.ts";
 
 test("renderSpecification expands parameterised text", () => {
 	const specification: Specification = {
@@ -66,17 +67,17 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 							},
 							{
 								type: "table",
-								table: {
+								table: table({
 									caption: {
 										template: "A {kind} caption.",
 										parameters: { kind: "table" },
 									},
-									headers: ["Name", "Value"],
+									headings: ["Name", "Value"],
 									rows: [
 										["first", "one"],
 										["second", "two"],
 									],
-								},
+								}),
 							},
 							{
 								type: "text",
@@ -103,10 +104,10 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 						content: [
 							{
 								type: "table",
-								table: {
-									headers: ["Only heading"],
+								table: table({
+									headings: ["Only heading"],
 									rows: [["only row"]],
-								},
+								}),
 							},
 							{
 								type: "text",
@@ -178,10 +179,10 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 						content: [
 							{
 								type: "table",
-								table: {
-									headers: ["Name | label", "Value"],
+								table: table({
+									headings: ["Name | label", "Value"],
 									rows: [["first", "one | two"]],
-								},
+								}),
 							},
 						],
 					},
@@ -225,11 +226,11 @@ test("renderSpecification preserves braces in literal text and table values", ()
 							{ type: "text", text: "Use {name} literally." },
 							{
 								type: "table",
-								table: {
+								table: table({
 									caption: "Caption {name}",
-									headers: ["Header {name}"],
+									headings: ["Header {name}"],
 									rows: [["Cell {name}"]],
-								},
+								}),
 							},
 						],
 					},
@@ -256,8 +257,8 @@ test("renderSpecification expands parameterised table headers and cells", () => 
 						content: [
 							{
 								type: "table",
-								table: {
-									headers: [
+								table: table({
+									headings: [
 										{
 											template: "Name {kind}",
 											parameters: { kind: "label|value" },
@@ -271,7 +272,7 @@ test("renderSpecification expands parameterised table headers and cells", () => 
 											},
 										],
 									],
-								},
+								}),
 							},
 						],
 					},
@@ -304,15 +305,10 @@ test("renderSpecification rejects unknown placeholders in table headers and cell
 
 	assert.throws(
 		() =>
-			renderSpecification(
-				tableSpecification({
-					type: "table",
-					table: {
-						headers: [{ template: "{missing}", parameters: {} }],
-						rows: [],
-					},
-				}),
-			),
+			table({
+				headings: [{ template: "{missing}", parameters: {} }],
+				rows: [["value"]],
+			}),
 		{ message: "Unknown example placeholder: {missing}" },
 	);
 
@@ -321,10 +317,10 @@ test("renderSpecification rejects unknown placeholders in table headers and cell
 			renderSpecification(
 				tableSpecification({
 					type: "table",
-					table: {
-						headers: ["Heading"],
+					table: table({
+						headings: ["Heading"],
 						rows: [[{ template: "{missing}", parameters: {} }]],
-					},
+					}),
 				}),
 			),
 		{ message: "Unknown example placeholder: {missing}" },

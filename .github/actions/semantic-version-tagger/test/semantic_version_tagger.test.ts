@@ -11,6 +11,7 @@ import type {
 	Table,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import {
+	cellAt,
 	expandText,
 	tableAt,
 	textAt,
@@ -48,7 +49,9 @@ test("uses plain text in specification table cells", () => {
 	const cells = semanticVersionTaggingSpecification.rules.flatMap((rule) =>
 		rule.examples.flatMap((example) =>
 			example.content.flatMap((item) =>
-				item.type === "table" ? item.table.rows.flat() : [],
+				item.type === "table"
+					? item.table.rows.flatMap((row) => row.map((cell) => cell.value))
+					: [],
 			),
 		),
 	);
@@ -90,7 +93,7 @@ test("prints updated tags with short commit SHAs", async () => {
 });
 
 async function runTaggingExample(example: Example): Promise<void> {
-	const table = plainTable(tableAt(example, 1));
+	const table = tableAt(example, 1);
 	const inputText = textAt(example, 0);
 	assert(typeof inputText !== "string", "Expected parameterised input text");
 	const fakeGitHubApi = new FakeGitHubApi(tagState(table, "Before"));
@@ -102,13 +105,14 @@ async function runTaggingExample(example: Example): Promise<void> {
 			inputText.parameters.semanticVersion,
 			inputText.parameters.commit,
 		);
-		const resultColumnIndex = table.headers.indexOf("Result");
-		const expectedStatus =
-			resultColumnIndex === -1
-				? 0
-				: table.rows.some((row) => row[resultColumnIndex] === "Error")
-					? 1
-					: 0;
+		const hasResultColumn = table.rows[0].some(
+			(cell) => expandText(cell.heading) === "Result",
+		);
+		const expectedStatus = !hasResultColumn
+			? 0
+			: table.rows.some((row) => cellAt(row, "Result") === "Error")
+				? 1
+				: 0;
 
 		assert.equal(result.status, expectedStatus, result.stderr);
 		if (example.id === "rejects-existing-version-tag") {
@@ -124,30 +128,18 @@ async function runTaggingExample(example: Example): Promise<void> {
 	}
 }
 
-type PlainTable = { headers: string[]; rows: string[][] };
-
-function plainTable(table: Table): PlainTable {
-	return {
-		headers: table.headers.map(expandText),
-		rows: table.rows.map((row) => row.map(expandText)),
-	};
-}
-
 function tagState(
-	table: PlainTable,
+	table: Table,
 	column: "Before" | "After",
 ): Map<string, string> {
-	const tagIndex = table.headers.indexOf("Tag");
-	const valueIndex = table.headers.indexOf(column);
-
 	return new Map(
 		table.rows.flatMap((row): [string, string][] => {
-			const value = row[valueIndex];
+			const value = cellAt(row, column);
 			if (value === "—") {
 				return [];
 			}
 
-			return [[row[tagIndex], value]];
+			return [[cellAt(row, "Tag"), value]];
 		}),
 	);
 }

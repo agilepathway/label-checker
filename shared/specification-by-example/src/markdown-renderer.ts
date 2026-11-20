@@ -12,10 +12,17 @@ function escapePipes(value: string): string {
 
 function renderTable(table: Table): string {
 	const renderedTable = [
-		`| ${table.headers.map(expandText).map(escapePipes).join(" | ")} |`,
-		`|${table.headers.map(() => "---").join("|")}|`,
+		`| ${table.rows[0]
+			.map((cell) => expandText(cell.heading))
+			.map(escapePipes)
+			.join(" | ")} |`,
+		`|${table.rows[0].map(() => "---").join("|")}|`,
 		...table.rows.map(
-			(row) => `| ${row.map(expandText).map(escapePipes).join(" | ")} |`,
+			(row) =>
+				`| ${row
+					.map((cell) => expandText(cell.value))
+					.map(escapePipes)
+					.join(" | ")} |`,
 		),
 	].join("\n");
 

@@ -2,6 +2,7 @@ import type {
 	Rule,
 	Specification,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
+import { table } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 
 const requestedIncrementRule: Rule = {
 	definition:
@@ -12,8 +13,8 @@ const requestedIncrementRule: Rule = {
 			content: [
 				{
 					type: "table",
-					table: {
-						headers: ["Input", "Outcome"],
+					table: table({
+						headings: ["Input", "Outcome"],
 						rows: [
 							["major", "Accepted"],
 							["minor", "Accepted"],
@@ -28,7 +29,7 @@ const requestedIncrementRule: Rule = {
 							["Empty string", "Error"],
 							["Missing input", "Error"],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -44,8 +45,8 @@ const versionTagFormatRule: Rule = {
 			content: [
 				{
 					type: "table",
-					table: {
-						headers: ["Existing tag", "Accepted?", "Notes"],
+					table: table({
+						headings: ["Existing tag", "Accepted?", "Notes"],
 						rows: [
 							["v2.0.0", "Yes", ""],
 							["v2.10.3", "Yes", ""],
@@ -66,7 +67,7 @@ const versionTagFormatRule: Rule = {
 								"Build metadata may be considered in the future, but are not accepted now.",
 							],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -82,8 +83,8 @@ const highestExistingSemanticVersionTagRule: Rule = {
 			content: [
 				{
 					type: "table",
-					table: {
-						headers: [
+					table: table({
+						headings: [
 							"Existing tags",
 							"Highest existing semantic version tag",
 							"Notes",
@@ -99,7 +100,7 @@ const highestExistingSemanticVersionTagRule: Rule = {
 								"2.5.0 is ignored because it is not a valid semantic version tag.",
 							],
 						],
-					},
+					}),
 				},
 			],
 		},
@@ -115,10 +116,10 @@ const requiresExistingSemanticVersionTagRule: Rule = {
 			content: [
 				{
 					type: "table",
-					table: {
-						headers: ["Existing tags", "Outcome"],
+					table: table({
+						headings: ["Existing tags", "Outcome"],
 						rows: [["None", "Error"]],
-					},
+					}),
 				},
 				{
 					type: "text",
@@ -138,8 +139,8 @@ const calculatingNextVersionRule: Rule = {
 			content: [
 				{
 					type: "table",
-					table: {
-						headers: ["Starting version", "Increment", "Result"],
+					table: table({
+						headings: ["Starting version", "Increment", "Result"],
 						rows: [
 							["v2.4.7", "patch", "v2.4.8"],
 							["v2.4.7", "minor", "v2.5.0"],
@@ -154,7 +155,7 @@ const calculatingNextVersionRule: Rule = {
 							["v2.4.9", "minor", "v2.5.0"],
 							["v2.4.9", "major", "v3.0.0"],
 						],
-					},
+					}),
 				},
 			],
 		},
