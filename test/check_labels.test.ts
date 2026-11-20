@@ -9,7 +9,6 @@ import {
 	expandText,
 	type Row,
 	rawCellAt,
-	type Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
@@ -32,6 +31,50 @@ test("ExecutableCriterion execution metadata is readonly", () => {
 		criterion.execution.input = "";
 	};
 	void verifyReadonlyTypes;
+});
+
+test("ExecutableCriterion runtime validation checks the complete shape", () => {
+	const criterion: ExecutableCriterion = {
+		template: "Requires {labels}",
+		parameters: { labels: "bug" },
+		execution: { requirement: "one", input: "bug" },
+	};
+
+	assert.equal(executableCriterion(criterion, "Criterion"), criterion);
+	const emptyParametersCriterion = { ...criterion, parameters: {} };
+	assert.equal(
+		executableCriterion(emptyParametersCriterion, "Criterion"),
+		emptyParametersCriterion,
+	);
+
+	const invalidCriteria: unknown[] = [
+		"not executable",
+		null,
+		[],
+		{ parameters: criterion.parameters, execution: criterion.execution },
+		{ ...criterion, template: 1 },
+		{ ...criterion, parameters: null },
+		{ ...criterion, parameters: [] },
+		{ ...criterion, parameters: { labels: 1 } },
+		{ template: criterion.template, execution: criterion.execution },
+		{ template: criterion.template, parameters: criterion.parameters },
+		{ ...criterion, execution: null },
+		{ ...criterion, execution: [] },
+		{
+			...criterion,
+			execution: { requirement: "something-else", input: "bug" },
+		},
+		{
+			...criterion,
+			execution: { requirement: "one", input: 1 },
+		},
+	];
+
+	for (const invalidCriterion of invalidCriteria) {
+		assert.throws(() => executableCriterion(invalidCriterion, "Criterion"), {
+			message: "Expected executable Criterion",
+		});
+	}
 });
 
 test("published label-checker specification is up to date", async () => {
@@ -175,22 +218,39 @@ function executableCriterionFromCell(cell: Cell): ExecutableCriterion {
 }
 
 function executableCriterion(
-	criterion: Text,
+	criterion: unknown,
 	heading: string,
 ): ExecutableCriterion {
 	assert(isExecutableCriterion(criterion), `Expected executable ${heading}`);
 	return criterion;
 }
 
-function isExecutableCriterion(text: Text): text is ExecutableCriterion {
+function isExecutableCriterion(text: unknown): text is ExecutableCriterion {
 	return (
-		typeof text !== "string" &&
-		"execution" in text &&
-		typeof text.execution === "object" &&
-		text.execution !== null &&
-		"requirement" in text.execution &&
-		"input" in text.execution &&
-		typeof text.execution.requirement === "string" &&
+		isRecord(text) &&
+		typeof text.template === "string" &&
+		isStringRecord(text.parameters) &&
+		isRecord(text.execution) &&
+		isRequirement(text.execution.requirement) &&
 		typeof text.execution.input === "string"
+	);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+	return (
+		isRecord(value) &&
+		Object.values(value).every((item) => typeof item === "string")
+	);
+}
+
+function isRequirement(
+	value: unknown,
+): value is ExecutableCriterion["execution"]["requirement"] {
+	return (
+		value === "none" || value === "one" || value === "any" || value === "all"
 	);
 }
