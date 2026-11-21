@@ -7,6 +7,7 @@ import {
 	cellAtAnyOf,
 	type EmptyAssociatedData,
 	type Example,
+	type ExampleFactoryInput,
 	expandText,
 	hasColumn,
 	example as makeExample,
@@ -16,6 +17,7 @@ import {
 	rawCellAtAnyOf,
 	type Specification,
 	type Table,
+	type TableFactoryInput,
 	table,
 	tableAt,
 	textAt,
@@ -399,8 +401,21 @@ test("table preserves row-associated data and defaults omitted data to an empty 
 		associatedData,
 	});
 
-	const verifyDefaultAssociatedDataType = (): void => {
-		table<EmptyAssociatedData>({
+	const mixedRows = table({
+		headings: ["Heading"],
+		rows: [
+			{ values: ["configured"], associatedData },
+			{ values: ["defaulted"] },
+		],
+	});
+
+	const verifyMixedRowTypes = (): void => {
+		// @ts-expect-error The omitted row contains empty data, not the configured row data.
+		const expectedOutcome: typeof associatedData =
+			mixedRows.rows[1].associatedData;
+		void expectedOutcome;
+
+		const invalidTableInput: TableFactoryInput = {
 			headings: ["Heading"],
 			rows: [
 				{
@@ -409,9 +424,17 @@ test("table preserves row-associated data and defaults omitted data to an empty 
 					associatedData: { unexpected: true },
 				},
 			],
-		});
+		};
+		void invalidTableInput;
 	};
-	void verifyDefaultAssociatedDataType;
+	void verifyMixedRowTypes;
+
+	const nullAssociatedData = table({
+		headings: ["Heading"],
+		rows: [{ values: ["null"], associatedData: null }],
+	}).rows[0].associatedData;
+	const verifyNullAssociatedDataType = (value: null): null => value;
+	assert.equal(verifyNullAssociatedDataType(nullAssociatedData), null);
 });
 
 test("example defaults omitted associated data and preserves supplied data", () => {
@@ -429,6 +452,52 @@ test("example defaults omitted associated data and preserves supplied data", () 
 	});
 	assert.deepEqual(configuredExample.associatedData, associatedData);
 	assert.equal(configuredExample.associatedData.testConfiguration, "special");
+
+	const nullExample = makeExample({
+		id: "null-associated-data",
+		content: [{ type: "text", text: "Visible" }],
+		associatedData: null,
+	});
+	const verifyNullExampleAssociatedDataType = (value: null): null => value;
+	assert.equal(
+		verifyNullExampleAssociatedDataType(nullExample.associatedData),
+		null,
+	);
+});
+
+test("example accepts named and explicitly generic inputs with optional associated data", () => {
+	type Configuration = { mode: string };
+	const namedInput: ExampleFactoryInput<EmptyAssociatedData, Configuration> = {
+		id: "named-input",
+		content: [{ type: "text", text: "Visible" }],
+	};
+	const namedResult = makeExample(namedInput);
+	const explicitResult = makeExample<EmptyAssociatedData, Configuration>({
+		id: "explicit-generics",
+		content: [{ type: "text", text: "Visible" }],
+	});
+
+	const verifyOptionalAssociatedDataTypes = (): void => {
+		// @ts-expect-error A named optional input may default to empty associated data.
+		const namedConfiguration: Configuration = namedResult.associatedData;
+		// @ts-expect-error Explicit generic inputs may omit associated data too.
+		const explicitConfiguration: Configuration = explicitResult.associatedData;
+		void namedConfiguration;
+		void explicitConfiguration;
+	};
+	void verifyOptionalAssociatedDataTypes;
+
+	const verifyFactoryInputTypes = (
+		named: Configuration | EmptyAssociatedData,
+		explicit: Configuration | EmptyAssociatedData,
+	): void => {
+		void named;
+		void explicit;
+	};
+	verifyFactoryInputTypes(
+		namedResult.associatedData,
+		explicitResult.associatedData,
+	);
 
 	const verifyDefaultAssociatedDataType = (): void => {
 		makeExample<EmptyAssociatedData, EmptyAssociatedData>({
