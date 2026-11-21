@@ -1,7 +1,6 @@
 // biome-ignore-all lint/security/noSecrets: Prefix criteria are specification text, not secrets.
 
 import type {
-	EmptyAssociatedData,
 	Example,
 	NonEmptyArray,
 	ParameterisedText,
@@ -43,11 +42,11 @@ type UnsupportedTestExecution = {
 
 export type LabelCheckerExample =
 	| Example<LabelCheckerInputsAndExpectedResults, SupportedTestExecution>
-	| Example<EmptyAssociatedData, UnsupportedTestExecution>;
+	| Example<never, UnsupportedTestExecution>;
 
 type LabelCheckerSpecification = Omit<
 	Specification<
-		LabelCheckerInputsAndExpectedResults | EmptyAssociatedData,
+		LabelCheckerInputsAndExpectedResults,
 		SupportedTestExecution | UnsupportedTestExecution
 	>,
 	"rules"
@@ -55,7 +54,7 @@ type LabelCheckerSpecification = Omit<
 	rules: Array<
 		Omit<
 			Rule<
-				LabelCheckerInputsAndExpectedResults | EmptyAssociatedData,
+				LabelCheckerInputsAndExpectedResults,
 				SupportedTestExecution | UnsupportedTestExecution
 			>,
 			"examples"
@@ -608,7 +607,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			definition:
 				"The label checker does not support prefix checking with `all_of`.",
 			examples: [
-				example<EmptyAssociatedData, UnsupportedTestExecution>({
+				example<never, UnsupportedTestExecution>({
 					id: "all_of_type_prefix",
 					associatedData: {
 						kind: "unsupported",
@@ -632,7 +631,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 		{
 			definition: "Each prefix check can specify only one prefix.",
 			examples: [
-				example<EmptyAssociatedData, UnsupportedTestExecution>({
+				example<never, UnsupportedTestExecution>({
 					id: "multiple_prefixes_per_check",
 					associatedData: {
 						kind: "unsupported",

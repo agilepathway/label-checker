@@ -5,7 +5,6 @@ import {
 	assertUniqueExampleIds,
 	cellAt,
 	cellAtAnyOf,
-	type EmptyAssociatedData,
 	type Example,
 	type ExampleFactoryInput,
 	expandText,
@@ -152,7 +151,7 @@ test("table pairs values with expanded, unique headings", () => {
 					{ heading, value },
 					{ heading: "Second", value: "other" },
 				],
-				associatedData: {},
+				associatedData: undefined,
 			},
 		],
 	});
@@ -234,7 +233,7 @@ test("Table requires factory construction and is readonly", () => {
 		// @ts-expect-error Validated table properties are readonly.
 		validated.rows = [];
 		// @ts-expect-error Validated row collections are readonly.
-		validated.rows.push({ cells: [], associatedData: {} });
+		validated.rows.push({ cells: [], associatedData: undefined });
 		// @ts-expect-error Validated cell properties are readonly.
 		validated.rows[0].cells[0].value = "changed";
 	};
@@ -379,13 +378,13 @@ test("tableAt returns the table payload at the requested index", () => {
 		rows: [
 			{
 				cells: [{ heading: "Heading", value: "value" }],
-				associatedData: {},
+				associatedData: undefined,
 			},
 		],
 	});
 });
 
-test("table preserves row-associated data and defaults omitted data to an empty object", () => {
+test("table preserves row-associated data and leaves omitted data undefined", () => {
 	const associatedData = { expectedOutcome: "success" };
 	const result = table({
 		headings: ["Heading"],
@@ -394,7 +393,7 @@ test("table preserves row-associated data and defaults omitted data to an empty 
 
 	assert.deepEqual(
 		result.rows.map((row) => row.associatedData),
-		[associatedData, {}],
+		[associatedData, undefined],
 	);
 	assert.deepEqual(result.rows[0], {
 		cells: [{ heading: "Heading", value: "first" }],
@@ -410,7 +409,7 @@ test("table preserves row-associated data and defaults omitted data to an empty 
 	});
 
 	const verifyMixedRowTypes = (): void => {
-		// @ts-expect-error The omitted row contains empty data, not the configured row data.
+		// @ts-expect-error Mixed rows may omit associated data.
 		const expectedOutcome: typeof associatedData =
 			mixedRows.rows[1].associatedData;
 		void expectedOutcome;
@@ -420,7 +419,7 @@ test("table preserves row-associated data and defaults omitted data to an empty 
 			rows: [
 				{
 					values: ["value"],
-					// @ts-expect-error The default associated-data type rejects custom properties.
+					// @ts-expect-error The default generic rejects consumer-specific associated data.
 					associatedData: { unexpected: true },
 				},
 			],
@@ -429,20 +428,56 @@ test("table preserves row-associated data and defaults omitted data to an empty 
 	};
 	void verifyMixedRowTypes;
 
-	const nullAssociatedData = table({
+	const namedInput: TableFactoryInput<{ outcome: string }> = {
+		headings: ["Heading"],
+		rows: [
+			{ values: ["configured"], associatedData: { outcome: "success" } },
+			{ values: ["omitted"] },
+		],
+	};
+	const namedTable = table(namedInput);
+	assert.equal(namedTable.rows[1].associatedData, undefined);
+	const explicitTable = table<{ outcome: string }>({
+		headings: ["Heading"],
+		rows: [
+			{ values: ["configured"], associatedData: { outcome: "success" } },
+			{ values: ["explicitly absent"], associatedData: undefined },
+		],
+	});
+
+	const verifyOptionalRowTypes = (): void => {
+		// @ts-expect-error Named inputs can omit the metadata.
+		const namedOutcome: string = namedTable.rows[0].associatedData.outcome;
+		const namedMissingOutcome: string =
+			// @ts-expect-error Named inputs can omit metadata on individual rows.
+			namedTable.rows[1].associatedData.outcome;
+		const explicitOutcome: string =
+			// @ts-expect-error Explicit generic inputs can omit metadata too.
+			explicitTable.rows[1].associatedData.outcome;
+		const checkedOutcome = namedTable.rows[0].associatedData?.outcome;
+		// biome-ignore lint/style/noNonNullAssertion: This case verifies the documented consumer assertion.
+		const assertedOutcome = explicitTable.rows[0].associatedData!.outcome;
+		void namedOutcome;
+		void namedMissingOutcome;
+		void explicitOutcome;
+		void checkedOutcome;
+		void assertedOutcome;
+	};
+	void verifyOptionalRowTypes;
+
+	const nullAssociatedData: null | undefined = table({
 		headings: ["Heading"],
 		rows: [{ values: ["null"], associatedData: null }],
 	}).rows[0].associatedData;
-	const verifyNullAssociatedDataType = (value: null): null => value;
-	assert.equal(verifyNullAssociatedDataType(nullAssociatedData), null);
+	assert.equal(nullAssociatedData, null);
 });
 
-test("example defaults omitted associated data and preserves supplied data", () => {
+test("example preserves supplied associated data and leaves omitted data undefined", () => {
 	const defaultExample = makeExample({
 		id: "default-associated-data",
 		content: [{ type: "text", text: "Visible" }],
 	});
-	assert.deepEqual(defaultExample.associatedData, {});
+	assert.equal(defaultExample.associatedData, undefined);
 
 	const associatedData = { testConfiguration: "special" };
 	const configuredExample = makeExample({
@@ -458,27 +493,26 @@ test("example defaults omitted associated data and preserves supplied data", () 
 		content: [{ type: "text", text: "Visible" }],
 		associatedData: null,
 	});
-	const verifyNullExampleAssociatedDataType = (value: null): null => value;
-	assert.equal(
-		verifyNullExampleAssociatedDataType(nullExample.associatedData),
-		null,
-	);
+	const nullExampleAssociatedData: null | undefined =
+		nullExample.associatedData;
+	assert.equal(nullExample.associatedData, null);
+	assert.equal(nullExampleAssociatedData, null);
 });
 
 test("example accepts named and explicitly generic inputs with optional associated data", () => {
 	type Configuration = { mode: string };
-	const namedInput: ExampleFactoryInput<EmptyAssociatedData, Configuration> = {
+	const namedInput: ExampleFactoryInput<never, Configuration> = {
 		id: "named-input",
 		content: [{ type: "text", text: "Visible" }],
 	};
 	const namedResult = makeExample(namedInput);
-	const explicitResult = makeExample<EmptyAssociatedData, Configuration>({
+	const explicitResult = makeExample<never, Configuration>({
 		id: "explicit-generics",
 		content: [{ type: "text", text: "Visible" }],
 	});
 
 	const verifyOptionalAssociatedDataTypes = (): void => {
-		// @ts-expect-error A named optional input may default to empty associated data.
+		// @ts-expect-error The named input may omit its associated data.
 		const namedConfiguration: Configuration = namedResult.associatedData;
 		// @ts-expect-error Explicit generic inputs may omit associated data too.
 		const explicitConfiguration: Configuration = explicitResult.associatedData;
@@ -488,8 +522,8 @@ test("example accepts named and explicitly generic inputs with optional associat
 	void verifyOptionalAssociatedDataTypes;
 
 	const verifyFactoryInputTypes = (
-		named: Configuration | EmptyAssociatedData,
-		explicit: Configuration | EmptyAssociatedData,
+		named: Configuration | undefined,
+		explicit: Configuration | undefined,
 	): void => {
 		void named;
 		void explicit;
@@ -500,10 +534,10 @@ test("example accepts named and explicitly generic inputs with optional associat
 	);
 
 	const verifyDefaultAssociatedDataType = (): void => {
-		makeExample<EmptyAssociatedData, EmptyAssociatedData>({
+		makeExample<never, never>({
 			id: "invalid-associated-data",
 			content: [{ type: "text", text: "Visible" }],
-			// @ts-expect-error The default associated-data type rejects custom properties.
+			// @ts-expect-error The default generic rejects consumer-specific associated data.
 			associatedData: { unexpected: true },
 		});
 	};
@@ -515,7 +549,7 @@ test("tableAt returns a table at the start of an example", () => {
 		rows: [
 			{
 				cells: [{ heading: "Heading", value: "value" }],
-				associatedData: {},
+				associatedData: undefined,
 			},
 		],
 	});
@@ -534,7 +568,7 @@ test("tableAt returns parameterised headers and cells", () => {
 						value: { template: "Value {name}", parameters: { name: "two" } },
 					},
 				],
-				associatedData: {},
+				associatedData: undefined,
 			},
 		],
 	});

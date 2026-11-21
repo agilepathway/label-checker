@@ -9,19 +9,17 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type ReadonlyNonEmptyArray<T> = readonly [T, ...T[]];
 
-export type EmptyAssociatedData = Readonly<Record<string, never>>;
-
 export type Cell = {
 	readonly heading: Text;
 	readonly value: Text;
 };
 
-export type Row<TAssociatedData = EmptyAssociatedData> = {
+export type Row<TAssociatedData = never> = {
 	readonly cells: readonly Cell[];
-	readonly associatedData: TAssociatedData;
+	readonly associatedData: TAssociatedData | undefined;
 };
 
-export type Table<TAssociatedData = EmptyAssociatedData> = {
+export type Table<TAssociatedData = never> = {
 	readonly caption?: Text;
 	readonly rows: ReadonlyNonEmptyArray<Row<TAssociatedData>>;
 	readonly [validatedTable]: true;
@@ -29,93 +27,42 @@ export type Table<TAssociatedData = EmptyAssociatedData> = {
 
 declare const validatedTable: unique symbol;
 
-export type ContentItem<TAssociatedData = EmptyAssociatedData> =
+export type ContentItem<TAssociatedData = never> =
 	| { type: "text"; text: Text }
 	| { type: "table"; table: Table<TAssociatedData> };
 
-export type TableFactoryInput<TAssociatedData = EmptyAssociatedData> = {
+export type TableFactoryInput<TAssociatedData = never> = {
 	caption?: Text;
 	headings: Text[];
 	rows: NonEmptyArray<{
 		values: Text[];
-		associatedData?: TAssociatedData;
+		associatedData?: TAssociatedData | undefined;
 	}>;
 };
 
-type TableFactoryRow = {
-	values: Text[];
-	associatedData?: unknown;
-};
-
-type AssociatedDataFromRow<TRow> = TRow extends {
-	associatedData?: infer TAssociatedData;
-}
-	?
-			| Exclude<TAssociatedData, undefined>
-			| (undefined extends TAssociatedData ? EmptyAssociatedData : never)
-	: EmptyAssociatedData;
-
-type AssociatedDataFromRows<TRows extends readonly TableFactoryRow[]> =
-	AssociatedDataFromRow<TRows[number]>;
-
-export type Example<
-	TRowAssociatedData = EmptyAssociatedData,
-	TAssociatedData = EmptyAssociatedData,
-> = {
+export type Example<TRowAssociatedData = never, TAssociatedData = never> = {
 	id: string;
 	content: NonEmptyArray<ContentItem<TRowAssociatedData>>;
-	associatedData: TAssociatedData;
+	associatedData: TAssociatedData | undefined;
 };
 
 export type ExampleFactoryInput<
-	TRowAssociatedData = EmptyAssociatedData,
-	TAssociatedData = EmptyAssociatedData,
+	TRowAssociatedData = never,
+	TAssociatedData = never,
 > = {
 	id: string;
 	content: NonEmptyArray<ContentItem<TRowAssociatedData>>;
-	associatedData?: TAssociatedData;
+	associatedData?: TAssociatedData | undefined;
 };
 
-type AssociatedDataFromExampleInput<TInput> = TInput extends {
-	associatedData: infer TAssociatedData;
-}
-	? TAssociatedData
-	: TInput extends { associatedData?: infer TAssociatedData }
-		? Exclude<TAssociatedData, undefined> | EmptyAssociatedData
-		: EmptyAssociatedData;
-
-type RowAssociatedDataFromContent<TContent> = TContent extends {
-	type: "table";
-	table: Table<infer TAssociatedData>;
-}
-	? TAssociatedData
-	: never;
-
-type RowAssociatedDataFromExampleInput<TInput> = TInput extends {
-	content: readonly (infer TContent)[];
-}
-	? [RowAssociatedDataFromContent<TContent>] extends [never]
-		? EmptyAssociatedData
-		: RowAssociatedDataFromContent<TContent>
-	: EmptyAssociatedData;
-
-type ExampleFactoryInputBase = {
-	id: string;
-	content: NonEmptyArray<ContentItem<unknown>>;
-	associatedData?: unknown;
-};
-
-export type Rule<
-	TRowAssociatedData = EmptyAssociatedData,
-	TExampleAssociatedData = EmptyAssociatedData,
-> = {
+export type Rule<TRowAssociatedData = never, TExampleAssociatedData = never> = {
 	definition: string;
 	examples: Example<TRowAssociatedData, TExampleAssociatedData>[];
 };
 
 export type Specification<
-	TRowAssociatedData = EmptyAssociatedData,
-	TExampleAssociatedData = EmptyAssociatedData,
+	TRowAssociatedData = never,
+	TExampleAssociatedData = never,
 > = {
 	title: string;
 	rules: Rule<TRowAssociatedData, TExampleAssociatedData>[];
@@ -137,15 +84,13 @@ export function expandText(text: Text): string {
 	});
 }
 
-export function table<
-	const TRows extends ReadonlyNonEmptyArray<TableFactoryRow>,
->({
+export function table<TAssociatedData = never>({
 	caption,
 	headings,
 	rows,
-}: Omit<TableFactoryInput<unknown>, "rows"> & {
-	rows: TRows;
-}): Table<AssociatedDataFromRows<TRows>> {
+}: TableFactoryInput<TAssociatedData>): Table<
+	Exclude<TAssociatedData, undefined>
+> {
 	if (headings.length === 0) {
 		throw new Error("A table must contain at least one heading.");
 	}
@@ -175,11 +120,7 @@ export function table<
 
 		return {
 			cells,
-			associatedData:
-				associatedData === undefined
-					? // biome-ignore lint/nursery/noUnsafeTypeAssertion: Omitted associated data is the empty default for the generic model.
-						({} as AssociatedDataFromRows<TRows>)
-					: associatedData,
+			associatedData,
 		};
 	});
 
@@ -197,7 +138,7 @@ export function table<
 		rows: [firstRow, ...remainingRows],
 	};
 	// biome-ignore lint/nursery/noUnsafeTypeAssertion: The private brand is compile-time-only and is created only after validation.
-	return result as unknown as Table<AssociatedDataFromRows<TRows>>;
+	return result as unknown as Table<Exclude<TAssociatedData, undefined>>;
 }
 
 export function hasColumn(table: Table<unknown>, heading: string): boolean {
@@ -242,42 +183,21 @@ export function cellAtAnyOf(row: Row<unknown>, ...headings: string[]): string {
 	return expandText(rawCellAtAnyOf(row, ...headings));
 }
 
-export function example<
-	TRowAssociatedData = EmptyAssociatedData,
-	TAssociatedData = EmptyAssociatedData,
->(
-	input: ExampleFactoryInput<TRowAssociatedData, TAssociatedData> & {
-		associatedData: TAssociatedData;
-	},
-): Example<TRowAssociatedData, TAssociatedData>;
-export function example<const TInput extends ExampleFactoryInputBase>(
-	input: TInput,
-): Example<
-	RowAssociatedDataFromExampleInput<TInput>,
-	AssociatedDataFromExampleInput<TInput>
->;
-export function example<TRowAssociatedData = EmptyAssociatedData>(
-	input: ExampleFactoryInput<TRowAssociatedData, EmptyAssociatedData>,
-): Example<TRowAssociatedData, EmptyAssociatedData>;
-export function example<
-	TRowAssociatedData = EmptyAssociatedData,
-	TAssociatedData = EmptyAssociatedData,
-	TInput extends ExampleFactoryInput<
-		TRowAssociatedData,
-		TAssociatedData
-	> = ExampleFactoryInput<TRowAssociatedData, TAssociatedData>,
->(
-	input: TInput,
-): Example<TRowAssociatedData, AssociatedDataFromExampleInput<TInput>>;
-export function example<TInput extends ExampleFactoryInputBase>({
+export function example<TRowAssociatedData = never, TAssociatedData = never>({
 	id,
 	content,
 	associatedData,
-}: TInput): Example<unknown, unknown> {
+}: ExampleFactoryInput<TRowAssociatedData, TAssociatedData>): Example<
+	TRowAssociatedData,
+	Exclude<TAssociatedData, undefined>
+> {
 	return {
 		id,
 		content,
-		associatedData: associatedData === undefined ? {} : associatedData,
+		// biome-ignore lint/nursery/noUnsafeTypeAssertion: Undefined is normalized out of the inferred associated-data generic.
+		associatedData: associatedData as
+			| Exclude<TAssociatedData, undefined>
+			| undefined,
 	};
 }
 

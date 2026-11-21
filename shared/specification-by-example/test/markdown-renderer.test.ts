@@ -3,7 +3,6 @@ import { test } from "node:test";
 import { renderSpecification } from "../src/markdown-renderer.ts";
 import type {
 	ContentItem,
-	EmptyAssociatedData,
 	Specification,
 } from "../src/specification-by-example.ts";
 import { example, table } from "../src/specification-by-example.ts";
@@ -54,8 +53,8 @@ test("renderSpecification expands parameterised text", () => {
 
 test("renderSpecification preserves ordered content, tables, rules, and examples", () => {
 	const specification: Specification<
-		EmptyAssociatedData | { hiddenRowMetadata: string },
-		EmptyAssociatedData | { hiddenExampleMetadata: string }
+		{ hiddenRowMetadata: string },
+		{ hiddenExampleMetadata: string }
 	> = {
 		title: "A specification",
 		rules: [
