@@ -28,7 +28,7 @@ export type ContentItem =
 	| { type: "text"; text: Text }
 	| { type: "table"; table: Table };
 
-export type TableInput = {
+export type TableFactoryInput = {
 	caption?: Text;
 	headings: Text[];
 	rows: NonEmptyArray<Text[]>;
@@ -65,7 +65,7 @@ export function expandText(text: Text): string {
 	});
 }
 
-export function table({ caption, headings, rows }: TableInput): Table {
+export function table({ caption, headings, rows }: TableFactoryInput): Table {
 	if (headings.length === 0) {
 		throw new Error("A table must contain at least one heading.");
 	}
