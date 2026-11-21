@@ -155,38 +155,23 @@ async function verifySupportedExample(
 		{ testExecution: { kind: "supported" } }
 	>,
 ): Promise<void> {
-	const tableContent = example.content.find((item) => item.type === "table");
-	assert(tableContent);
-	const table = tableContent.table;
-	assert.equal(
-		example.inputsAndExpectedResults.length,
-		table.rows.length,
-		"Inputs and expected results must correspond to every table row",
-	);
-
-	for (const [index, row] of table.rows.entries()) {
+	for (const [index, { row, expected }] of example.supportedRows.entries()) {
 		const labelsText = cellAt(row, "Labels on the pull request");
 		const labels = parseLabels(labelsText);
 		const requirements: Requirements = {};
 		const criteria = row
 			.filter((cell) => /^Criterion(?: \d+)?$/.test(expandText(cell.heading)))
 			.map(executableCriterionFromCell);
-
-		for (const criterion of criteria) {
+		for (const criterion of criteria)
 			requirements[criterion.execution.requirement] = criterion.execution.input;
-		}
-
 		const outcome = cellAtAnyOf(row, "Outcome", "Overall outcome");
 		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
-		const expected = example.inputsAndExpectedResults[index];
-
 		const result = await runLabelCheck({
 			pullRequestNumber: expected.pullRequestNumber ?? index + 1,
 			labels,
 			requirements,
 			prefixMode: example.testExecution.prefixMode ?? false,
 		});
-
 		assert.equal(result.status, expectedOutcome.status);
 		assert.equal(result.stdout, expected.stdout);
 		assert.equal(result.stderr, expected.stderr);
