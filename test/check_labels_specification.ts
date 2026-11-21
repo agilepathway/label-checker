@@ -2,9 +2,13 @@
 
 import type {
 	Example,
+	NonEmptyArray,
 	ParameterisedText,
+	Row,
 	Rule,
 	Specification,
+	Table,
+	Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { table } from "../shared/specification-by-example/src/specification-by-example.ts";
 
@@ -26,11 +30,8 @@ export type ExecutableCriterion = ParameterisedText & {
 export type LabelCheckerExample = Example &
 	(
 		| {
-				testExecution: {
-					kind: "supported";
-					prefixMode?: boolean;
-				};
-				inputsAndExpectedResults: LabelCheckerInputsAndExpectedResults[];
+				testExecution: SupportedTestExecution;
+				supportedRows: SupportedExampleRow[];
 		  }
 		| {
 				testExecution: {
@@ -38,13 +39,69 @@ export type LabelCheckerExample = Example &
 					prefixMode?: boolean;
 					expectedError: string;
 				};
-				inputsAndExpectedResults?: never;
+				supportedRows?: never;
 		  }
 	);
 
 type LabelCheckerSpecification = Omit<Specification, "rules"> & {
 	rules: Array<Omit<Rule, "examples"> & { examples: LabelCheckerExample[] }>;
 };
+
+type SupportedTestExecution = {
+	kind: "supported";
+	prefixMode?: boolean;
+};
+
+type SupportedExampleRow = {
+	readonly row: Row;
+	readonly expected: LabelCheckerInputsAndExpectedResults;
+};
+
+type SupportedExampleInputRow = {
+	readonly values: readonly Text[];
+	readonly expected: LabelCheckerInputsAndExpectedResults;
+};
+
+function supportedExample({
+	testExecution,
+	caption,
+	headings,
+	rows,
+}: {
+	testExecution: SupportedTestExecution;
+	caption?: Text;
+	headings: Text[];
+	rows: NonEmptyArray<SupportedExampleInputRow>;
+}): {
+	testExecution: SupportedTestExecution;
+	supportedRows: SupportedExampleRow[];
+	content: [{ type: "table"; table: Table }];
+} {
+	const [firstRow, ...remainingRows] = rows;
+	if (firstRow === undefined) {
+		throw new Error("A supported example must have at least one row.");
+	}
+
+	const specificationTable = table({
+		...(caption === undefined ? {} : { caption }),
+		headings,
+		rows: [
+			[...firstRow.values],
+			...remainingRows.map(({ values }) => [...values]),
+		],
+	});
+	const supportedRows = rows.map((supportedRow, index) => {
+		const row = specificationTable.rows[index];
+		if (row === undefined)
+			throw new Error(`Missing constructed table row ${index + 1}.`);
+		return { row, expected: supportedRow.expected };
+	});
+	return {
+		testExecution,
+		supportedRows,
+		content: [{ type: "table", table: specificationTable }],
+	};
+}
 
 function criterion(
 	template: string,
@@ -170,49 +227,46 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "none_of_major_minor_patch",
-					testExecution: {
-						kind: "supported",
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-							stderr: "",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
 						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								headings: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
-								],
-								rows: [
-									[noneOfCriterion, "(none)", "Success"],
-									[noneOfCriterion, "minor", "Failure"],
-									[noneOfCriterion, "minor, patch", "Failure"],
-									[noneOfCriterion, "major, minor, patch", "Failure"],
-								],
-							}),
-						},
-					],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
+						rows: [
+							{
+								values: [noneOfCriterion, "(none)", "Success"],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [noneOfCriterion, "minor", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+								},
+							},
+							{
+								values: [noneOfCriterion, "minor, patch", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+								},
+							},
+							{
+								values: [noneOfCriterion, "major, minor, patch", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -222,49 +276,46 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "one_of_major_minor_patch",
-					testExecution: {
-						kind: "supported",
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
 						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-							stderr: "",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								headings: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
-								],
-								rows: [
-									[oneOfCriterion, "(none)", "Failure"],
-									[oneOfCriterion, "minor", "Success"],
-									[oneOfCriterion, "minor, patch", "Failure"],
-									[oneOfCriterion, "major, minor, patch", "Failure"],
-								],
-							}),
-						},
-					],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
+						rows: [
+							{
+								values: [oneOfCriterion, "(none)", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+								},
+							},
+							{
+								values: [oneOfCriterion, "minor", "Success"],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [oneOfCriterion, "minor, patch", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+								},
+							},
+							{
+								values: [oneOfCriterion, "major, minor, patch", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -274,49 +325,46 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "all_of_major_minor_patch",
-					testExecution: {
-						kind: "supported",
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
 						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-							stderr: "",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								headings: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
-								],
-								rows: [
-									[allOfCriterion, "(none)", "Failure"],
-									[allOfCriterion, "minor", "Failure"],
-									[allOfCriterion, "minor, patch", "Failure"],
-									[allOfCriterion, "major, minor, patch", "Success"],
-								],
-							}),
-						},
-					],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
+						rows: [
+							{
+								values: [allOfCriterion, "(none)", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
+								},
+							},
+							{
+								values: [allOfCriterion, "minor", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+								},
+							},
+							{
+								values: [allOfCriterion, "minor, patch", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+								},
+							},
+							{
+								values: [allOfCriterion, "major, minor, patch", "Success"],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+									stderr: "",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -326,49 +374,46 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "any_of_major_minor_patch",
-					testExecution: {
-						kind: "supported",
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
 						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-							stderr: "",
-						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
-							stderr: "",
-						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-							stderr: "",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								headings: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
-								],
-								rows: [
-									[anyOfCriterion, "(none)", "Failure"],
-									[anyOfCriterion, "minor", "Success"],
-									[anyOfCriterion, "minor, patch", "Success"],
-									[anyOfCriterion, "major, minor, patch", "Success"],
-								],
-							}),
-						},
-					],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
+						rows: [
+							{
+								values: [anyOfCriterion, "(none)", "Failure"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
+								},
+							},
+							{
+								values: [anyOfCriterion, "minor", "Success"],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [anyOfCriterion, "minor, patch", "Success"],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [anyOfCriterion, "major, minor, patch", "Success"],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+									stderr: "",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -378,179 +423,174 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "none_of_type_prefix",
-					testExecution: {
-						kind: "supported",
-						prefixMode: true,
-					},
-					inputsAndExpectedResults: [
-						{
-							pullRequestNumber: 1,
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
-							stderr: "",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
+							prefixMode: true,
 						},
-						{
-							pullRequestNumber: 5,
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
-						},
-						{
-							pullRequestNumber: 6,
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
-						},
-						{
-							pullRequestNumber: 7,
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								caption: "**`none_of`**",
-								headings: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
+						caption: "**`none_of`**",
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
+						rows: [
+							{
+								values: [noneOfTypePrefixCriterion, "(none)", "Success"],
+								expected: {
+									pullRequestNumber: 1,
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [noneOfTypePrefixCriterion, "type:fix", "Failure"],
+								expected: {
+									pullRequestNumber: 5,
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
+								},
+							},
+							{
+								values: [
+									noneOfTypePrefixCriterion,
+									"type:fix, type:feature",
+									"Failure",
 								],
-								rows: [
-									[noneOfTypePrefixCriterion, "(none)", "Success"],
-									[noneOfTypePrefixCriterion, "type:fix", "Failure"],
-									[
-										noneOfTypePrefixCriterion,
-										"type:fix, type:feature",
-										"Failure",
-									],
-									[
-										noneOfTypePrefixCriterion,
-										"type:fix, type:feature, type:documentation",
-										"Failure",
-									],
+								expected: {
+									pullRequestNumber: 6,
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
+								},
+							},
+							{
+								values: [
+									noneOfTypePrefixCriterion,
+									"type:fix, type:feature, type:documentation",
+									"Failure",
 								],
-							}),
-						},
-					],
+								expected: {
+									pullRequestNumber: 7,
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+								},
+							},
+						],
+					}),
 				},
 				{
 					id: "one_of_type_prefix",
-					testExecution: {
-						kind: "supported",
-						prefixMode: true,
-					},
-					inputsAndExpectedResults: [
-						{
-							pullRequestNumber: 1,
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
+							prefixMode: true,
 						},
-						{
-							pullRequestNumber: 5,
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
-							stderr: "",
-						},
-						{
-							pullRequestNumber: 6,
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
-						},
-						{
-							pullRequestNumber: 7,
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								caption: "**`one_of`**",
-								headings: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
+						caption: "**`one_of`**",
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
+						rows: [
+							{
+								values: [oneOfTypePrefixCriterion, "(none)", "Failure"],
+								expected: {
+									pullRequestNumber: 1,
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
+								},
+							},
+							{
+								values: [oneOfTypePrefixCriterion, "type:fix", "Success"],
+								expected: {
+									pullRequestNumber: 5,
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [
+									oneOfTypePrefixCriterion,
+									"type:fix, type:feature",
+									"Failure",
 								],
-								rows: [
-									[oneOfTypePrefixCriterion, "(none)", "Failure"],
-									[oneOfTypePrefixCriterion, "type:fix", "Success"],
-									[
-										oneOfTypePrefixCriterion,
-										"type:fix, type:feature",
-										"Failure",
-									],
-									[
-										oneOfTypePrefixCriterion,
-										"type:fix, type:feature, type:documentation",
-										"Failure",
-									],
+								expected: {
+									pullRequestNumber: 6,
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
+								},
+							},
+							{
+								values: [
+									oneOfTypePrefixCriterion,
+									"type:fix, type:feature, type:documentation",
+									"Failure",
 								],
-							}),
-						},
-					],
+								expected: {
+									pullRequestNumber: 7,
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+								},
+							},
+						],
+					}),
 				},
 				{
 					id: "any_of_type_prefix",
-					testExecution: {
-						kind: "supported",
-						prefixMode: true,
-					},
-					inputsAndExpectedResults: [
-						{
-							pullRequestNumber: 1,
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
+							prefixMode: true,
 						},
-						{
-							pullRequestNumber: 5,
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
-							stderr: "",
-						},
-						{
-							pullRequestNumber: 6,
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
-							stderr: "",
-						},
-						{
-							pullRequestNumber: 7,
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
-							stderr: "",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								caption: "**`any_of`**",
-								headings: [
-									"Criterion",
-									"Labels on the pull request",
-									"Outcome",
+						caption: "**`any_of`**",
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
+						rows: [
+							{
+								values: [anyOfPrefixCriterion, "(none)", "Failure"],
+								expected: {
+									pullRequestNumber: 1,
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
+								},
+							},
+							{
+								values: [anyOfPrefixCriterion, "type:fix", "Success"],
+								expected: {
+									pullRequestNumber: 5,
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [
+									anyOfPrefixCriterion,
+									"type:fix, type:feature",
+									"Success",
 								],
-								rows: [
-									[anyOfPrefixCriterion, "(none)", "Failure"],
-									[anyOfPrefixCriterion, "type:fix", "Success"],
-									[anyOfPrefixCriterion, "type:fix, type:feature", "Success"],
-									[
-										anyOfPrefixCriterion,
-										"type:fix, type:feature, type:documentation",
-										"Success",
-									],
+								expected: {
+									pullRequestNumber: 6,
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
+									stderr: "",
+								},
+							},
+							{
+								values: [
+									anyOfPrefixCriterion,
+									"type:fix, type:feature, type:documentation",
+									"Success",
 								],
-							}),
-						},
-					],
+								expected: {
+									pullRequestNumber: 7,
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
+									stderr: "",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -612,43 +652,38 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "two_prefix_checks_combined",
-					testExecution: {
-						kind: "supported",
-						prefixMode: true,
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
-							stderr:
-								"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
+							prefixMode: true,
 						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								headings: [
-									"Criterion 1",
-									"Criterion 2",
-									"Labels on the pull request",
-									"Criterion 1 outcome",
-									"Criterion 2 outcome",
-									"Overall outcome",
+						headings: [
+							"Criterion 1",
+							"Criterion 2",
+							"Labels on the pull request",
+							"Criterion 1 outcome",
+							"Criterion 2 outcome",
+							"Overall outcome",
+						],
+						rows: [
+							{
+								values: [
+									noneOfTypePrefixCriterion,
+									oneOfTypePrefixCriterion,
+									"(none)",
+									"Success",
+									"Failure",
+									"Failure",
 								],
-								rows: [
-									[
-										noneOfTypePrefixCriterion,
-										oneOfTypePrefixCriterion,
-										"(none)",
-										"Success",
-										"Failure",
-										"Failure",
-									],
-								],
-							}),
-						},
-					],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
+									stderr:
+										"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -657,276 +692,279 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "two_checks_combined",
-					testExecution: {
-						kind: "supported",
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
 						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-							stderr:
-								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								caption: "2 checks combined:",
-								headings: [
-									"Criterion 1",
-									"Criterion 2",
-									"Labels on the pull request",
-									"Criterion 1 outcome",
-									"Criterion 2 outcome",
-									"Overall outcome",
+						caption: "2 checks combined:",
+						headings: [
+							"Criterion 1",
+							"Criterion 2",
+							"Labels on the pull request",
+							"Criterion 1 outcome",
+							"Criterion 2 outcome",
+							"Overall outcome",
+						],
+						rows: [
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									"(none)",
+									"Success",
+									"Failure",
+									combinedFailureOutcome,
 								],
-								rows: [
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										"(none)",
-										"Success",
-										"Failure",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										"minor",
-										"Failure",
-										"Success",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										"minor, patch",
-										"Failure",
-										"Failure",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										"major, minor, patch",
-										"Failure",
-										"Failure",
-										combinedFailureOutcome,
-									],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									"minor",
+									"Failure",
+									"Success",
+									combinedFailureOutcome,
 								],
-							}),
-						},
-					],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+									stderr:
+										"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									"minor, patch",
+									"Failure",
+									"Failure",
+									combinedFailureOutcome,
+								],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									"major, minor, patch",
+									"Failure",
+									"Failure",
+									combinedFailureOutcome,
+								],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+								},
+							},
+						],
+					}),
 				},
 				{
 					id: "three_checks_combined",
-					testExecution: {
-						kind: "supported",
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
 						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-							stderr:
-								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-						},
-						{
-							stdout: "Checking GitHub labels ...\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								caption: "3 checks combined:",
-								headings: [
-									"Criterion 1",
-									"Criterion 2",
-									"Criterion 3",
-									"Labels on the pull request",
-									"Criterion 1 outcome",
-									"Criterion 2 outcome",
-									"Criterion 3 outcome",
-									"Overall outcome",
+						caption: "3 checks combined:",
+						headings: [
+							"Criterion 1",
+							"Criterion 2",
+							"Criterion 3",
+							"Labels on the pull request",
+							"Criterion 1 outcome",
+							"Criterion 2 outcome",
+							"Criterion 3 outcome",
+							"Overall outcome",
+						],
+						rows: [
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									"(none)",
+									"Success",
+									"Failure",
+									"Failure",
+									combinedFailureOutcome,
 								],
-								rows: [
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										"(none)",
-										"Success",
-										"Failure",
-										"Failure",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										"minor",
-										"Failure",
-										"Success",
-										"Failure",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										"minor, patch",
-										"Failure",
-										"Failure",
-										"Failure",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										"major, minor, patch",
-										"Failure",
-										"Failure",
-										"Success",
-										combinedFailureOutcome,
-									],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									"minor",
+									"Failure",
+									"Success",
+									"Failure",
+									combinedFailureOutcome,
 								],
-							}),
-						},
-					],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+									stderr:
+										"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									"minor, patch",
+									"Failure",
+									"Failure",
+									"Failure",
+									combinedFailureOutcome,
+								],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									"major, minor, patch",
+									"Failure",
+									"Failure",
+									"Success",
+									combinedFailureOutcome,
+								],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+								},
+							},
+						],
+					}),
 				},
 				{
 					id: "four_checks_combined",
-					testExecution: {
-						kind: "supported",
-					},
-					inputsAndExpectedResults: [
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
+					...supportedExample({
+						testExecution: {
+							kind: "supported",
 						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
-							stderr:
-								"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
-						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
-						},
-						{
-							stdout:
-								"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
-							stderr:
-								"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
-						},
-					],
-					content: [
-						{
-							type: "table",
-							table: table({
-								caption: "4 checks combined:",
-								headings: [
-									"Criterion 1",
-									"Criterion 2",
-									"Criterion 3",
-									"Criterion 4",
-									"Labels on the pull request",
-									"Criterion 1 outcome",
-									"Criterion 2 outcome",
-									"Criterion 3 outcome",
-									"Criterion 4 outcome",
-									"Overall outcome",
+						caption: "4 checks combined:",
+						headings: [
+							"Criterion 1",
+							"Criterion 2",
+							"Criterion 3",
+							"Criterion 4",
+							"Labels on the pull request",
+							"Criterion 1 outcome",
+							"Criterion 2 outcome",
+							"Criterion 3 outcome",
+							"Criterion 4 outcome",
+							"Overall outcome",
+						],
+						rows: [
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									anyOfCriterion,
+									"(none)",
+									"Success",
+									"Failure",
+									"Failure",
+									"Failure",
+									combinedFailureOutcome,
 								],
-								rows: [
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										anyOfCriterion,
-										"(none)",
-										"Success",
-										"Failure",
-										"Failure",
-										"Failure",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										anyOfCriterion,
-										"minor",
-										"Failure",
-										"Success",
-										"Failure",
-										"Success",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										anyOfCriterion,
-										"minor, patch",
-										"Failure",
-										"Failure",
-										"Failure",
-										"Success",
-										combinedFailureOutcome,
-									],
-									[
-										noneOfCriterion,
-										oneOfCriterion,
-										allOfCriterion,
-										anyOfCriterion,
-										"major, minor, patch",
-										"Failure",
-										"Failure",
-										"Success",
-										"Success",
-										combinedFailureOutcome,
-									],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required all of 'major', 'minor', 'patch', but found 0.\nLabel check failed: required any of 'major', 'minor', 'patch', but found 0.\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									anyOfCriterion,
+									"minor",
+									"Failure",
+									"Success",
+									"Failure",
+									"Success",
+									combinedFailureOutcome,
 								],
-							}),
-						},
-					],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
+									stderr:
+										"::error:: Label check failed: required none of 'major', 'minor', 'patch', but found 1: 'minor'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 1: 'minor'\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									anyOfCriterion,
+									"minor, patch",
+									"Failure",
+									"Failure",
+									"Failure",
+									"Success",
+									combinedFailureOutcome,
+								],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\nLabel check failed: required all of 'major', 'minor', 'patch', but found 2: 'minor', 'patch'\n",
+								},
+							},
+							{
+								values: [
+									noneOfCriterion,
+									oneOfCriterion,
+									allOfCriterion,
+									anyOfCriterion,
+									"major, minor, patch",
+									"Failure",
+									"Failure",
+									"Success",
+									"Success",
+									combinedFailureOutcome,
+								],
+								expected: {
+									stdout:
+										"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
+									stderr:
+										"::error:: Label check failed: required 1 of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\nLabel check failed: required none of 'major', 'minor', 'patch', but found 3: 'major', 'minor', 'patch'\n",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
