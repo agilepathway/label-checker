@@ -3,9 +3,10 @@ import { test } from "node:test";
 import { renderSpecification } from "../src/markdown-renderer.ts";
 import type {
 	ContentItem,
+	EmptyAssociatedData,
 	Specification,
 } from "../src/specification-by-example.ts";
-import { table } from "../src/specification-by-example.ts";
+import { example, table } from "../src/specification-by-example.ts";
 
 test("renderSpecification expands parameterised text", () => {
 	const specification: Specification = {
@@ -14,7 +15,7 @@ test("renderSpecification expands parameterised text", () => {
 			{
 				definition: "The rule.",
 				examples: [
-					{
+					example({
 						id: "version-release",
 						content: [
 							{
@@ -25,7 +26,7 @@ test("renderSpecification expands parameterised text", () => {
 								},
 							},
 						],
-					},
+					}),
 				],
 			},
 		],
@@ -52,14 +53,18 @@ test("renderSpecification expands parameterised text", () => {
 });
 
 test("renderSpecification preserves ordered content, tables, rules, and examples", () => {
-	const specification: Specification = {
+	const specification: Specification<
+		EmptyAssociatedData | { hiddenRowMetadata: string },
+		EmptyAssociatedData | { hiddenExampleMetadata: string }
+	> = {
 		title: "A specification",
 		rules: [
 			{
 				definition: "The first rule.",
 				examples: [
-					{
+					example({
 						id: "ordered-content",
+						associatedData: { hiddenExampleMetadata: "not published" },
 						content: [
 							{
 								type: "text",
@@ -74,8 +79,11 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 									},
 									headings: ["Name", "Value"],
 									rows: [
-										["first", "one"],
-										["second", "two"],
+										{
+											values: ["first", "one"],
+											associatedData: { hiddenRowMetadata: "not published" },
+										},
+										{ values: ["second", "two"] },
 									],
 								}),
 							},
@@ -84,8 +92,8 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 								text: "After the table.",
 							},
 						],
-					},
-					{
+					}),
+					example({
 						id: "second-example",
 						content: [
 							{
@@ -93,20 +101,20 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 								text: "A second example.",
 							},
 						],
-					},
+					}),
 				],
 			},
 			{
 				definition: "The second rule.",
 				examples: [
-					{
+					example({
 						id: "different-table",
 						content: [
 							{
 								type: "table",
 								table: table({
 									headings: ["Only heading"],
-									rows: [["only row"]],
+									rows: [{ values: ["only row"] }],
 								}),
 							},
 							{
@@ -114,7 +122,7 @@ test("renderSpecification preserves ordered content, tables, rules, and examples
 								text: "A table with a different shape.",
 							},
 						],
-					},
+					}),
 				],
 			},
 		],
@@ -174,18 +182,18 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 			{
 				definition: "The rule.",
 				examples: [
-					{
+					example({
 						id: "table-with-pipes",
 						content: [
 							{
 								type: "table",
 								table: table({
 									headings: ["Name | label", "Value"],
-									rows: [["first", "one | two"]],
+									rows: [{ values: ["first", "one | two"] }],
 								}),
 							},
 						],
-					},
+					}),
 				],
 			},
 		],
@@ -220,7 +228,7 @@ test("renderSpecification preserves braces in literal text and table values", ()
 			{
 				definition: "The rule.",
 				examples: [
-					{
+					example({
 						id: "literal-braces",
 						content: [
 							{ type: "text", text: "Use {name} literally." },
@@ -229,11 +237,11 @@ test("renderSpecification preserves braces in literal text and table values", ()
 								table: table({
 									caption: "Caption {name}",
 									headings: ["Header {name}"],
-									rows: [["Cell {name}"]],
+									rows: [{ values: ["Cell {name}"] }],
 								}),
 							},
 						],
-					},
+					}),
 				],
 			},
 		],
@@ -252,7 +260,7 @@ test("renderSpecification expands parameterised table headers and cells", () => 
 			{
 				definition: "The rule.",
 				examples: [
-					{
+					example({
 						id: "parameterised-table",
 						content: [
 							{
@@ -265,17 +273,19 @@ test("renderSpecification expands parameterised table headers and cells", () => 
 										},
 									],
 									rows: [
-										[
-											{
-												template: "{name}",
-												parameters: { name: "first|one" },
-											},
-										],
+										{
+											values: [
+												{
+													template: "{name}",
+													parameters: { name: "first|one" },
+												},
+											],
+										},
 									],
 								}),
 							},
 						],
-					},
+					}),
 				],
 			},
 		],
@@ -294,10 +304,10 @@ test("renderSpecification rejects unknown placeholders in table headers and cell
 			{
 				definition: "The rule.",
 				examples: [
-					{
+					example({
 						id: "unknown-table-placeholder",
 						content: [content],
-					},
+					}),
 				],
 			},
 		],
@@ -307,7 +317,7 @@ test("renderSpecification rejects unknown placeholders in table headers and cell
 		() =>
 			table({
 				headings: [{ template: "{missing}", parameters: {} }],
-				rows: [["value"]],
+				rows: [{ values: ["value"] }],
 			}),
 		{ message: "Unknown example placeholder: {missing}" },
 	);
@@ -319,7 +329,7 @@ test("renderSpecification rejects unknown placeholders in table headers and cell
 					type: "table",
 					table: table({
 						headings: ["Heading"],
-						rows: [[{ template: "{missing}", parameters: {} }]],
+						rows: [{ values: [{ template: "{missing}", parameters: {} }] }],
 					}),
 				}),
 			),

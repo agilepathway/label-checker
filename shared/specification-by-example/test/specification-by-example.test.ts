@@ -5,9 +5,11 @@ import {
 	assertUniqueExampleIds,
 	cellAt,
 	cellAtAnyOf,
+	type EmptyAssociatedData,
 	type Example,
 	expandText,
 	hasColumn,
+	example as makeExample,
 	type ParameterisedText,
 	type Row,
 	rawCellAt,
@@ -19,7 +21,7 @@ import {
 	textAt,
 } from "../src/specification-by-example.ts";
 
-const example: Example = {
+const example: Example = makeExample({
 	id: "sample",
 	content: [
 		{
@@ -28,51 +30,55 @@ const example: Example = {
 		},
 		{
 			type: "table",
-			table: table({ headings: ["Heading"], rows: [["value"]] }),
+			table: table({ headings: ["Heading"], rows: [{ values: ["value"] }] }),
 		},
 	],
-};
+});
 
-const literalExample: Example = {
+const literalExample: Example = makeExample({
 	id: "literal",
 	content: [{ type: "text", text: "A literal value" }],
-};
+});
 
-const tableFirstExample: Example = {
+const tableFirstExample: Example = makeExample({
 	id: "table-first",
 	content: [
 		{
 			type: "table",
-			table: table({ headings: ["Heading"], rows: [["value"]] }),
+			table: table({ headings: ["Heading"], rows: [{ values: ["value"] }] }),
 		},
 	],
-};
+});
 
-const parameterisedTableExample: Example = {
+const parameterisedTableExample: Example = makeExample({
 	id: "parameterised-table",
 	content: [
 		{
 			type: "table",
 			table: table({
 				headings: [{ template: "Heading {name}", parameters: { name: "one" } }],
-				rows: [[{ template: "Value {name}", parameters: { name: "two" } }]],
+				rows: [
+					{
+						values: [{ template: "Value {name}", parameters: { name: "two" } }],
+					},
+				],
 			}),
 		},
 	],
-};
+});
 
-const _emptyContentExample: Example = {
+const _emptyContentExample = makeExample({
 	id: "empty",
 	// @ts-expect-error Examples must have at least one content item.
 	content: [],
-};
+});
 
 const specification: Specification = {
 	title: "Specification",
 	rules: [
 		{
 			definition: "Rule",
-			examples: [example, { ...example, id: "another-sample" }],
+			examples: [example, makeExample({ ...example, id: "another-sample" })],
 		},
 	],
 };
@@ -88,7 +94,10 @@ test("assertUniqueExampleIds rejects duplicate IDs", () => {
 				title: "Specification",
 				rules: [
 					{ definition: "First", examples: [example] },
-					{ definition: "Second", examples: [{ ...example }] },
+					{
+						definition: "Second",
+						examples: [makeExample({ ...example })],
+					},
 				],
 			}),
 		{ message: "Duplicate example ID: sample" },
@@ -131,28 +140,36 @@ test("table pairs values with expanded, unique headings", () => {
 	const value = { template: "Value {name}", parameters: { name: "two" } };
 	const result = table({
 		headings: [heading, "Second"],
-		rows: [[value, "other"]],
+		rows: [{ values: [value, "other"] }],
 	});
 
 	assert.deepEqual(result, {
 		rows: [
-			[
-				{ heading, value },
-				{ heading: "Second", value: "other" },
-			],
+			{
+				cells: [
+					{ heading, value },
+					{ heading: "Second", value: "other" },
+				],
+				associatedData: {},
+			},
 		],
 	});
 });
 
 test("table rejects rows with too few or too many values", () => {
 	assert.throws(
-		() => table({ headings: ["First", "Second"], rows: [["only one"]] }),
+		() =>
+			table({
+				headings: ["First", "Second"],
+				rows: [{ values: ["only one"] }],
+			}),
 		{
 			message: "Table row 1 has 1 values, but there are 2 headings.",
 		},
 	);
 	assert.throws(
-		() => table({ headings: ["Only"], rows: [["one", "too many"]] }),
+		() =>
+			table({ headings: ["Only"], rows: [{ values: ["one", "too many"] }] }),
 		{
 			message: "Table row 1 has 2 values, but there are 1 headings.",
 		},
@@ -167,14 +184,14 @@ test("table rejects duplicate expanded headings", () => {
 					"Outcome",
 					{ template: "{name}", parameters: { name: "Outcome" } },
 				],
-				rows: [["Success", "Failure"]],
+				rows: [{ values: ["Success", "Failure"] }],
 			}),
 		{ message: "Table headings must be unique." },
 	);
 });
 
 test("table rejects empty headings", () => {
-	assert.throws(() => table({ headings: [], rows: [[]] }), {
+	assert.throws(() => table({ headings: [], rows: [{ values: [] }] }), {
 		message: "A table must contain at least one heading.",
 	});
 });
@@ -188,7 +205,10 @@ test("table requires at least one data row", () => {
 });
 
 test("hasColumn finds literal headings", () => {
-	const result = table({ headings: ["Heading"], rows: [["value"]] });
+	const result = table({
+		headings: ["Heading"],
+		rows: [{ values: ["value"] }],
+	});
 	assert.equal(hasColumn(result, "Heading"), true);
 	assert.equal(hasColumn(result, "Missing"), false);
 });
@@ -196,7 +216,7 @@ test("hasColumn finds literal headings", () => {
 test("hasColumn matches expanded parameterised headings", () => {
 	const result = table({
 		headings: [{ template: "Heading {name}", parameters: { name: "one" } }],
-		rows: [["value"]],
+		rows: [{ values: ["value"] }],
 	});
 
 	assert.equal(hasColumn(result, "Heading one"), true);
@@ -212,9 +232,9 @@ test("Table requires factory construction and is readonly", () => {
 		// @ts-expect-error Validated table properties are readonly.
 		validated.rows = [];
 		// @ts-expect-error Validated row collections are readonly.
-		validated.rows.push([]);
+		validated.rows.push({ cells: [], associatedData: {} });
 		// @ts-expect-error Validated cell properties are readonly.
-		validated.rows[0][0].value = "changed";
+		validated.rows[0].cells[0].value = "changed";
 	};
 	void verifyReadonlyTypes;
 });
@@ -235,10 +255,12 @@ test("cellAt looks up an exact heading and expands the value", () => {
 	const row = table({
 		headings: ["Fallback", "Preferred"],
 		rows: [
-			[
-				{ template: "First {value}", parameters: { value: "cell" } },
-				{ template: "Second {value}", parameters: { value: "cell" } },
-			],
+			{
+				values: [
+					{ template: "First {value}", parameters: { value: "cell" } },
+					{ template: "Second {value}", parameters: { value: "cell" } },
+				],
+			},
 		],
 	}).rows[0];
 
@@ -250,7 +272,8 @@ test("cellAt looks up an exact heading and expands the value", () => {
 });
 
 test("cellAt reports when the exact heading does not exist", () => {
-	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
+	const row = table({ headings: ["Heading"], rows: [{ values: ["value"] }] })
+		.rows[0];
 	assert.throws(() => cellAt(row, "Missing"), {
 		message: 'Could not find a table cell with the heading: "Missing".',
 	});
@@ -263,10 +286,12 @@ test("AnyOf lookups use the first matching alternative heading and expand the va
 	const row = table({
 		headings: ["Fallback", "Preferred"],
 		rows: [
-			[
-				{ template: "First {value}", parameters: { value: "cell" } },
-				{ template: "Second {value}", parameters: { value: "cell" } },
-			],
+			{
+				values: [
+					{ template: "First {value}", parameters: { value: "cell" } },
+					{ template: "Second {value}", parameters: { value: "cell" } },
+				],
+			},
 		],
 	}).rows[0];
 
@@ -280,7 +305,13 @@ test("AnyOf lookups use the first matching alternative heading and expand the va
 test("AnyOf lookups fall back when the preferred heading is absent", () => {
 	const row = table({
 		headings: ["Fallback"],
-		rows: [[{ template: "Fallback {value}", parameters: { value: "cell" } }]],
+		rows: [
+			{
+				values: [
+					{ template: "Fallback {value}", parameters: { value: "cell" } },
+				],
+			},
+		],
 	}).rows[0];
 
 	assert.equal(cellAtAnyOf(row, "Preferred", "Fallback"), "Fallback cell");
@@ -291,7 +322,8 @@ test("AnyOf lookups fall back when the preferred heading is absent", () => {
 });
 
 test("AnyOf lookups report when none of the requested headings exist", () => {
-	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
+	const row = table({ headings: ["Heading"], rows: [{ values: ["value"] }] })
+		.rows[0];
 	assert.throws(() => cellAtAnyOf(row, "Missing", "Also missing"), {
 		message:
 			'Could not find a table cell with any of the headings: "Missing", "Also missing".',
@@ -342,28 +374,99 @@ test("textAt reports a content-type mismatch", () => {
 
 test("tableAt returns the table payload at the requested index", () => {
 	assert.deepEqual(tableAt(example, 1), {
-		rows: [[{ heading: "Heading", value: "value" }]],
+		rows: [
+			{
+				cells: [{ heading: "Heading", value: "value" }],
+				associatedData: {},
+			},
+		],
 	});
+});
+
+test("table preserves row-associated data and defaults omitted data to an empty object", () => {
+	const associatedData = { expectedOutcome: "success" };
+	const result = table({
+		headings: ["Heading"],
+		rows: [{ values: ["first"], associatedData }, { values: ["second"] }],
+	});
+
+	assert.deepEqual(
+		result.rows.map((row) => row.associatedData),
+		[associatedData, {}],
+	);
+	assert.deepEqual(result.rows[0], {
+		cells: [{ heading: "Heading", value: "first" }],
+		associatedData,
+	});
+
+	const verifyDefaultAssociatedDataType = (): void => {
+		table<EmptyAssociatedData>({
+			headings: ["Heading"],
+			rows: [
+				{
+					values: ["value"],
+					// @ts-expect-error The default associated-data type rejects custom properties.
+					associatedData: { unexpected: true },
+				},
+			],
+		});
+	};
+	void verifyDefaultAssociatedDataType;
+});
+
+test("example defaults omitted associated data and preserves supplied data", () => {
+	const defaultExample = makeExample({
+		id: "default-associated-data",
+		content: [{ type: "text", text: "Visible" }],
+	});
+	assert.deepEqual(defaultExample.associatedData, {});
+
+	const associatedData = { testConfiguration: "special" };
+	const configuredExample = makeExample({
+		id: "configured-associated-data",
+		content: [{ type: "text", text: "Visible" }],
+		associatedData,
+	});
+	assert.deepEqual(configuredExample.associatedData, associatedData);
+	assert.equal(configuredExample.associatedData.testConfiguration, "special");
+
+	const verifyDefaultAssociatedDataType = (): void => {
+		makeExample<EmptyAssociatedData, EmptyAssociatedData>({
+			id: "invalid-associated-data",
+			content: [{ type: "text", text: "Visible" }],
+			// @ts-expect-error The default associated-data type rejects custom properties.
+			associatedData: { unexpected: true },
+		});
+	};
+	void verifyDefaultAssociatedDataType;
 });
 
 test("tableAt returns a table at the start of an example", () => {
 	assert.deepEqual(tableAt(tableFirstExample, 0), {
-		rows: [[{ heading: "Heading", value: "value" }]],
+		rows: [
+			{
+				cells: [{ heading: "Heading", value: "value" }],
+				associatedData: {},
+			},
+		],
 	});
 });
 
 test("tableAt returns parameterised headers and cells", () => {
 	assert.deepEqual(tableAt(parameterisedTableExample, 0), {
 		rows: [
-			[
-				{
-					heading: {
-						template: "Heading {name}",
-						parameters: { name: "one" },
+			{
+				cells: [
+					{
+						heading: {
+							template: "Heading {name}",
+							parameters: { name: "one" },
+						},
+						value: { template: "Value {name}", parameters: { name: "two" } },
 					},
-					value: { template: "Value {name}", parameters: { name: "two" } },
-				},
-			],
+				],
+				associatedData: {},
+			},
 		],
 	});
 });

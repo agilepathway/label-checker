@@ -4,10 +4,11 @@ import type {
 	Example,
 	Specification,
 } from "../../src/specification-by-example.ts";
+import { example as makeExample } from "../../src/specification-by-example.ts";
 import { registerSpecificationTests } from "../../src/specification-test-registration.ts";
 
 function createExample(id: string): Example {
-	const example: Example = {
+	return makeExample({
 		id,
 		content: [
 			{
@@ -15,9 +16,7 @@ function createExample(id: string): Example {
 				text: { template: id, parameters: {} },
 			},
 		],
-	};
-
-	return example;
+	});
 }
 
 const specification: Specification = {

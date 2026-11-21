@@ -6,6 +6,7 @@ import type {
 	Example,
 	Specification,
 } from "../src/specification-by-example.ts";
+import { example as makeExample } from "../src/specification-by-example.ts";
 import { registerSpecificationTests } from "../src/specification-test-registration.ts";
 
 test("registerSpecificationTests registers each example separately in order", () => {
@@ -44,7 +45,7 @@ test("registerSpecificationTests rejects duplicate example IDs", () => {
 });
 
 function createSpecification(): Specification {
-	const example: Example = {
+	const example: Example = makeExample({
 		id: "example",
 		content: [
 			{
@@ -52,7 +53,7 @@ function createSpecification(): Specification {
 				text: { template: "Example", parameters: {} },
 			},
 		],
-	};
+	});
 
 	return {
 		title: "Test",

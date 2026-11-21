@@ -51,7 +51,9 @@ test("uses plain text in specification table cells", () => {
 		rule.examples.flatMap((example) =>
 			example.content.flatMap((item) =>
 				item.type === "table"
-					? item.table.rows.flatMap((row) => row.map((cell) => cell.value))
+					? item.table.rows.flatMap((row) =>
+							row.cells.map((cell) => cell.value),
+						)
 					: [],
 			),
 		),

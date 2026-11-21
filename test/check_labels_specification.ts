@@ -1,16 +1,19 @@
 // biome-ignore-all lint/security/noSecrets: Prefix criteria are specification text, not secrets.
 
 import type {
+	EmptyAssociatedData,
 	Example,
 	NonEmptyArray,
 	ParameterisedText,
-	Row,
 	Rule,
 	Specification,
 	Table,
 	Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
-import { table } from "../shared/specification-by-example/src/specification-by-example.ts";
+import {
+	example,
+	table,
+} from "../shared/specification-by-example/src/specification-by-example.ts";
 
 export type LabelCheckerInputsAndExpectedResults = {
 	pullRequestNumber?: number;
@@ -27,34 +30,37 @@ export type ExecutableCriterion = ParameterisedText & {
 	};
 };
 
-export type LabelCheckerExample = Example &
-	(
-		| {
-				testExecution: SupportedTestExecution;
-				supportedRows: SupportedExampleRow[];
-		  }
-		| {
-				testExecution: {
-					kind: "unsupported";
-					prefixMode?: boolean;
-					expectedError: string;
-				};
-				supportedRows?: never;
-		  }
-	);
-
-type LabelCheckerSpecification = Omit<Specification, "rules"> & {
-	rules: Array<Omit<Rule, "examples"> & { examples: LabelCheckerExample[] }>;
-};
-
 type SupportedTestExecution = {
 	kind: "supported";
 	prefixMode?: boolean;
 };
 
-type SupportedExampleRow = {
-	readonly row: Row;
-	readonly expected: LabelCheckerInputsAndExpectedResults;
+type UnsupportedTestExecution = {
+	kind: "unsupported";
+	prefixMode?: boolean;
+	expectedError: string;
+};
+
+export type LabelCheckerExample =
+	| Example<LabelCheckerInputsAndExpectedResults, SupportedTestExecution>
+	| Example<EmptyAssociatedData, UnsupportedTestExecution>;
+
+type LabelCheckerSpecification = Omit<
+	Specification<
+		LabelCheckerInputsAndExpectedResults | EmptyAssociatedData,
+		SupportedTestExecution | UnsupportedTestExecution
+	>,
+	"rules"
+> & {
+	rules: Array<
+		Omit<
+			Rule<
+				LabelCheckerInputsAndExpectedResults | EmptyAssociatedData,
+				SupportedTestExecution | UnsupportedTestExecution
+			>,
+			"examples"
+		> & { examples: LabelCheckerExample[] }
+	>;
 };
 
 type SupportedExampleInputRow = {
@@ -73,33 +79,37 @@ function supportedExample({
 	headings: Text[];
 	rows: NonEmptyArray<SupportedExampleInputRow>;
 }): {
-	testExecution: SupportedTestExecution;
-	supportedRows: SupportedExampleRow[];
-	content: [{ type: "table"; table: Table }];
+	associatedData: SupportedTestExecution;
+	content: [
+		{ type: "table"; table: Table<LabelCheckerInputsAndExpectedResults> },
+	];
 } {
 	const [firstRow, ...remainingRows] = rows;
 	if (firstRow === undefined) {
 		throw new Error("A supported example must have at least one row.");
 	}
 
-	const specificationTable = table({
-		...(caption === undefined ? {} : { caption }),
-		headings,
-		rows: [
-			[...firstRow.values],
-			...remainingRows.map(({ values }) => [...values]),
-		],
-	});
-	const supportedRows = rows.map((supportedRow, index) => {
-		const row = specificationTable.rows[index];
-		if (row === undefined)
-			throw new Error(`Missing constructed table row ${index + 1}.`);
-		return { row, expected: supportedRow.expected };
-	});
 	return {
-		testExecution,
-		supportedRows,
-		content: [{ type: "table", table: specificationTable }],
+		associatedData: testExecution,
+		content: [
+			{
+				type: "table",
+				table: table({
+					...(caption === undefined ? {} : { caption }),
+					headings,
+					rows: [
+						{
+							values: [...firstRow.values],
+							associatedData: firstRow.expected,
+						},
+						...remainingRows.map(({ values, expected }) => ({
+							values: [...values],
+							associatedData: expected,
+						})),
+					],
+				}),
+			},
+		],
 	};
 }
 
@@ -225,7 +235,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			definition:
 				"A pull request must not have any of the labels specified by `none_of`.",
 			examples: [
-				{
+				example({
 					id: "none_of_major_minor_patch",
 					...supportedExample({
 						testExecution: {
@@ -267,14 +277,14 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
+				}),
 			],
 		},
 		{
 			definition:
 				"A pull request must have exactly one of the labels specified by `one_of`.",
 			examples: [
-				{
+				example({
 					id: "one_of_major_minor_patch",
 					...supportedExample({
 						testExecution: {
@@ -316,14 +326,14 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
+				}),
 			],
 		},
 		{
 			definition:
 				"A pull request must have all of the labels specified by `all_of`.",
 			examples: [
-				{
+				example({
 					id: "all_of_major_minor_patch",
 					...supportedExample({
 						testExecution: {
@@ -365,14 +375,14 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
+				}),
 			],
 		},
 		{
 			definition:
 				"A pull request must have at least one of the labels specified by `any_of`.",
 			examples: [
-				{
+				example({
 					id: "any_of_major_minor_patch",
 					...supportedExample({
 						testExecution: {
@@ -414,14 +424,14 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
+				}),
 			],
 		},
 		{
 			definition:
 				"The label checker can check for labels that start with a given prefix.",
 			examples: [
-				{
+				example({
 					id: "none_of_type_prefix",
 					...supportedExample({
 						testExecution: {
@@ -477,8 +487,8 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
-				{
+				}),
+				example({
 					id: "one_of_type_prefix",
 					...supportedExample({
 						testExecution: {
@@ -534,8 +544,8 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
-				{
+				}),
+				example({
 					id: "any_of_type_prefix",
 					...supportedExample({
 						testExecution: {
@@ -591,16 +601,16 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
+				}),
 			],
 		},
 		{
 			definition:
 				"The label checker does not support prefix checking with `all_of`.",
 			examples: [
-				{
+				example<EmptyAssociatedData, UnsupportedTestExecution>({
 					id: "all_of_type_prefix",
-					testExecution: {
+					associatedData: {
 						kind: "unsupported",
 						prefixMode: true,
 						expectedError:
@@ -612,19 +622,19 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							table: table({
 								caption: "**`all_of`**",
 								headings: ["Criterion", "Outcome"],
-								rows: [[allOfPrefixCriterion, "Error"]],
+								rows: [{ values: [allOfPrefixCriterion, "Error"] }],
 							}),
 						},
 					],
-				},
+				}),
 			],
 		},
 		{
 			definition: "Each prefix check can specify only one prefix.",
 			examples: [
-				{
+				example<EmptyAssociatedData, UnsupportedTestExecution>({
 					id: "multiple_prefixes_per_check",
-					testExecution: {
+					associatedData: {
 						kind: "unsupported",
 						prefixMode: true,
 						expectedError:
@@ -636,21 +646,21 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							table: table({
 								headings: ["Criterion", "Outcome"],
 								rows: [
-									[noneOfMultiplePrefixesCriterion, "Error"],
-									[oneOfMultiplePrefixesCriterion, "Error"],
-									[anyOfMultiplePrefixesCriterion, "Error"],
-									[allOfMultiplePrefixesCriterion, "Error"],
+									{ values: [noneOfMultiplePrefixesCriterion, "Error"] },
+									{ values: [oneOfMultiplePrefixesCriterion, "Error"] },
+									{ values: [anyOfMultiplePrefixesCriterion, "Error"] },
+									{ values: [allOfMultiplePrefixesCriterion, "Error"] },
 								],
 							}),
 						},
 					],
-				},
+				}),
 			],
 		},
 		{
 			definition: "The label checker can combine multiple prefix checks.",
 			examples: [
-				{
+				example({
 					id: "two_prefix_checks_combined",
 					...supportedExample({
 						testExecution: {
@@ -684,13 +694,13 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
+				}),
 			],
 		},
 		{
 			definition: "The label checker can combine multiple checks together.",
 			examples: [
-				{
+				example({
 					id: "two_checks_combined",
 					...supportedExample({
 						testExecution: {
@@ -770,8 +780,8 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
-				{
+				}),
+				example({
 					id: "three_checks_combined",
 					...supportedExample({
 						testExecution: {
@@ -862,8 +872,8 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
-				{
+				}),
+				example({
 					id: "four_checks_combined",
 					...supportedExample({
 						testExecution: {
@@ -965,7 +975,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 							},
 						],
 					}),
-				},
+				}),
 			],
 		},
 	],

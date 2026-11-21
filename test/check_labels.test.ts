@@ -115,15 +115,15 @@ function isUnsupportedExample(
 	example: LabelCheckerExample,
 ): example is Extract<
 	LabelCheckerExample,
-	{ testExecution: { kind: "unsupported" } }
+	{ associatedData: { kind: "unsupported" } }
 > {
-	return example.testExecution.kind === "unsupported";
+	return example.associatedData.kind === "unsupported";
 }
 
 async function verifyUnsupportedExample(
 	example: Extract<
 		LabelCheckerExample,
-		{ testExecution: { kind: "unsupported" } }
+		{ associatedData: { kind: "unsupported" } }
 	>,
 ): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
@@ -139,12 +139,12 @@ async function verifyUnsupportedExample(
 			requirements: {
 				[criterion.execution.requirement]: criterion.execution.input,
 			},
-			prefixMode: example.testExecution.prefixMode ?? false,
+			prefixMode: example.associatedData.prefixMode ?? false,
 		});
 
 		assert.equal(result.status, 1);
 		assert.equal(result.stdout, "Checking GitHub labels ...\n");
-		assert.equal(result.stderr, example.testExecution.expectedError);
+		assert.equal(result.stderr, example.associatedData.expectedError);
 		assert.equal(result.output, "label_check=failure");
 	}
 }
@@ -152,14 +152,17 @@ async function verifyUnsupportedExample(
 async function verifySupportedExample(
 	example: Extract<
 		LabelCheckerExample,
-		{ testExecution: { kind: "supported" } }
+		{ associatedData: { kind: "supported" } }
 	>,
 ): Promise<void> {
-	for (const [index, { row, expected }] of example.supportedRows.entries()) {
+	const tableContent = example.content.find((item) => item.type === "table");
+	assert(tableContent);
+	for (const [index, row] of tableContent.table.rows.entries()) {
+		const expected = row.associatedData;
 		const labelsText = cellAt(row, "Labels on the pull request");
 		const labels = parseLabels(labelsText);
 		const requirements: Requirements = {};
-		const criteria = row
+		const criteria = row.cells
 			.filter((cell) => /^Criterion(?: \d+)?$/.test(expandText(cell.heading)))
 			.map(executableCriterionFromCell);
 		for (const criterion of criteria)
@@ -170,7 +173,7 @@ async function verifySupportedExample(
 			pullRequestNumber: expected.pullRequestNumber ?? index + 1,
 			labels,
 			requirements,
-			prefixMode: example.testExecution.prefixMode ?? false,
+			prefixMode: example.associatedData.prefixMode ?? false,
 		});
 		assert.equal(result.status, expectedOutcome.status);
 		assert.equal(result.stdout, expected.stdout);

@@ -1,25 +1,20 @@
-import type {
-	Example,
-	Rule,
-	Specification,
-	Table,
-} from "./specification-by-example.ts";
+import type { Example, Table } from "./specification-by-example.ts";
 import { expandText } from "./specification-by-example.ts";
 
 function escapePipes(value: string): string {
 	return value.replaceAll("|", "\\|");
 }
 
-function renderTable(table: Table): string {
+function renderTable(table: Table<unknown>): string {
 	const renderedTable = [
-		`| ${table.rows[0]
+		`| ${table.rows[0].cells
 			.map((cell) => expandText(cell.heading))
 			.map(escapePipes)
 			.join(" | ")} |`,
-		`|${table.rows[0].map(() => "---").join("|")}|`,
+		`|${table.rows[0].cells.map(() => "---").join("|")}|`,
 		...table.rows.map(
 			(row) =>
-				`| ${row
+				`| ${row.cells
 					.map((cell) => expandText(cell.value))
 					.map(escapePipes)
 					.join(" | ")} |`,
@@ -31,7 +26,7 @@ function renderTable(table: Table): string {
 		: renderedTable;
 }
 
-function renderExample(example: Example): string {
+function renderExample(example: Example<unknown, unknown>): string {
 	const content = example.content.map((item) => {
 		if (item.type === "text") {
 			return expandText(item.text);
@@ -43,13 +38,19 @@ function renderExample(example: Example): string {
 	return ["### Example", ...content].join("\n\n");
 }
 
-function renderRule(rule: Rule): string {
+function renderRule(rule: {
+	definition: string;
+	examples: Example<unknown, unknown>[];
+}): string {
 	return ["## Rule", rule.definition, ...rule.examples.map(renderExample)].join(
 		"\n\n",
 	);
 }
 
-export function renderSpecification(specification: Specification): string {
+export function renderSpecification(specification: {
+	title: string;
+	rules: { definition: string; examples: Example<unknown, unknown>[] }[];
+}): string {
 	return [
 		`# ${specification.title}`,
 		"---",

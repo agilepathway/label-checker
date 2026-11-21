@@ -3,14 +3,19 @@ import { test } from "node:test";
 import {
 	assertUniqueExampleIds,
 	type Example,
-	type Specification,
 } from "./specification-by-example.ts";
 
-export type ExampleTestImplementation = (example: Example) => Promise<void>;
+export type ExampleTestImplementation<
+	TExample extends Example<unknown, unknown> = Example,
+> = (example: TExample) => Promise<void>;
 
-export function registerSpecificationTests(
-	specification: Specification,
-	implementation: ExampleTestImplementation,
+export function registerSpecificationTests<
+	TExample extends Example<unknown, unknown>,
+>(
+	specification: {
+		rules: { examples: TExample[] }[];
+	},
+	implementation: ExampleTestImplementation<TExample>,
 ): void {
 	const examples = specification.rules.flatMap((rule) => rule.examples);
 	assertUniqueExampleIds(specification);
