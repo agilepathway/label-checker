@@ -58,8 +58,8 @@ type SupportedExampleRow = {
 };
 
 type SupportedExampleInputRow = {
-	values: Text[];
-	expected: LabelCheckerInputsAndExpectedResults;
+	readonly values: readonly Text[];
+	readonly expected: LabelCheckerInputsAndExpectedResults;
 };
 
 function supportedExample({
@@ -85,7 +85,10 @@ function supportedExample({
 	const specificationTable = table({
 		...(caption === undefined ? {} : { caption }),
 		headings,
-		rows: [firstRow.values, ...remainingRows.map(({ values }) => values)],
+		rows: [
+			[...firstRow.values],
+			...remainingRows.map(({ values }) => [...values]),
+		],
 	});
 	const supportedRows = rows.map((supportedRow, index) => {
 		const row = specificationTable.rows[index];
