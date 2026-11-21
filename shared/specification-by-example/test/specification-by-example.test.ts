@@ -499,6 +499,33 @@ test("example preserves supplied associated data and leaves omitted data undefin
 	assert.equal(nullExampleAssociatedData, null);
 });
 
+test("example preserves explicit undefined and optional associated data", () => {
+	type Configuration = { mode: string };
+	const explicitUndefined = makeExample({
+		id: "explicitly-undefined-associated-data",
+		content: [{ type: "text", text: "Visible" }],
+		associatedData: undefined,
+	});
+
+	const maybeConfiguration: Configuration | undefined = undefined;
+	const optional = makeExample({
+		id: "optional-associated-data",
+		content: [{ type: "text", text: "Visible" }],
+		associatedData: maybeConfiguration,
+	});
+
+	const verifyAssociatedDataTypes = (): void => {
+		const explicitUndefinedValue: undefined = explicitUndefined.associatedData;
+		const optionalValue: Configuration | undefined = optional.associatedData;
+		void explicitUndefinedValue;
+		void optionalValue;
+	};
+	void verifyAssociatedDataTypes;
+
+	assert.equal(explicitUndefined.associatedData, undefined);
+	assert.equal(optional.associatedData, undefined);
+});
+
 test("example accepts named and explicitly generic inputs with optional associated data", () => {
 	type Configuration = { mode: string };
 	const namedInput: ExampleFactoryInput<never, Configuration> = {
