@@ -507,18 +507,27 @@ test("example preserves explicit undefined and optional associated data", () => 
 		associatedData: undefined,
 	});
 
-	const maybeConfiguration: Configuration | undefined = undefined;
-	const optional = makeExample({
-		id: "optional-associated-data",
-		content: [{ type: "text", text: "Visible" }],
-		associatedData: maybeConfiguration,
-	});
+	const makeOptionalExample = (
+		associatedData: Configuration | undefined,
+	): Example<never, Configuration> =>
+		makeExample({
+			id: "optional-associated-data",
+			content: [{ type: "text", text: "Visible" }],
+			associatedData,
+		});
+	const optional = makeOptionalExample(undefined);
 
 	const verifyAssociatedDataTypes = (): void => {
 		const explicitUndefinedValue: undefined = explicitUndefined.associatedData;
 		const optionalValue: Configuration | undefined = optional.associatedData;
+		// @ts-expect-error A union input may produce configured metadata.
+		const onlyUndefined: undefined = optional.associatedData;
+		// @ts-expect-error A union input may produce undefined.
+		const onlyConfiguration: Configuration = optional.associatedData;
 		void explicitUndefinedValue;
 		void optionalValue;
+		void onlyUndefined;
+		void onlyConfiguration;
 	};
 	void verifyAssociatedDataTypes;
 
