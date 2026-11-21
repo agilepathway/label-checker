@@ -507,9 +507,8 @@ test("example preserves explicit undefined and optional associated data", () => 
 		associatedData: undefined,
 	});
 
-	const makeOptionalExample = (
-		associatedData: Configuration | undefined,
-	): Example<never, Configuration> =>
+	// biome-ignore lint/nursery/useExplicitType: The inferred factory return type is under test.
+	const makeOptionalExample = (associatedData: Configuration | undefined) =>
 		makeExample({
 			id: "optional-associated-data",
 			content: [{ type: "text", text: "Visible" }],
