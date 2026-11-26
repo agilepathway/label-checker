@@ -4,7 +4,6 @@ import type {
 	Example,
 	NonEmptyArray,
 	ParameterisedText,
-	Row,
 	Rule,
 	Specification,
 	Table,
@@ -31,7 +30,6 @@ export type LabelCheckerExample = Example &
 	(
 		| {
 				testExecution: SupportedTestExecution;
-				supportedRows: SupportedExampleRow[];
 		  }
 		| {
 				testExecution: {
@@ -39,7 +37,6 @@ export type LabelCheckerExample = Example &
 					prefixMode?: boolean;
 					expectedError: string;
 				};
-				supportedRows?: never;
 		  }
 	);
 
@@ -50,11 +47,6 @@ type LabelCheckerSpecification = Omit<Specification, "rules"> & {
 type SupportedTestExecution = {
 	kind: "supported";
 	prefixMode?: boolean;
-};
-
-type SupportedExampleRow = {
-	readonly row: Row;
-	readonly expected: LabelCheckerInputsAndExpectedResults;
 };
 
 type SupportedExampleInputRow = {
@@ -74,7 +66,6 @@ function supportedExample({
 	rows: NonEmptyArray<SupportedExampleInputRow>;
 }): {
 	testExecution: SupportedTestExecution;
-	supportedRows: SupportedExampleRow[];
 	content: [{ type: "table"; table: Table }];
 } {
 	const [firstRow, ...remainingRows] = rows;
@@ -84,21 +75,17 @@ function supportedExample({
 
 	const specificationTable = table({
 		...(caption === undefined ? {} : { caption }),
-		headings,
+		headings: [...headings, "Unpublished"],
 		rows: [
-			[...firstRow.values],
-			...remainingRows.map(({ values }) => [...values]),
+			[...firstRow.values, JSON.stringify(firstRow.expected)],
+			...remainingRows.map(({ values, expected }) => [
+				...values,
+				JSON.stringify(expected),
+			]),
 		],
-	});
-	const supportedRows = rows.map((supportedRow, index) => {
-		const row = specificationTable.rows[index];
-		if (row === undefined)
-			throw new Error(`Missing constructed table row ${index + 1}.`);
-		return { row, expected: supportedRow.expected };
 	});
 	return {
 		testExecution,
-		supportedRows,
 		content: [{ type: "table", table: specificationTable }],
 	};
 }

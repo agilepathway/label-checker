@@ -11,15 +11,22 @@ function escapePipes(value: string): string {
 }
 
 function renderTable(table: Table): string {
+	const headingRow = table.rows[0];
+	const visibleColumnIndices = headingRow.flatMap((cell, index) =>
+		cell.heading === "Unpublished" ? [] : [index],
+	);
+	const visibleColumns = new Set(visibleColumnIndices);
 	const renderedTable = [
-		`| ${table.rows[0]
+		`| ${headingRow
+			.filter((_cell, index) => visibleColumns.has(index))
 			.map((cell) => expandText(cell.heading))
 			.map(escapePipes)
 			.join(" | ")} |`,
-		`|${table.rows[0].map(() => "---").join("|")}|`,
+		`|${visibleColumnIndices.map(() => "---").join("|")}|`,
 		...table.rows.map(
 			(row) =>
 				`| ${row
+					.filter((_cell, index) => visibleColumns.has(index))
 					.map((cell) => expandText(cell.value))
 					.map(escapePipes)
 					.join(" | ")} |`,

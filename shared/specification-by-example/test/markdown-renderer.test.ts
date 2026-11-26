@@ -213,6 +213,42 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 	);
 });
 
+test("renderSpecification omits Unpublished columns without expanding their cells", () => {
+	const specification: Specification = {
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "unpublished-column",
+						content: [
+							{
+								type: "table",
+								table: table({
+									headings: ["Before", "Unpublished", "After"],
+									rows: [
+										[
+											"first",
+											{ template: "{missing}", parameters: {} },
+											"last",
+										],
+									],
+								}),
+							},
+						],
+					},
+				],
+			},
+		],
+	};
+
+	assert.match(
+		renderSpecification(specification),
+		/\| Before \| After \|\n\|---\|---\|\n\| first \| last \|/,
+	);
+});
+
 test("renderSpecification preserves braces in literal text and table values", () => {
 	const specification: Specification = {
 		title: "A specification",
