@@ -11,12 +11,6 @@ import type {
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { table } from "../shared/specification-by-example/src/specification-by-example.ts";
 
-export type LabelCheckerInputsAndExpectedResults = {
-	pullRequestNumber?: number;
-	stdout: string;
-	stderr: string;
-};
-
 type Requirement = "none" | "one" | "any" | "all";
 
 export type ExecutableCriterion = ParameterisedText & {
@@ -51,7 +45,11 @@ type SupportedTestExecution = {
 
 type SupportedExampleInputRow = {
 	readonly values: readonly Text[];
-	readonly expected: LabelCheckerInputsAndExpectedResults;
+	readonly expected: {
+		pullRequestNumber?: number;
+		stdout: string;
+		stderr: string;
+	};
 };
 
 function supportedExample({

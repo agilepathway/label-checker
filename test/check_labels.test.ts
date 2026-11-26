@@ -9,13 +9,11 @@ import {
 	expandText,
 	type Row,
 	rawCellAt,
-	table,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
 	type ExecutableCriterion,
 	type LabelCheckerExample,
-	type LabelCheckerInputsAndExpectedResults,
 	labelCheckerSpecification,
 } from "./check_labels_specification.ts";
 import {
@@ -160,7 +158,8 @@ async function verifySupportedExample(
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
 	for (const [index, row] of tableContent.table.rows.entries()) {
-		const expected = expectedResultsAt(row);
+		// biome-ignore lint/nursery/noUnsafeTypeAssertion: Unpublished data is serialized from typed specification rows.
+		const expected = JSON.parse(rawCellAt(row, "Unpublished") as string);
 		const labelsText = cellAt(row, "Labels on the pull request");
 		const labels = parseLabels(labelsText);
 		const requirements: Requirements = {};
@@ -184,29 +183,6 @@ async function verifySupportedExample(
 	}
 }
 
-function expectedResultsAt(row: Row): LabelCheckerInputsAndExpectedResults {
-	const expectedJson = rawCellAt(row, "Unpublished");
-	assert(typeof expectedJson === "string");
-	const expected: unknown = JSON.parse(expectedJson);
-	assert(
-		isLabelCheckerInputsAndExpectedResults(expected),
-		"Expected valid unpublished execution data",
-	);
-	return expected;
-}
-
-function isLabelCheckerInputsAndExpectedResults(
-	value: unknown,
-): value is LabelCheckerInputsAndExpectedResults {
-	return (
-		isRecord(value) &&
-		typeof value.stdout === "string" &&
-		typeof value.stderr === "string" &&
-		(value.pullRequestNumber === undefined ||
-			typeof value.pullRequestNumber === "number")
-	);
-}
-
 function interpretSuccessFailureOutcome(outcome: string):
 	| { status: 0; output: "label_check=success" }
 	| {
@@ -222,16 +198,6 @@ function interpretSuccessFailureOutcome(outcome: string):
 function parseLabels(labelsText: string): string[] {
 	return labelsText === "(none)" ? [] : labelsText.split(", ");
 }
-
-test("expected execution row data is validated", () => {
-	const row = table({
-		headings: ["Unpublished"],
-		rows: [["{}"]],
-	}).rows[0];
-	assert.throws(() => expectedResultsAt(row), {
-		message: "Expected valid unpublished execution data",
-	});
-});
 
 function executableCriterionAt(row: Row, heading: string): ExecutableCriterion {
 	return executableCriterion(rawCellAt(row, heading), heading);
