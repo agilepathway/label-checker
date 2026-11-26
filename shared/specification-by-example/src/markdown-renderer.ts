@@ -13,8 +13,7 @@ function escapePipes(value: string): string {
 function renderTable(table: Table): string {
 	const headingRow = table.rows[0];
 	const visibleColumnIndices = headingRow.flatMap((cell, index) =>
-		typeof cell.heading === "string" &&
-		cell.heading.toLowerCase() === "unpublished data"
+		expandText(cell.heading).toLowerCase() === "unpublished data"
 			? []
 			: [index],
 	);
