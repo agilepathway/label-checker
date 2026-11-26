@@ -249,6 +249,42 @@ test("renderSpecification omits Unpublished data columns without expanding their
 	);
 });
 
+test("renderSpecification omits differently capitalized Unpublished data columns without expanding their cells", () => {
+	const specification: Specification = {
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "capitalized-unpublished-column",
+						content: [
+							{
+								type: "table",
+								table: table({
+									headings: ["Before", "UNPUBLISHED DATA", "After"],
+									rows: [
+										[
+											"first",
+											{ template: "{missing}", parameters: {} },
+											"last",
+										],
+									],
+								}),
+							},
+						],
+					},
+				],
+			},
+		],
+	};
+
+	assert.match(
+		renderSpecification(specification),
+		/\| Before \| After \|\n\|---\|---\|\n\| first \| last \|/,
+	);
+});
+
 test("renderSpecification preserves braces in literal text and table values", () => {
 	const specification: Specification = {
 		title: "A specification",
