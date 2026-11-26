@@ -4,19 +4,12 @@ import type {
 	Example,
 	NonEmptyArray,
 	ParameterisedText,
-	Row,
 	Rule,
 	Specification,
 	Table,
 	Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { table } from "../shared/specification-by-example/src/specification-by-example.ts";
-
-export type LabelCheckerInputsAndExpectedResults = {
-	pullRequestNumber?: number;
-	stdout: string;
-	stderr: string;
-};
 
 type Requirement = "none" | "one" | "any" | "all";
 
@@ -31,7 +24,6 @@ export type LabelCheckerExample = Example &
 	(
 		| {
 				testExecution: SupportedTestExecution;
-				supportedRows: SupportedExampleRow[];
 		  }
 		| {
 				testExecution: {
@@ -39,7 +31,6 @@ export type LabelCheckerExample = Example &
 					prefixMode?: boolean;
 					expectedError: string;
 				};
-				supportedRows?: never;
 		  }
 	);
 
@@ -52,14 +43,13 @@ type SupportedTestExecution = {
 	prefixMode?: boolean;
 };
 
-type SupportedExampleRow = {
-	readonly row: Row;
-	readonly expected: LabelCheckerInputsAndExpectedResults;
-};
-
 type SupportedExampleInputRow = {
 	readonly values: readonly Text[];
-	readonly expected: LabelCheckerInputsAndExpectedResults;
+	readonly expected: {
+		pullRequestNumber?: number;
+		stdout: string;
+		stderr: string;
+	};
 };
 
 function supportedExample({
@@ -74,7 +64,6 @@ function supportedExample({
 	rows: NonEmptyArray<SupportedExampleInputRow>;
 }): {
 	testExecution: SupportedTestExecution;
-	supportedRows: SupportedExampleRow[];
 	content: [{ type: "table"; table: Table }];
 } {
 	const [firstRow, ...remainingRows] = rows;
@@ -84,21 +73,17 @@ function supportedExample({
 
 	const specificationTable = table({
 		...(caption === undefined ? {} : { caption }),
-		headings,
+		headings: [...headings, "Unpublished data"],
 		rows: [
-			[...firstRow.values],
-			...remainingRows.map(({ values }) => [...values]),
+			[...firstRow.values, JSON.stringify(firstRow.expected)],
+			...remainingRows.map(({ values, expected }) => [
+				...values,
+				JSON.stringify(expected),
+			]),
 		],
-	});
-	const supportedRows = rows.map((supportedRow, index) => {
-		const row = specificationTable.rows[index];
-		if (row === undefined)
-			throw new Error(`Missing constructed table row ${index + 1}.`);
-		return { row, expected: supportedRow.expected };
 	});
 	return {
 		testExecution,
-		supportedRows,
 		content: [{ type: "table", table: specificationTable }],
 	};
 }
