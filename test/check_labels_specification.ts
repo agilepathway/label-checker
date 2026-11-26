@@ -73,7 +73,7 @@ function supportedExample({
 
 	const specificationTable = table({
 		...(caption === undefined ? {} : { caption }),
-		headings: [...headings, "Unpublished"],
+		headings: [...headings, "Unpublished data"],
 		rows: [
 			[...firstRow.values, JSON.stringify(firstRow.expected)],
 			...remainingRows.map(({ values, expected }) => [

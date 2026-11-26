@@ -213,7 +213,7 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 	);
 });
 
-test("renderSpecification omits Unpublished columns without expanding their cells", () => {
+test("renderSpecification omits Unpublished data columns without expanding their cells", () => {
 	const specification: Specification = {
 		title: "A specification",
 		rules: [
@@ -226,7 +226,7 @@ test("renderSpecification omits Unpublished columns without expanding their cell
 							{
 								type: "table",
 								table: table({
-									headings: ["Before", "Unpublished", "After"],
+									headings: ["Before", "Unpublished data", "After"],
 									rows: [
 										[
 											"first",

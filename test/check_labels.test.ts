@@ -159,7 +159,7 @@ async function verifySupportedExample(
 	assert(tableContent);
 	for (const [index, row] of tableContent.table.rows.entries()) {
 		// biome-ignore lint/nursery/noUnsafeTypeAssertion: Unpublished data is serialized from typed specification rows.
-		const expected = JSON.parse(rawCellAt(row, "Unpublished") as string);
+		const expected = JSON.parse(rawCellAt(row, "Unpublished data") as string);
 		const labelsText = cellAt(row, "Labels on the pull request");
 		const labels = parseLabels(labelsText);
 		const requirements: Requirements = {};
