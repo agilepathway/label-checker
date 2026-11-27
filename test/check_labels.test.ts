@@ -100,7 +100,9 @@ async function verifySpecificationExample(example: Example): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
 	for (const row of tableContent.table.rows) {
-		const pullRequestNumber = Number(cellAt(row, "Pull request number"));
+		const pullRequestNumber = parsePullRequestNumber(
+			cellAt(row, "Pull request number"),
+		);
 		const prefixMode = parseBoolean(cellAt(row, "Prefix mode"));
 		const expectedStdout = cellAt(row, "Expected stdout");
 		const expectedStderr = cellAt(row, "Expected stderr");
@@ -126,6 +128,15 @@ async function verifySpecificationExample(example: Example): Promise<void> {
 		assert.equal(result.stderr, expectedStderr);
 		assert.equal(result.output, expectedOutcome.output);
 	}
+}
+
+function parsePullRequestNumber(value: string): number {
+	const pullRequestNumber = Number(value);
+	assert(
+		Number.isSafeInteger(pullRequestNumber) && pullRequestNumber > 0,
+		"Expected a positive pull request number",
+	);
+	return pullRequestNumber;
 }
 
 function interpretOutcome(outcome: string):
