@@ -50,9 +50,16 @@ function executableExample({
 	rows: NonEmptyArray<ExampleInputRow>;
 }): Pick<Example, "content"> {
 	const [firstRow, ...remainingRows] = rows;
-	if (firstRow === undefined) {
-		throw new Error("An executable example must have at least one row.");
-	}
+	const toTableRow = (
+		{ values, expected, pullRequestNumber }: ExampleInputRow,
+		index: number,
+	): Text[] => [
+		...values,
+		String(pullRequestNumber ?? index + 1),
+		String(prefixMode),
+		expected.stdout,
+		expected.stderr,
+	];
 
 	return {
 		content: [
@@ -62,22 +69,8 @@ function executableExample({
 					...(caption === undefined ? {} : { caption }),
 					headings: [...headings, ...supplementaryHeadings],
 					rows: [
-						[
-							...firstRow.values,
-							String(firstRow.pullRequestNumber ?? 1),
-							String(prefixMode),
-							firstRow.expected.stdout,
-							firstRow.expected.stderr,
-						],
-						...remainingRows.map(
-							({ values, expected, pullRequestNumber }, index) => [
-								...values,
-								String(pullRequestNumber ?? index + 2),
-								String(prefixMode),
-								expected.stdout,
-								expected.stderr,
-							],
-						),
+						toTableRow(firstRow, 0),
+						...remainingRows.map((row, index) => toTableRow(row, index + 1)),
 					],
 				}),
 			},
@@ -399,7 +392,6 @@ export const labelCheckerSpecification: Specification = {
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								pullRequestNumber: 1,
 								values: [noneOfTypePrefixCriterion, "(none)", "Success"],
 								expected: {
 									stdout:
@@ -453,7 +445,6 @@ export const labelCheckerSpecification: Specification = {
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								pullRequestNumber: 1,
 								values: [oneOfTypePrefixCriterion, "(none)", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -507,7 +498,6 @@ export const labelCheckerSpecification: Specification = {
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								pullRequestNumber: 1,
 								values: [anyOfPrefixCriterion, "(none)", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
