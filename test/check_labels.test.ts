@@ -157,28 +157,31 @@ async function verifySupportedExample(
 ): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
-	for (const [index, row] of tableContent.table.rows.entries()) {
-		// biome-ignore lint/nursery/noUnsafeTypeAssertion: Unpublished data is serialized from typed specification rows.
-		const expected = JSON.parse(rawCellAt(row, "Unpublished data") as string);
+	for (const row of tableContent.table.rows) {
+		const pullRequestNumber = Number(cellAt(row, "Pull request number"));
+		const expectedStdout = cellAt(row, "Expected stdout");
+		const expectedStderr = cellAt(row, "Expected stderr");
 		const labelsText = cellAt(row, "Labels on the pull request");
 		const labels = parseLabels(labelsText);
 		const requirements: Requirements = {};
 		const criteria = row
-			.filter((cell) => /^Criterion(?: \d+)?$/.test(expandText(cell.heading)))
+			.filter((cell) =>
+				/^Criterion(?: \d+)?$/.test(expandText(cell.heading.name)),
+			)
 			.map(executableCriterionFromCell);
 		for (const criterion of criteria)
 			requirements[criterion.execution.requirement] = criterion.execution.input;
 		const outcome = cellAtAnyOf(row, "Outcome", "Overall outcome");
 		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
 		const result = await runLabelCheck({
-			pullRequestNumber: expected.pullRequestNumber ?? index + 1,
+			pullRequestNumber,
 			labels,
 			requirements,
 			prefixMode: example.testExecution.prefixMode ?? false,
 		});
 		assert.equal(result.status, expectedOutcome.status);
-		assert.equal(result.stdout, expected.stdout);
-		assert.equal(result.stderr, expected.stderr);
+		assert.equal(result.stdout, expectedStdout);
+		assert.equal(result.stderr, expectedStderr);
 		assert.equal(result.output, expectedOutcome.output);
 	}
 }
@@ -204,7 +207,7 @@ function executableCriterionAt(row: Row, heading: string): ExecutableCriterion {
 }
 
 function executableCriterionFromCell(cell: Cell): ExecutableCriterion {
-	const heading = expandText(cell.heading);
+	const heading = expandText(cell.heading.name);
 	return executableCriterion(cell.value, heading);
 }
 

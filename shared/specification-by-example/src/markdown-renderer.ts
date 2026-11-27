@@ -13,15 +13,13 @@ function escapePipes(value: string): string {
 function renderTable(table: Table): string {
 	const headingRow = table.rows[0];
 	const visibleColumnIndices = headingRow.flatMap((cell, index) =>
-		expandText(cell.heading).toLowerCase() === "unpublished data"
-			? []
-			: [index],
+		cell.heading.published === false ? [] : [index],
 	);
 	const visibleColumns = new Set(visibleColumnIndices);
 	const renderedTable = [
 		`| ${headingRow
 			.filter((_cell, index) => visibleColumns.has(index))
-			.map((cell) => expandText(cell.heading))
+			.map((cell) => expandText(cell.heading.name))
 			.map(escapePipes)
 			.join(" | ")} |`,
 		`|${visibleColumnIndices.map(() => "---").join("|")}|`,

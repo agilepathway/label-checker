@@ -2,6 +2,7 @@
 
 import type {
 	Example,
+	HeadingInput,
 	NonEmptyArray,
 	ParameterisedText,
 	Rule,
@@ -9,7 +10,10 @@ import type {
 	Table,
 	Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
-import { table } from "../shared/specification-by-example/src/specification-by-example.ts";
+import {
+	table,
+	unpublished,
+} from "../shared/specification-by-example/src/specification-by-example.ts";
 
 type Requirement = "none" | "one" | "any" | "all";
 
@@ -52,6 +56,12 @@ type SupportedExampleInputRow = {
 	};
 };
 
+const supplementaryHeadings = [
+	unpublished("Pull request number"),
+	unpublished("Expected stdout"),
+	unpublished("Expected stderr"),
+];
+
 function supportedExample({
 	testExecution,
 	caption,
@@ -60,7 +70,7 @@ function supportedExample({
 }: {
 	testExecution: SupportedTestExecution;
 	caption?: Text;
-	headings: Text[];
+	headings: HeadingInput[];
 	rows: NonEmptyArray<SupportedExampleInputRow>;
 }): {
 	testExecution: SupportedTestExecution;
@@ -73,12 +83,19 @@ function supportedExample({
 
 	const specificationTable = table({
 		...(caption === undefined ? {} : { caption }),
-		headings: [...headings, "Unpublished data"],
+		headings: [...headings, ...supplementaryHeadings],
 		rows: [
-			[...firstRow.values, JSON.stringify(firstRow.expected)],
-			...remainingRows.map(({ values, expected }) => [
+			[
+				...firstRow.values,
+				String(firstRow.expected.pullRequestNumber ?? 1),
+				firstRow.expected.stdout,
+				firstRow.expected.stderr,
+			],
+			...remainingRows.map(({ values, expected }, index) => [
 				...values,
-				JSON.stringify(expected),
+				String(expected.pullRequestNumber ?? index + 2),
+				expected.stdout,
+				expected.stderr,
 			]),
 		],
 	});

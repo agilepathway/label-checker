@@ -17,6 +17,7 @@ import {
 	table,
 	tableAt,
 	textAt,
+	unpublished,
 } from "../src/specification-by-example.ts";
 
 const example: Example = {
@@ -130,15 +131,15 @@ test("table pairs values with expanded, unique headings", () => {
 	};
 	const value = { template: "Value {name}", parameters: { name: "two" } };
 	const result = table({
-		headings: [heading, "Second"],
+		headings: [heading, unpublished("Second")],
 		rows: [[value, "other"]],
 	});
 
 	assert.deepEqual(result, {
 		rows: [
 			[
-				{ heading, value },
-				{ heading: "Second", value: "other" },
+				{ heading: { name: heading }, value },
+				{ heading: { name: "Second", published: false }, value: "other" },
 			],
 		],
 	});
@@ -146,7 +147,11 @@ test("table pairs values with expanded, unique headings", () => {
 
 test("table rejects rows with too few or too many values", () => {
 	assert.throws(
-		() => table({ headings: ["First", "Second"], rows: [["only one"]] }),
+		() =>
+			table({
+				headings: ["First", "Second"],
+				rows: [["only one"]],
+			}),
 		{
 			message: "Table row 1 has 1 values, but there are 2 headings.",
 		},
@@ -177,6 +182,56 @@ test("table rejects empty headings", () => {
 	assert.throws(() => table({ headings: [], rows: [[]] }), {
 		message: "A table must contain at least one heading.",
 	});
+});
+
+test("table normalises plain text headings into Heading objects", () => {
+	const result = table({ headings: ["Heading"], rows: [["value"]] });
+	assert.deepEqual(result.rows[0][0].heading, { name: "Heading" });
+});
+
+test("table normalises unpublished headings without exposing the wrapper", () => {
+	const heading = {
+		template: "Internal {name}",
+		parameters: { name: "data" },
+	};
+	const result = table({
+		headings: [unpublished(heading)],
+		rows: [["value"]],
+	});
+
+	assert.deepEqual(result.rows[0][0].heading, {
+		name: heading,
+		published: false,
+	});
+	assert.equal(hasColumn(result, "Internal data"), true);
+	assert.equal(cellAt(result.rows[0], "Internal data"), "value");
+});
+
+test("table treats parameterised headings with name and published properties as text", () => {
+	const heading = {
+		template: "Heading {value}",
+		parameters: { value: "one" },
+		name: "Not a heading",
+		published: false,
+	};
+	const result = table({ headings: [heading], rows: [["value"]] });
+
+	assert.deepEqual(result.rows[0][0].heading, { name: heading });
+	assert.equal(hasColumn(result, "Heading one"), true);
+});
+
+test("table factory accepts only text or unpublished heading inputs", () => {
+	const verifyHeadingInputTypes = (text: ParameterisedText): void => {
+		table({
+			headings: ["Literal", text, unpublished(text)],
+			rows: [["a", "b", "c"]],
+		});
+
+		const arbitraryHeading = { name: "Internal", published: false };
+		// @ts-expect-error Arbitrary Heading objects are not factory inputs.
+		table({ headings: [arbitraryHeading], rows: [["value"]] });
+	};
+	void verifyHeadingInputTypes;
 });
 
 test("table requires at least one data row", () => {
@@ -215,6 +270,8 @@ test("Table requires factory construction and is readonly", () => {
 		validated.rows.push([]);
 		// @ts-expect-error Validated cell properties are readonly.
 		validated.rows[0][0].value = "changed";
+		// @ts-expect-error Heading properties are readonly.
+		validated.rows[0][0].heading.name = "changed";
 	};
 	void verifyReadonlyTypes;
 });
@@ -250,7 +307,10 @@ test("cellAt looks up an exact heading and expands the value", () => {
 });
 
 test("cellAt reports when the exact heading does not exist", () => {
-	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
+	const row = table({
+		headings: ["Heading"],
+		rows: [["value"]],
+	}).rows[0];
 	assert.throws(() => cellAt(row, "Missing"), {
 		message: 'Could not find a table cell with the heading: "Missing".',
 	});
@@ -291,7 +351,10 @@ test("AnyOf lookups fall back when the preferred heading is absent", () => {
 });
 
 test("AnyOf lookups report when none of the requested headings exist", () => {
-	const row = table({ headings: ["Heading"], rows: [["value"]] }).rows[0];
+	const row = table({
+		headings: ["Heading"],
+		rows: [["value"]],
+	}).rows[0];
 	assert.throws(() => cellAtAnyOf(row, "Missing", "Also missing"), {
 		message:
 			'Could not find a table cell with any of the headings: "Missing", "Also missing".',
@@ -342,13 +405,13 @@ test("textAt reports a content-type mismatch", () => {
 
 test("tableAt returns the table payload at the requested index", () => {
 	assert.deepEqual(tableAt(example, 1), {
-		rows: [[{ heading: "Heading", value: "value" }]],
+		rows: [[{ heading: { name: "Heading" }, value: "value" }]],
 	});
 });
 
 test("tableAt returns a table at the start of an example", () => {
 	assert.deepEqual(tableAt(tableFirstExample, 0), {
-		rows: [[{ heading: "Heading", value: "value" }]],
+		rows: [[{ heading: { name: "Heading" }, value: "value" }]],
 	});
 });
 
@@ -358,8 +421,10 @@ test("tableAt returns parameterised headers and cells", () => {
 			[
 				{
 					heading: {
-						template: "Heading {name}",
-						parameters: { name: "one" },
+						name: {
+							template: "Heading {name}",
+							parameters: { name: "one" },
+						},
 					},
 					value: { template: "Value {name}", parameters: { name: "two" } },
 				},
