@@ -178,6 +178,48 @@ test("table rejects duplicate expanded headings", () => {
 	);
 });
 
+test("table rejects headings that differ only by case", () => {
+	assert.throws(
+		() => table({ headings: ["Name", "name"], rows: [["one", "two"]] }),
+		{ message: "Table headings must be unique." },
+	);
+	assert.throws(
+		() =>
+			table({
+				headings: [
+					{ template: "Name {value}", parameters: { value: "one" } },
+					{ template: "name {value}", parameters: { value: "ONE" } },
+				],
+				rows: [["one", "two"]],
+			}),
+		{ message: "Table headings must be unique." },
+	);
+	assert.throws(
+		() =>
+			table({
+				headings: [
+					"Unpublished data",
+					{
+						template: "{label}",
+						parameters: { label: "UNPUBLISHED DATA" },
+					},
+				],
+				rows: [["one", "two"]],
+			}),
+		{ message: "Table headings must be unique." },
+	);
+});
+
+test("table preserves headings that differ by whitespace", () => {
+	const result = table({
+		headings: ["Name", " Name"],
+		rows: [["one", "two"]],
+	});
+
+	assert.equal(result.rows[0][0].heading.name, "Name");
+	assert.equal(result.rows[0][1].heading.name, " Name");
+});
+
 test("table rejects empty headings", () => {
 	assert.throws(() => table({ headings: [], rows: [[]] }), {
 		message: "A table must contain at least one heading.",
@@ -245,6 +287,7 @@ test("table requires at least one data row", () => {
 test("hasColumn finds literal headings", () => {
 	const result = table({ headings: ["Heading"], rows: [["value"]] });
 	assert.equal(hasColumn(result, "Heading"), true);
+	assert.equal(hasColumn(result, "heading"), false);
 	assert.equal(hasColumn(result, "Missing"), false);
 });
 
@@ -300,6 +343,9 @@ test("cellAt looks up an exact heading and expands the value", () => {
 	}).rows[0];
 
 	assert.equal(cellAt(row, "Preferred"), "Second cell");
+	assert.throws(() => cellAt(row, "preferred"), {
+		message: 'Could not find a table cell with the heading: "preferred".',
+	});
 	assert.deepEqual(rawCellAt(row, "Preferred"), {
 		template: "Second {value}",
 		parameters: { value: "cell" },
