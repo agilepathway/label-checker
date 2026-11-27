@@ -5,9 +5,7 @@ import type {
 	HeadingInput,
 	NonEmptyArray,
 	ParameterisedText,
-	Rule,
 	Specification,
-	Table,
 	Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import {
@@ -24,33 +22,10 @@ export type ExecutableCriterion = ParameterisedText & {
 	};
 };
 
-export type LabelCheckerExample = Example &
-	(
-		| {
-				testExecution: SupportedTestExecution;
-		  }
-		| {
-				testExecution: {
-					kind: "unsupported";
-					prefixMode?: boolean;
-					expectedError: string;
-				};
-		  }
-	);
-
-type LabelCheckerSpecification = Omit<Specification, "rules"> & {
-	rules: Array<Omit<Rule, "examples"> & { examples: LabelCheckerExample[] }>;
-};
-
-type SupportedTestExecution = {
-	kind: "supported";
-	prefixMode?: boolean;
-};
-
-type SupportedExampleInputRow = {
+type ExampleInputRow = {
+	readonly pullRequestNumber?: number;
 	readonly values: readonly Text[];
 	readonly expected: {
-		pullRequestNumber?: number;
 		stdout: string;
 		stderr: string;
 	};
@@ -58,50 +33,55 @@ type SupportedExampleInputRow = {
 
 const supplementaryHeadings = [
 	unpublished("Pull request number"),
+	unpublished("Prefix mode"),
 	unpublished("Expected stdout"),
 	unpublished("Expected stderr"),
 ];
 
-function supportedExample({
-	testExecution,
+function executableExample({
+	prefixMode = false,
 	caption,
 	headings,
 	rows,
 }: {
-	testExecution: SupportedTestExecution;
+	prefixMode?: boolean;
 	caption?: Text;
 	headings: HeadingInput[];
-	rows: NonEmptyArray<SupportedExampleInputRow>;
-}): {
-	testExecution: SupportedTestExecution;
-	content: [{ type: "table"; table: Table }];
-} {
+	rows: NonEmptyArray<ExampleInputRow>;
+}): Pick<Example, "content"> {
 	const [firstRow, ...remainingRows] = rows;
 	if (firstRow === undefined) {
-		throw new Error("A supported example must have at least one row.");
+		throw new Error("An executable example must have at least one row.");
 	}
 
-	const specificationTable = table({
-		...(caption === undefined ? {} : { caption }),
-		headings: [...headings, ...supplementaryHeadings],
-		rows: [
-			[
-				...firstRow.values,
-				String(firstRow.expected.pullRequestNumber ?? 1),
-				firstRow.expected.stdout,
-				firstRow.expected.stderr,
-			],
-			...remainingRows.map(({ values, expected }, index) => [
-				...values,
-				String(expected.pullRequestNumber ?? index + 2),
-				expected.stdout,
-				expected.stderr,
-			]),
-		],
-	});
 	return {
-		testExecution,
-		content: [{ type: "table", table: specificationTable }],
+		content: [
+			{
+				type: "table",
+				table: table({
+					...(caption === undefined ? {} : { caption }),
+					headings: [...headings, ...supplementaryHeadings],
+					rows: [
+						[
+							...firstRow.values,
+							String(firstRow.pullRequestNumber ?? 1),
+							String(prefixMode),
+							firstRow.expected.stdout,
+							firstRow.expected.stderr,
+						],
+						...remainingRows.map(
+							({ values, expected, pullRequestNumber }, index) => [
+								...values,
+								String(pullRequestNumber ?? index + 2),
+								String(prefixMode),
+								expected.stdout,
+								expected.stderr,
+							],
+						),
+					],
+				}),
+			},
+		],
 	};
 }
 
@@ -220,7 +200,7 @@ const allOfCriterion = criterion(
 
 const combinedFailureOutcome = "Failure";
 
-export const labelCheckerSpecification: LabelCheckerSpecification = {
+export const labelCheckerSpecification: Specification = {
 	title: "Label checker",
 	rules: [
 		{
@@ -229,10 +209,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "none_of_major_minor_patch",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-						},
+					...executableExample({
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
@@ -278,10 +255,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "one_of_major_minor_patch",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-						},
+					...executableExample({
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
@@ -327,10 +301,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "all_of_major_minor_patch",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-						},
+					...executableExample({
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
@@ -376,10 +347,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "any_of_major_minor_patch",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-						},
+					...executableExample({
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
@@ -425,53 +393,50 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "none_of_type_prefix",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-							prefixMode: true,
-						},
+					...executableExample({
+						prefixMode: true,
 						caption: "**`none_of`**",
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
+								pullRequestNumber: 1,
 								values: [noneOfTypePrefixCriterion, "(none)", "Success"],
 								expected: {
-									pullRequestNumber: 1,
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
 									stderr: "",
 								},
 							},
 							{
+								pullRequestNumber: 5,
 								values: [noneOfTypePrefixCriterion, "type:fix", "Failure"],
 								expected: {
-									pullRequestNumber: 5,
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
 										"::error:: Label check failed: required none prefixed with 'type:', but found 1: 'type:fix'\n",
 								},
 							},
 							{
+								pullRequestNumber: 6,
 								values: [
 									noneOfTypePrefixCriterion,
 									"type:fix, type:feature",
 									"Failure",
 								],
 								expected: {
-									pullRequestNumber: 6,
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
 										"::error:: Label check failed: required none prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
 								},
 							},
 							{
+								pullRequestNumber: 7,
 								values: [
 									noneOfTypePrefixCriterion,
 									"type:fix, type:feature, type:documentation",
 									"Failure",
 								],
 								expected: {
-									pullRequestNumber: 7,
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
 										"::error:: Label check failed: required none prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
@@ -482,53 +447,50 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "one_of_type_prefix",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-							prefixMode: true,
-						},
+					...executableExample({
+						prefixMode: true,
 						caption: "**`one_of`**",
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
+								pullRequestNumber: 1,
 								values: [oneOfTypePrefixCriterion, "(none)", "Failure"],
 								expected: {
-									pullRequestNumber: 1,
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
 										"::error:: Label check failed: required 1 prefixed with 'type:', but found 0.\n",
 								},
 							},
 							{
+								pullRequestNumber: 5,
 								values: [oneOfTypePrefixCriterion, "type:fix", "Success"],
 								expected: {
-									pullRequestNumber: 5,
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
 									stderr: "",
 								},
 							},
 							{
+								pullRequestNumber: 6,
 								values: [
 									oneOfTypePrefixCriterion,
 									"type:fix, type:feature",
 									"Failure",
 								],
 								expected: {
-									pullRequestNumber: 6,
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
 										"::error:: Label check failed: required 1 prefixed with 'type:', but found 2: 'type:fix', 'type:feature'\n",
 								},
 							},
 							{
+								pullRequestNumber: 7,
 								values: [
 									oneOfTypePrefixCriterion,
 									"type:fix, type:feature, type:documentation",
 									"Failure",
 								],
 								expected: {
-									pullRequestNumber: 7,
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
 										"::error:: Label check failed: required 1 prefixed with 'type:', but found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
@@ -539,53 +501,50 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "any_of_type_prefix",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-							prefixMode: true,
-						},
+					...executableExample({
+						prefixMode: true,
 						caption: "**`any_of`**",
 						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
+								pullRequestNumber: 1,
 								values: [anyOfPrefixCriterion, "(none)", "Failure"],
 								expected: {
-									pullRequestNumber: 1,
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
 										"::error:: Label check failed: required any prefixed with 'type:', but found 0.\n",
 								},
 							},
 							{
+								pullRequestNumber: 5,
 								values: [anyOfPrefixCriterion, "type:fix", "Success"],
 								expected: {
-									pullRequestNumber: 5,
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
 									stderr: "",
 								},
 							},
 							{
+								pullRequestNumber: 6,
 								values: [
 									anyOfPrefixCriterion,
 									"type:fix, type:feature",
 									"Success",
 								],
 								expected: {
-									pullRequestNumber: 6,
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 2: 'type:fix', 'type:feature'\n",
 									stderr: "",
 								},
 							},
 							{
+								pullRequestNumber: 7,
 								values: [
 									anyOfPrefixCriterion,
 									"type:fix, type:feature, type:documentation",
 									"Success",
 								],
 								expected: {
-									pullRequestNumber: 7,
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 3: 'type:fix', 'type:feature', 'type:documentation'\n",
 									stderr: "",
@@ -602,22 +561,25 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "all_of_type_prefix",
-					testExecution: {
-						kind: "unsupported",
+					...executableExample({
 						prefixMode: true,
-						expectedError:
-							"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
-					},
-					content: [
-						{
-							type: "table",
-							table: table({
-								caption: "**`all_of`**",
-								headings: ["Criterion", "Outcome"],
-								rows: [[allOfPrefixCriterion, "Error"]],
-							}),
-						},
-					],
+						caption: "**`all_of`**",
+						headings: [
+							"Criterion",
+							"Outcome",
+							unpublished("Labels on the pull request"),
+						],
+						rows: [
+							{
+								values: [allOfPrefixCriterion, "Error", "(none)"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: The label checker does not support prefix checking with `all_of`, as that is not a logical combination.\n",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -626,26 +588,48 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "multiple_prefixes_per_check",
-					testExecution: {
-						kind: "unsupported",
+					...executableExample({
 						prefixMode: true,
-						expectedError:
-							"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
-					},
-					content: [
-						{
-							type: "table",
-							table: table({
-								headings: ["Criterion", "Outcome"],
-								rows: [
-									[noneOfMultiplePrefixesCriterion, "Error"],
-									[oneOfMultiplePrefixesCriterion, "Error"],
-									[anyOfMultiplePrefixesCriterion, "Error"],
-									[allOfMultiplePrefixesCriterion, "Error"],
-								],
-							}),
-						},
-					],
+						headings: [
+							"Criterion",
+							"Outcome",
+							unpublished("Labels on the pull request"),
+						],
+						rows: [
+							{
+								values: [noneOfMultiplePrefixesCriterion, "Error", "(none)"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+								},
+							},
+							{
+								values: [oneOfMultiplePrefixesCriterion, "Error", "(none)"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+								},
+							},
+							{
+								values: [anyOfMultiplePrefixesCriterion, "Error", "(none)"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+								},
+							},
+							{
+								values: [allOfMultiplePrefixesCriterion, "Error", "(none)"],
+								expected: {
+									stdout: "Checking GitHub labels ...\n",
+									stderr:
+										"::error:: Currently the label checker only supports checking with one prefix, not multiple.\n",
+								},
+							},
+						],
+					}),
 				},
 			],
 		},
@@ -654,11 +638,8 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "two_prefix_checks_combined",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-							prefixMode: true,
-						},
+					...executableExample({
+						prefixMode: true,
 						headings: [
 							"Criterion 1",
 							"Criterion 2",
@@ -694,10 +675,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 			examples: [
 				{
 					id: "two_checks_combined",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-						},
+					...executableExample({
 						caption: "2 checks combined:",
 						headings: [
 							"Criterion 1",
@@ -775,10 +753,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "three_checks_combined",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-						},
+					...executableExample({
 						caption: "3 checks combined:",
 						headings: [
 							"Criterion 1",
@@ -867,10 +842,7 @@ export const labelCheckerSpecification: LabelCheckerSpecification = {
 				},
 				{
 					id: "four_checks_combined",
-					...supportedExample({
-						testExecution: {
-							kind: "supported",
-						},
+					...executableExample({
 						caption: "4 checks combined:",
 						headings: [
 							"Criterion 1",
