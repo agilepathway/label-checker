@@ -23,6 +23,7 @@ export type ExecutableCriterion = ParameterisedText & {
 };
 
 type ExampleInputRow = {
+	readonly pullRequestNumber?: number;
 	readonly values: readonly Text[];
 	readonly expected: {
 		stdout: string;
@@ -30,21 +31,35 @@ type ExampleInputRow = {
 	};
 };
 
-const expectedResultHeadings = [
+const supplementaryHeadings = [
+	unpublished("Pull request number"),
+	unpublished("Prefix mode"),
 	unpublished("Expected stdout"),
 	unpublished("Expected stderr"),
 ];
 
 function executableExample({
+	prefixMode = false,
 	caption,
 	headings,
 	rows,
 }: {
+	prefixMode?: boolean;
 	caption?: Text;
 	headings: HeadingInput[];
 	rows: NonEmptyArray<ExampleInputRow>;
 }): Pick<Example, "content"> {
 	const [firstRow, ...remainingRows] = rows;
+	const toTableRow = (
+		{ values, expected, pullRequestNumber }: ExampleInputRow,
+		index: number,
+	): Text[] => [
+		...values,
+		String(pullRequestNumber ?? index + 1),
+		String(prefixMode),
+		expected.stdout,
+		expected.stderr,
+	];
 
 	return {
 		content: [
@@ -52,18 +67,10 @@ function executableExample({
 				type: "table",
 				table: table({
 					...(caption === undefined ? {} : { caption }),
-					headings: [...headings, ...expectedResultHeadings],
+					headings: [...headings, ...supplementaryHeadings],
 					rows: [
-						[
-							...firstRow.values,
-							firstRow.expected.stdout,
-							firstRow.expected.stderr,
-						],
-						...remainingRows.map(({ values, expected }) => [
-							...values,
-							expected.stdout,
-							expected.stderr,
-						]),
+						toTableRow(firstRow, 0),
+						...remainingRows.map((row, index) => toTableRow(row, index + 1)),
 					],
 				}),
 			},
@@ -196,16 +203,10 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "none_of_major_minor_patch",
 					...executableExample({
-						headings: [
-							"Criterion",
-							"Labels on the pull request",
-							"Outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
-						],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								values: [noneOfCriterion, "(none)", "Success", "1", "false"],
+								values: [noneOfCriterion, "(none)", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required none of 'major', 'minor', 'patch', and found 0.\n",
@@ -213,7 +214,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [noneOfCriterion, "minor", "Failure", "2", "false"],
+								values: [noneOfCriterion, "minor", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -221,13 +222,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									noneOfCriterion,
-									"minor, patch",
-									"Failure",
-									"3",
-									"false",
-								],
+								values: [noneOfCriterion, "minor, patch", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -235,13 +230,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									noneOfCriterion,
-									"major, minor, patch",
-									"Failure",
-									"4",
-									"false",
-								],
+								values: [noneOfCriterion, "major, minor, patch", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -260,16 +249,10 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "one_of_major_minor_patch",
 					...executableExample({
-						headings: [
-							"Criterion",
-							"Labels on the pull request",
-							"Outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
-						],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								values: [oneOfCriterion, "(none)", "Failure", "1", "false"],
+								values: [oneOfCriterion, "(none)", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -277,7 +260,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [oneOfCriterion, "minor", "Success", "2", "false"],
+								values: [oneOfCriterion, "minor", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required 1 of 'major', 'minor', 'patch', and found 1: 'minor'\n",
@@ -285,13 +268,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									oneOfCriterion,
-									"minor, patch",
-									"Failure",
-									"3",
-									"false",
-								],
+								values: [oneOfCriterion, "minor, patch", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -299,13 +276,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									oneOfCriterion,
-									"major, minor, patch",
-									"Failure",
-									"4",
-									"false",
-								],
+								values: [oneOfCriterion, "major, minor, patch", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -324,16 +295,10 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "all_of_major_minor_patch",
 					...executableExample({
-						headings: [
-							"Criterion",
-							"Labels on the pull request",
-							"Outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
-						],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								values: [allOfCriterion, "(none)", "Failure", "1", "false"],
+								values: [allOfCriterion, "(none)", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -341,7 +306,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [allOfCriterion, "minor", "Failure", "2", "false"],
+								values: [allOfCriterion, "minor", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -349,13 +314,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									allOfCriterion,
-									"minor, patch",
-									"Failure",
-									"3",
-									"false",
-								],
+								values: [allOfCriterion, "minor, patch", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -363,13 +322,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									allOfCriterion,
-									"major, minor, patch",
-									"Success",
-									"4",
-									"false",
-								],
+								values: [allOfCriterion, "major, minor, patch", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required all of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
@@ -388,16 +341,10 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "any_of_major_minor_patch",
 					...executableExample({
-						headings: [
-							"Criterion",
-							"Labels on the pull request",
-							"Outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
-						],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								values: [anyOfCriterion, "(none)", "Failure", "1", "false"],
+								values: [anyOfCriterion, "(none)", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -405,7 +352,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [anyOfCriterion, "minor", "Success", "2", "false"],
+								values: [anyOfCriterion, "minor", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 1: 'minor'\n",
@@ -413,13 +360,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									anyOfCriterion,
-									"minor, patch",
-									"Success",
-									"3",
-									"false",
-								],
+								values: [anyOfCriterion, "minor, patch", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 2: 'minor', 'patch'\n",
@@ -427,13 +368,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									anyOfCriterion,
-									"major, minor, patch",
-									"Success",
-									"4",
-									"false",
-								],
+								values: [anyOfCriterion, "major, minor, patch", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required any of 'major', 'minor', 'patch', and found 3: 'major', 'minor', 'patch'\n",
@@ -452,23 +387,12 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "none_of_type_prefix",
 					...executableExample({
+						prefixMode: true,
 						caption: "**`none_of`**",
-						headings: [
-							"Criterion",
-							"Labels on the pull request",
-							"Outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
-						],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								values: [
-									noneOfTypePrefixCriterion,
-									"(none)",
-									"Success",
-									"1",
-									"true",
-								],
+								values: [noneOfTypePrefixCriterion, "(none)", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required none prefixed with 'type:', and found 0.\n",
@@ -476,13 +400,8 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									noneOfTypePrefixCriterion,
-									"type:fix",
-									"Failure",
-									"5",
-									"true",
-								],
+								pullRequestNumber: 5,
+								values: [noneOfTypePrefixCriterion, "type:fix", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -490,12 +409,11 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
+								pullRequestNumber: 6,
 								values: [
 									noneOfTypePrefixCriterion,
 									"type:fix, type:feature",
 									"Failure",
-									"6",
-									"true",
 								],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -504,12 +422,11 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
+								pullRequestNumber: 7,
 								values: [
 									noneOfTypePrefixCriterion,
 									"type:fix, type:feature, type:documentation",
 									"Failure",
-									"7",
-									"true",
 								],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -523,23 +440,12 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "one_of_type_prefix",
 					...executableExample({
+						prefixMode: true,
 						caption: "**`one_of`**",
-						headings: [
-							"Criterion",
-							"Labels on the pull request",
-							"Outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
-						],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								values: [
-									oneOfTypePrefixCriterion,
-									"(none)",
-									"Failure",
-									"1",
-									"true",
-								],
+								values: [oneOfTypePrefixCriterion, "(none)", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -547,13 +453,8 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									oneOfTypePrefixCriterion,
-									"type:fix",
-									"Success",
-									"5",
-									"true",
-								],
+								pullRequestNumber: 5,
+								values: [oneOfTypePrefixCriterion, "type:fix", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required 1 prefixed with 'type:', and found 1: 'type:fix'\n",
@@ -561,12 +462,11 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
+								pullRequestNumber: 6,
 								values: [
 									oneOfTypePrefixCriterion,
 									"type:fix, type:feature",
 									"Failure",
-									"6",
-									"true",
 								],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -575,12 +475,11 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
+								pullRequestNumber: 7,
 								values: [
 									oneOfTypePrefixCriterion,
 									"type:fix, type:feature, type:documentation",
 									"Failure",
-									"7",
-									"true",
 								],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -594,23 +493,12 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "any_of_type_prefix",
 					...executableExample({
+						prefixMode: true,
 						caption: "**`any_of`**",
-						headings: [
-							"Criterion",
-							"Labels on the pull request",
-							"Outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
-						],
+						headings: ["Criterion", "Labels on the pull request", "Outcome"],
 						rows: [
 							{
-								values: [
-									anyOfPrefixCriterion,
-									"(none)",
-									"Failure",
-									"1",
-									"true",
-								],
+								values: [anyOfPrefixCriterion, "(none)", "Failure"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -618,13 +506,8 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									anyOfPrefixCriterion,
-									"type:fix",
-									"Success",
-									"5",
-									"true",
-								],
+								pullRequestNumber: 5,
+								values: [anyOfPrefixCriterion, "type:fix", "Success"],
 								expected: {
 									stdout:
 										"Checking GitHub labels ...\nLabel check successful: required any prefixed with 'type:', and found 1: 'type:fix'\n",
@@ -632,12 +515,11 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
+								pullRequestNumber: 6,
 								values: [
 									anyOfPrefixCriterion,
 									"type:fix, type:feature",
 									"Success",
-									"6",
-									"true",
 								],
 								expected: {
 									stdout:
@@ -646,12 +528,11 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
+								pullRequestNumber: 7,
 								values: [
 									anyOfPrefixCriterion,
 									"type:fix, type:feature, type:documentation",
 									"Success",
-									"7",
-									"true",
 								],
 								expected: {
 									stdout:
@@ -671,17 +552,16 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "all_of_type_prefix",
 					...executableExample({
+						prefixMode: true,
 						caption: "**`all_of`**",
 						headings: [
 							"Criterion",
 							"Outcome",
 							unpublished("Labels on the pull request"),
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
 						],
 						rows: [
 							{
-								values: [allOfPrefixCriterion, "Error", "(none)", "1", "true"],
+								values: [allOfPrefixCriterion, "Error", "(none)"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -699,22 +579,15 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "multiple_prefixes_per_check",
 					...executableExample({
+						prefixMode: true,
 						headings: [
 							"Criterion",
 							"Outcome",
 							unpublished("Labels on the pull request"),
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
 						],
 						rows: [
 							{
-								values: [
-									noneOfMultiplePrefixesCriterion,
-									"Error",
-									"(none)",
-									"1",
-									"true",
-								],
+								values: [noneOfMultiplePrefixesCriterion, "Error", "(none)"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -722,13 +595,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									oneOfMultiplePrefixesCriterion,
-									"Error",
-									"(none)",
-									"2",
-									"true",
-								],
+								values: [oneOfMultiplePrefixesCriterion, "Error", "(none)"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -736,13 +603,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									anyOfMultiplePrefixesCriterion,
-									"Error",
-									"(none)",
-									"3",
-									"true",
-								],
+								values: [anyOfMultiplePrefixesCriterion, "Error", "(none)"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -750,13 +611,7 @@ export const labelCheckerSpecification: Specification = {
 								},
 							},
 							{
-								values: [
-									allOfMultiplePrefixesCriterion,
-									"Error",
-									"(none)",
-									"4",
-									"true",
-								],
+								values: [allOfMultiplePrefixesCriterion, "Error", "(none)"],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
 									stderr:
@@ -774,6 +629,7 @@ export const labelCheckerSpecification: Specification = {
 				{
 					id: "two_prefix_checks_combined",
 					...executableExample({
+						prefixMode: true,
 						headings: [
 							"Criterion 1",
 							"Criterion 2",
@@ -781,8 +637,6 @@ export const labelCheckerSpecification: Specification = {
 							"Criterion 1 outcome",
 							"Criterion 2 outcome",
 							"Overall outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
 						],
 						rows: [
 							{
@@ -793,8 +647,6 @@ export const labelCheckerSpecification: Specification = {
 									"Success",
 									"Failure",
 									"Failure",
-									"1",
-									"true",
 								],
 								expected: {
 									stdout:
@@ -822,8 +674,6 @@ export const labelCheckerSpecification: Specification = {
 							"Criterion 1 outcome",
 							"Criterion 2 outcome",
 							"Overall outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
 						],
 						rows: [
 							{
@@ -834,8 +684,6 @@ export const labelCheckerSpecification: Specification = {
 									"Success",
 									"Failure",
 									combinedFailureOutcome,
-									"1",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -852,8 +700,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Success",
 									combinedFailureOutcome,
-									"2",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -870,8 +716,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Failure",
 									combinedFailureOutcome,
-									"3",
-									"false",
 								],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -887,8 +731,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Failure",
 									combinedFailureOutcome,
-									"4",
-									"false",
 								],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -912,8 +754,6 @@ export const labelCheckerSpecification: Specification = {
 							"Criterion 2 outcome",
 							"Criterion 3 outcome",
 							"Overall outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
 						],
 						rows: [
 							{
@@ -926,8 +766,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Failure",
 									combinedFailureOutcome,
-									"1",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -946,8 +784,6 @@ export const labelCheckerSpecification: Specification = {
 									"Success",
 									"Failure",
 									combinedFailureOutcome,
-									"2",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -966,8 +802,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Failure",
 									combinedFailureOutcome,
-									"3",
-									"false",
 								],
 								expected: {
 									stdout: "Checking GitHub labels ...\n",
@@ -985,8 +819,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Success",
 									combinedFailureOutcome,
-									"4",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -1013,8 +845,6 @@ export const labelCheckerSpecification: Specification = {
 							"Criterion 3 outcome",
 							"Criterion 4 outcome",
 							"Overall outcome",
-							unpublished("Pull request number"),
-							unpublished("Prefix mode"),
 						],
 						rows: [
 							{
@@ -1029,8 +859,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Failure",
 									combinedFailureOutcome,
-									"1",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -1051,8 +879,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Success",
 									combinedFailureOutcome,
-									"2",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -1073,8 +899,6 @@ export const labelCheckerSpecification: Specification = {
 									"Failure",
 									"Success",
 									combinedFailureOutcome,
-									"3",
-									"false",
 								],
 								expected: {
 									stdout:
@@ -1095,8 +919,6 @@ export const labelCheckerSpecification: Specification = {
 									"Success",
 									"Success",
 									combinedFailureOutcome,
-									"4",
-									"false",
 								],
 								expected: {
 									stdout:
