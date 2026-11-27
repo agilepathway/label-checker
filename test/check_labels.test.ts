@@ -104,11 +104,7 @@ async function verifySpecificationExample(example: Example): Promise<void> {
 		const prefixMode = parseBoolean(cellAt(row, "Prefix mode"));
 		const expectedStdout = cellAt(row, "Expected stdout");
 		const expectedStderr = cellAt(row, "Expected stderr");
-		const labelsCell = row.find(
-			(cell) => expandText(cell.heading.name) === "Labels on the pull request",
-		);
-		const labels =
-			labelsCell === undefined ? [] : parseLabels(expandText(labelsCell.value));
+		const labels = parseLabels(cellAt(row, "Labels on the pull request"));
 		const requirements: Requirements = {};
 		const criteria = row
 			.filter((cell) =>
