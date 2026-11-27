@@ -213,7 +213,7 @@ test("renderSpecification escapes literal pipes in table headers and cells", () 
 	);
 });
 
-test("renderSpecification omits Unpublished data columns without expanding their cells", () => {
+test("renderSpecification omits an unpublished column without expanding its cells", () => {
 	const specification: Specification = {
 		title: "A specification",
 		rules: [
@@ -226,84 +226,9 @@ test("renderSpecification omits Unpublished data columns without expanding their
 							{
 								type: "table",
 								table: table({
-									headings: ["Before", "Unpublished data", "After"],
-									rows: [
-										[
-											"first",
-											{ template: "{missing}", parameters: {} },
-											"last",
-										],
-									],
-								}),
-							},
-						],
-					},
-				],
-			},
-		],
-	};
-
-	assert.match(
-		renderSpecification(specification),
-		/\| Before \| After \|\n\|---\|---\|\n\| first \| last \|/,
-	);
-});
-
-test("renderSpecification omits differently capitalized Unpublished data columns without expanding their cells", () => {
-	const specification: Specification = {
-		title: "A specification",
-		rules: [
-			{
-				definition: "The rule.",
-				examples: [
-					{
-						id: "capitalized-unpublished-column",
-						content: [
-							{
-								type: "table",
-								table: table({
-									headings: ["Before", "UNPUBLISHED DATA", "After"],
-									rows: [
-										[
-											"first",
-											{ template: "{missing}", parameters: {} },
-											"last",
-										],
-									],
-								}),
-							},
-						],
-					},
-				],
-			},
-		],
-	};
-
-	assert.match(
-		renderSpecification(specification),
-		/\| Before \| After \|\n\|---\|---\|\n\| first \| last \|/,
-	);
-});
-
-test("renderSpecification omits parameterized Unpublished data headings without expanding their cells", () => {
-	const specification: Specification = {
-		title: "A specification",
-		rules: [
-			{
-				definition: "The rule.",
-				examples: [
-					{
-						id: "parameterized-unpublished-column",
-						content: [
-							{
-								type: "table",
-								table: table({
 									headings: [
 										"Before",
-										{
-											template: "{name}",
-											parameters: { name: "Unpublished data" },
-										},
+										{ name: "Internal data", published: false },
 										"After",
 									],
 									rows: [
@@ -321,10 +246,85 @@ test("renderSpecification omits parameterized Unpublished data headings without 
 			},
 		],
 	};
-
 	assert.match(
 		renderSpecification(specification),
 		/\| Before \| After \|\n\|---\|---\|\n\| first \| last \|/,
+	);
+});
+
+test("renderSpecification omits multiple unpublished columns across rows without expanding their cells", () => {
+	const specification: Specification = {
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "multiple-unpublished-columns",
+						content: [
+							{
+								type: "table",
+								table: table({
+									headings: [
+										"Before",
+										{ name: "Internal number", published: false },
+										{ name: "Internal output", published: false },
+										"After",
+									],
+									rows: [
+										[
+											"first",
+											{ template: "{missing}", parameters: {} },
+											{ template: "{alsoMissing}", parameters: {} },
+											"last",
+										],
+										[
+											"second",
+											{ template: "{missingAgain}", parameters: {} },
+											{ template: "{alsoMissingAgain}", parameters: {} },
+											"final",
+										],
+									],
+								}),
+							},
+						],
+					},
+				],
+			},
+		],
+	};
+	assert.match(
+		renderSpecification(specification),
+		/\| Before \| After \|\n\|---\|---\|\n\| first \| last \|\n\| second \| final \|/,
+	);
+});
+
+test("renderSpecification publishes a heading named Unpublished data by default", () => {
+	const specification: Specification = {
+		title: "A specification",
+		rules: [
+			{
+				definition: "The rule.",
+				examples: [
+					{
+						id: "ordinary-unpublished-data-heading",
+						content: [
+							{
+								type: "table",
+								table: table({
+									headings: ["Before", "Unpublished data", "After"],
+									rows: [["first", "visible", "last"]],
+								}),
+							},
+						],
+					},
+				],
+			},
+		],
+	};
+	assert.match(
+		renderSpecification(specification),
+		/\| Before \| Unpublished data \| After \|\n\|---\|---\|---\|\n\| first \| visible \| last \|/,
 	);
 });
 

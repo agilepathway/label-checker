@@ -9,8 +9,15 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type ReadonlyNonEmptyArray<T> = readonly [T, ...T[]];
 
+export type Heading = {
+	readonly name: Text;
+	readonly published?: boolean;
+};
+
+export type HeadingInput = Text | Heading;
+
 export type Cell = {
-	readonly heading: Text;
+	readonly heading: Heading;
 	readonly value: Text;
 };
 
@@ -30,7 +37,7 @@ export type ContentItem =
 
 export type TableFactoryInput = {
 	caption?: Text;
-	headings: Text[];
+	headings: HeadingInput[];
 	rows: NonEmptyArray<Text[]>;
 };
 
@@ -70,7 +77,15 @@ export function table({ caption, headings, rows }: TableFactoryInput): Table {
 		throw new Error("A table must contain at least one heading.");
 	}
 
-	const expandedHeadings = headings.map(expandText);
+	const normalisedHeadings = headings.map(
+		(heading): Heading =>
+			typeof heading === "object" && "name" in heading
+				? heading
+				: { name: heading },
+	);
+	const expandedHeadings = normalisedHeadings.map((heading) =>
+		expandText(heading.name),
+	);
 	if (new Set(expandedHeadings).size !== expandedHeadings.length) {
 		throw new Error("Table headings must be unique.");
 	}
@@ -82,11 +97,11 @@ export function table({ caption, headings, rows }: TableFactoryInput): Table {
 			);
 		}
 
-		return headings.map((heading, index) => {
+		return normalisedHeadings.map((heading, index) => {
 			const value = row[index];
 			if (value === undefined) {
 				throw new Error(
-					`Table row ${rowIndex + 1} is missing a value for heading "${expandText(heading)}".`,
+					`Table row ${rowIndex + 1} is missing a value for heading "${expandText(heading.name)}".`,
 				);
 			}
 
@@ -112,12 +127,14 @@ export function table({ caption, headings, rows }: TableFactoryInput): Table {
 }
 
 export function hasColumn(table: Table, heading: string): boolean {
-	return table.rows[0].some((cell) => expandText(cell.heading) === heading);
+	return table.rows[0].some(
+		(cell) => expandText(cell.heading.name) === heading,
+	);
 }
 
 export function rawCellAt(row: Row, heading: string): Text {
 	const cell = row.find(
-		(candidate) => expandText(candidate.heading) === heading,
+		(candidate) => expandText(candidate.heading.name) === heading,
 	);
 	if (cell === undefined) {
 		throw new Error(
@@ -131,7 +148,7 @@ export function rawCellAt(row: Row, heading: string): Text {
 export function rawCellAtAnyOf(row: Row, ...headings: string[]): Text {
 	const cell = headings
 		.map((heading) =>
-			row.find((candidate) => expandText(candidate.heading) === heading),
+			row.find((candidate) => expandText(candidate.heading.name) === heading),
 		)
 		.find((candidate) => candidate !== undefined);
 	if (cell === undefined) {
