@@ -8,73 +8,51 @@ import {
 	cellAtAnyOf,
 	type Example,
 	expandText,
+	type Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
-	type ExecutableCriterion,
+	type CriterionOperator,
 	labelCheckerSpecification,
 } from "./check_labels_specification.ts";
 import {
+	type Requirement,
 	type Requirements,
 	runLabelCheck,
 } from "./check_labels_test_harness.ts";
 
-test("ExecutableCriterion execution metadata is readonly", () => {
-	const verifyReadonlyTypes = (criterion: ExecutableCriterion): void => {
-		// @ts-expect-error Executable criterion execution metadata is readonly.
-		criterion.execution = { requirement: "all", input: "" };
-		// @ts-expect-error Executable criterion requirements are readonly.
-		criterion.execution.requirement = "all";
-		// @ts-expect-error Executable criterion input is readonly.
-		criterion.execution.input = "";
+test("criterion interpreter rejects missing or unsupported operators", () => {
+	const criterion: Text = {
+		template: "{operator} {labels}",
+		parameters: { labels: "bug" },
 	};
-	void verifyReadonlyTypes;
+	assert.throws(() => interpretCriterion(criterion, "Criterion"), {
+		message: "Expected a supported operator for Criterion",
+	});
+
+	const unsupportedOperator: Text = {
+		template: "{operator} {labels}",
+		parameters: { operator: "Sometimes", labels: "bug" },
+	};
+	assert.throws(() => interpretCriterion(unsupportedOperator, "Criterion"), {
+		message: "Expected a supported operator for Criterion",
+	});
 });
 
-test("ExecutableCriterion runtime validation checks the complete shape", () => {
-	const criterion: ExecutableCriterion = {
-		template: "Requires {labels}",
-		parameters: { labels: "bug" },
-		execution: { requirement: "one", input: "bug" },
+test("criterion interpreter preserves parameter order", () => {
+	const criterion: Text = {
+		template: "{operator} {first} {second}",
+		parameters: {
+			first: "type:",
+			second: "visibility/",
+			operator: "No",
+		},
 	};
 
-	assert.equal(executableCriterion(criterion, "Criterion"), criterion);
-	const emptyParametersCriterion = { ...criterion, parameters: {} };
-	assert.equal(
-		executableCriterion(emptyParametersCriterion, "Criterion"),
-		emptyParametersCriterion,
-	);
-
-	const invalidCriteria: unknown[] = [
-		"not executable",
-		null,
-		[],
-		{ parameters: criterion.parameters, execution: criterion.execution },
-		{ ...criterion, template: 1 },
-		{ ...criterion, parameters: null },
-		{ ...criterion, parameters: [] },
-		{ ...criterion, parameters: { labels: 1 } },
-		{ template: criterion.template, execution: criterion.execution },
-		{ template: criterion.template, parameters: criterion.parameters },
-		{ ...criterion, execution: null },
-		{ ...criterion, execution: [] },
-		{ ...criterion, execution: { input: "bug" } },
-		{ ...criterion, execution: { requirement: "one" } },
-		{
-			...criterion,
-			execution: { requirement: "something-else", input: "bug" },
-		},
-		{
-			...criterion,
-			execution: { requirement: "one", input: 1 },
-		},
-	];
-
-	for (const invalidCriterion of invalidCriteria) {
-		assert.throws(() => executableCriterion(invalidCriterion, "Criterion"), {
-			message: "Expected executable Criterion",
-		});
-	}
+	assert.deepEqual(interpretCriterion(criterion, "Criterion"), {
+		requirement: "none",
+		input: "type:,visibility/",
+	});
 });
 
 test("published label-checker specification is up to date", async () => {
@@ -112,9 +90,9 @@ async function verifySpecificationExample(example: Example): Promise<void> {
 			.filter((cell) =>
 				/^Criterion(?: \d+)?$/.test(expandText(cell.heading.name)),
 			)
-			.map(executableCriterionFromCell);
+			.map(criterionFromCell);
 		for (const criterion of criteria)
-			requirements[criterion.execution.requirement] = criterion.execution.input;
+			requirements[criterion.requirement] = criterion.input;
 		const outcome = cellAtAnyOf(row, "Outcome", "Overall outcome");
 		const expectedOutcome = interpretOutcome(outcome);
 		const result = await runLabelCheck({
@@ -160,45 +138,41 @@ function parseLabels(labelsText: string): string[] {
 	return labelsText === "(none)" ? [] : labelsText.split(", ");
 }
 
-function executableCriterionFromCell(cell: Cell): ExecutableCriterion {
+const requirementByOperator: Record<CriterionOperator, Requirement> = {
+	"None of": "none",
+	No: "none",
+	"Exactly one of": "one",
+	"Exactly one": "one",
+	"At least one of": "any",
+	"At least one": "any",
+	"All of": "all",
+	All: "all",
+};
+
+function criterionFromCell(cell: Cell): {
+	requirement: Requirement;
+	input: string;
+} {
 	const heading = expandText(cell.heading.name);
-	return executableCriterion(cell.value, heading);
+	return interpretCriterion(cell.value, heading);
 }
 
-function executableCriterion(
-	criterion: unknown,
+function interpretCriterion(
+	criterion: Text,
 	heading: string,
-): ExecutableCriterion {
-	assert(isExecutableCriterion(criterion), `Expected executable ${heading}`);
-	return criterion;
-}
-
-function isExecutableCriterion(text: unknown): text is ExecutableCriterion {
-	return (
-		isRecord(text) &&
-		typeof text.template === "string" &&
-		isStringRecord(text.parameters) &&
-		isRecord(text.execution) &&
-		isRequirement(text.execution.requirement) &&
-		typeof text.execution.input === "string"
+): { requirement: Requirement; input: string } {
+	assert(typeof criterion !== "string", `Expected parameterised ${heading}`);
+	const { operator, ...inputParameters } = criterion.parameters;
+	assert(
+		isCriterionOperator(operator),
+		`Expected a supported operator for ${heading}`,
 	);
+	return {
+		requirement: requirementByOperator[operator],
+		input: Object.values(inputParameters).join(",").replaceAll(", ", ","),
+	};
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isStringRecord(value: unknown): value is Record<string, string> {
-	return (
-		isRecord(value) &&
-		Object.values(value).every((item) => typeof item === "string")
-	);
-}
-
-function isRequirement(
-	value: unknown,
-): value is ExecutableCriterion["execution"]["requirement"] {
-	return (
-		value === "none" || value === "one" || value === "any" || value === "all"
-	);
+function isCriterionOperator(value: string): value is CriterionOperator {
+	return Object.hasOwn(requirementByOperator, value);
 }

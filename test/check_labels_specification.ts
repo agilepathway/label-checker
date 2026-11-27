@@ -13,14 +13,15 @@ import {
 	unpublished,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 
-type Requirement = "none" | "one" | "any" | "all";
-
-export type ExecutableCriterion = ParameterisedText & {
-	readonly execution: {
-		readonly requirement: Requirement;
-		readonly input: string;
-	};
-};
+export type CriterionOperator =
+	| "None of"
+	| "No"
+	| "Exactly one of"
+	| "Exactly one"
+	| "At least one of"
+	| "At least one"
+	| "All of"
+	| "All";
 
 type ExampleInputRow = {
 	readonly pullRequestNumber?: number;
@@ -81,73 +82,48 @@ function executableExample({
 function criterion(
 	template: string,
 	inputValues: Record<string, string>,
-	requirement: Requirement,
-): ExecutableCriterion {
-	const parameters = { ...inputValues };
-	if (template.includes("{operator}")) {
-		const operatorByRequirement: Record<Requirement, string> = Object.hasOwn(
-			inputValues,
-			"required",
-		)
-			? {
-					none: "None of",
-					one: "Exactly one of",
-					any: "At least one of",
-					all: "All of",
-				}
-			: {
-					none: "No",
-					one: "Exactly one",
-					any: "At least one",
-					all: "All",
-				};
-		parameters.operator = operatorByRequirement[requirement];
-	}
-
+	operator: CriterionOperator,
+): ParameterisedText {
 	return {
 		template,
-		parameters,
-		execution: {
-			requirement,
-			input: Object.values(inputValues).join(",").replaceAll(", ", ","),
-		},
+		parameters: { ...inputValues, operator },
 	};
 }
 
 const oneOfCriterion = criterion(
 	"{operator} {required} is present.",
 	{ required: "major, minor, patch" },
-	"one",
+	"Exactly one of",
 );
 
 const noneOfCriterion = criterion(
 	"{operator} {required} are present.",
 	{ required: "major, minor, patch" },
-	"none",
+	"None of",
 );
 
 const noneOfTypePrefixCriterion = criterion(
 	"{operator} labels starting with {prefix} are present.",
 	{ prefix: "type:" },
-	"none",
+	"No",
 );
 
 const oneOfTypePrefixCriterion = criterion(
 	"{operator} label starting with {prefix} is present.",
 	{ prefix: "type:" },
-	"one",
+	"Exactly one",
 );
 
 const anyOfPrefixCriterion = criterion(
 	"{operator} label starting with {prefix} is present.",
 	{ prefix: "type:" },
-	"any",
+	"At least one",
 );
 
 const allOfPrefixCriterion = criterion(
 	"{operator} labels start with prefix {prefix}",
 	{ prefix: "type:" },
-	"all",
+	"All",
 );
 
 const multiplePrefixes = {
@@ -158,37 +134,37 @@ const multiplePrefixes = {
 const noneOfMultiplePrefixesCriterion = criterion(
 	"{operator} labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
 	multiplePrefixes,
-	"none",
+	"No",
 );
 
 const oneOfMultiplePrefixesCriterion = criterion(
 	"{operator} label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
 	multiplePrefixes,
-	"one",
+	"Exactly one",
 );
 
 const anyOfMultiplePrefixesCriterion = criterion(
 	"{operator} label starts with prefixes `{firstPrefix}` and `{secondPrefix}`",
 	multiplePrefixes,
-	"any",
+	"At least one",
 );
 
 const allOfMultiplePrefixesCriterion = criterion(
 	"{operator} labels start with prefixes `{firstPrefix}` and `{secondPrefix}`",
 	multiplePrefixes,
-	"all",
+	"All",
 );
 
 const anyOfCriterion = criterion(
 	"{operator} {required} is present.",
 	{ required: "major, minor, patch" },
-	"any",
+	"At least one of",
 );
 
 const allOfCriterion = criterion(
 	"{operator} {required} are present.",
 	{ required: "major, minor, patch" },
-	"all",
+	"All of",
 );
 
 const combinedFailureOutcome = "Failure";
