@@ -17,6 +17,7 @@ import {
 	table,
 	tableAt,
 	textAt,
+	unpublished,
 } from "../src/specification-by-example.ts";
 
 const example: Example = {
@@ -130,7 +131,7 @@ test("table pairs values with expanded, unique headings", () => {
 	};
 	const value = { template: "Value {name}", parameters: { name: "two" } };
 	const result = table({
-		headings: [heading, { name: "Second", published: false }],
+		headings: [heading, unpublished("Second")],
 		rows: [[value, "other"]],
 	});
 
@@ -186,6 +187,51 @@ test("table rejects empty headings", () => {
 test("table normalises plain text headings into Heading objects", () => {
 	const result = table({ headings: ["Heading"], rows: [["value"]] });
 	assert.deepEqual(result.rows[0][0].heading, { name: "Heading" });
+});
+
+test("table normalises unpublished headings without exposing the wrapper", () => {
+	const heading = {
+		template: "Internal {name}",
+		parameters: { name: "data" },
+	};
+	const result = table({
+		headings: [unpublished(heading)],
+		rows: [["value"]],
+	});
+
+	assert.deepEqual(result.rows[0][0].heading, {
+		name: heading,
+		published: false,
+	});
+	assert.equal(hasColumn(result, "Internal data"), true);
+	assert.equal(cellAt(result.rows[0], "Internal data"), "value");
+});
+
+test("table treats parameterised headings with name and published properties as text", () => {
+	const heading = {
+		template: "Heading {value}",
+		parameters: { value: "one" },
+		name: "Not a heading",
+		published: false,
+	};
+	const result = table({ headings: [heading], rows: [["value"]] });
+
+	assert.deepEqual(result.rows[0][0].heading, { name: heading });
+	assert.equal(hasColumn(result, "Heading one"), true);
+});
+
+test("table factory accepts only text or unpublished heading inputs", () => {
+	const verifyHeadingInputTypes = (text: ParameterisedText): void => {
+		table({
+			headings: ["Literal", text, unpublished(text)],
+			rows: [["a", "b", "c"]],
+		});
+
+		const arbitraryHeading = { name: "Internal", published: false };
+		// @ts-expect-error Arbitrary Heading objects are not factory inputs.
+		table({ headings: [arbitraryHeading], rows: [["value"]] });
+	};
+	void verifyHeadingInputTypes;
 });
 
 test("table requires at least one data row", () => {

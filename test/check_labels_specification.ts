@@ -2,7 +2,6 @@
 
 import type {
 	Example,
-	Heading,
 	HeadingInput,
 	NonEmptyArray,
 	ParameterisedText,
@@ -11,7 +10,10 @@ import type {
 	Table,
 	Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
-import { table } from "../shared/specification-by-example/src/specification-by-example.ts";
+import {
+	table,
+	unpublished,
+} from "../shared/specification-by-example/src/specification-by-example.ts";
 
 type Requirement = "none" | "one" | "any" | "all";
 
@@ -54,10 +56,10 @@ type SupportedExampleInputRow = {
 	};
 };
 
-const supplementaryHeadings: Heading[] = [
-	{ name: "Pull request number", published: false },
-	{ name: "Expected stdout", published: false },
-	{ name: "Expected stderr", published: false },
+const supplementaryHeadings = [
+	unpublished("Pull request number"),
+	unpublished("Expected stdout"),
+	unpublished("Expected stderr"),
 ];
 
 function supportedExample({

@@ -5,7 +5,7 @@ import type {
 	ContentItem,
 	Specification,
 } from "../src/specification-by-example.ts";
-import { table } from "../src/specification-by-example.ts";
+import { table, unpublished } from "../src/specification-by-example.ts";
 
 test("renderSpecification expands parameterised text", () => {
 	const specification: Specification = {
@@ -226,11 +226,7 @@ test("renderSpecification omits an unpublished column without expanding its cell
 							{
 								type: "table",
 								table: table({
-									headings: [
-										"Before",
-										{ name: "Internal data", published: false },
-										"After",
-									],
+									headings: ["Before", unpublished("Internal data"), "After"],
 									rows: [
 										[
 											"first",
@@ -267,8 +263,8 @@ test("renderSpecification omits multiple unpublished columns across rows without
 								table: table({
 									headings: [
 										"Before",
-										{ name: "Internal number", published: false },
-										{ name: "Internal output", published: false },
+										unpublished("Internal number"),
+										unpublished("Internal output"),
 										"After",
 									],
 									rows: [

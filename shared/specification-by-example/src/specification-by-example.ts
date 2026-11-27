@@ -14,7 +14,13 @@ export type Heading = {
 	readonly published?: boolean;
 };
 
-export type HeadingInput = Text | Heading;
+const unpublishedHeadingInput: unique symbol = Symbol("unpublished heading");
+
+export type UnpublishedHeadingInput = {
+	readonly [unpublishedHeadingInput]: Text;
+};
+
+export type HeadingInput = Text | UnpublishedHeadingInput;
 
 export type Cell = {
 	readonly heading: Heading;
@@ -72,17 +78,29 @@ export function expandText(text: Text): string {
 	});
 }
 
+export function unpublished(name: Text): UnpublishedHeadingInput {
+	return { [unpublishedHeadingInput]: name };
+}
+
 export function table({ caption, headings, rows }: TableFactoryInput): Table {
 	if (headings.length === 0) {
 		throw new Error("A table must contain at least one heading.");
 	}
 
-	const normalisedHeadings = headings.map(
-		(heading): Heading =>
-			typeof heading === "object" && "name" in heading
-				? heading
-				: { name: heading },
-	);
+	const normalisedHeadings = headings.map((heading): Heading => {
+		if (
+			typeof heading === "object" &&
+			heading !== null &&
+			unpublishedHeadingInput in heading
+		) {
+			return {
+				name: heading[unpublishedHeadingInput],
+				published: false,
+			};
+		}
+
+		return { name: heading };
+	});
 	const expandedHeadings = normalisedHeadings.map((heading) =>
 		expandText(heading.name),
 	);
