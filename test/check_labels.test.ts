@@ -6,14 +6,12 @@ import {
 	type Cell,
 	cellAt,
 	cellAtAnyOf,
+	type Example,
 	expandText,
-	type Row,
-	rawCellAt,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
 import {
 	type ExecutableCriterion,
-	type LabelCheckerExample,
 	labelCheckerSpecification,
 } from "./check_labels_specification.ts";
 import {
@@ -94,75 +92,23 @@ test("published label-checker specification is up to date", async () => {
 	);
 });
 
-registerSpecificationTests(
-	labelCheckerSpecification,
-	// biome-ignore lint/nursery/noUnsafeTypeAssertion: The label-checker specification adds required metadata to shared examples.
-	(example) => verifySpecificationExample(example as LabelCheckerExample),
+registerSpecificationTests(labelCheckerSpecification, (example) =>
+	verifySpecificationExample(example),
 );
 
-async function verifySpecificationExample(
-	example: LabelCheckerExample,
-): Promise<void> {
-	if (isUnsupportedExample(example)) {
-		await verifyUnsupportedExample(example);
-		return;
-	}
-
-	await verifySupportedExample(example);
-}
-
-function isUnsupportedExample(
-	example: LabelCheckerExample,
-): example is Extract<
-	LabelCheckerExample,
-	{ testExecution: { kind: "unsupported" } }
-> {
-	return example.testExecution.kind === "unsupported";
-}
-
-async function verifyUnsupportedExample(
-	example: Extract<
-		LabelCheckerExample,
-		{ testExecution: { kind: "unsupported" } }
-	>,
-): Promise<void> {
-	const tableContent = example.content.find((item) => item.type === "table");
-	assert(tableContent);
-	const table = tableContent.table;
-	for (const [index, row] of table.rows.entries()) {
-		const criterion = executableCriterionAt(row, "Criterion");
-		assert.equal(cellAtAnyOf(row, "Outcome", "Overall outcome"), "Error");
-
-		const result = await runLabelCheck({
-			pullRequestNumber: index + 1,
-			labels: [],
-			requirements: {
-				[criterion.execution.requirement]: criterion.execution.input,
-			},
-			prefixMode: example.testExecution.prefixMode ?? false,
-		});
-
-		assert.equal(result.status, 1);
-		assert.equal(result.stdout, "Checking GitHub labels ...\n");
-		assert.equal(result.stderr, example.testExecution.expectedError);
-		assert.equal(result.output, "label_check=failure");
-	}
-}
-
-async function verifySupportedExample(
-	example: Extract<
-		LabelCheckerExample,
-		{ testExecution: { kind: "supported" } }
-	>,
-): Promise<void> {
+async function verifySpecificationExample(example: Example): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
 	for (const row of tableContent.table.rows) {
 		const pullRequestNumber = Number(cellAt(row, "Pull request number"));
+		const prefixMode = parseBoolean(cellAt(row, "Prefix mode"));
 		const expectedStdout = cellAt(row, "Expected stdout");
 		const expectedStderr = cellAt(row, "Expected stderr");
-		const labelsText = cellAt(row, "Labels on the pull request");
-		const labels = parseLabels(labelsText);
+		const labelsCell = row.find(
+			(cell) => expandText(cell.heading.name) === "Labels on the pull request",
+		);
+		const labels =
+			labelsCell === undefined ? [] : parseLabels(expandText(labelsCell.value));
 		const requirements: Requirements = {};
 		const criteria = row
 			.filter((cell) =>
@@ -172,12 +118,12 @@ async function verifySupportedExample(
 		for (const criterion of criteria)
 			requirements[criterion.execution.requirement] = criterion.execution.input;
 		const outcome = cellAtAnyOf(row, "Outcome", "Overall outcome");
-		const expectedOutcome = interpretSuccessFailureOutcome(outcome);
+		const expectedOutcome = interpretOutcome(outcome);
 		const result = await runLabelCheck({
 			pullRequestNumber,
 			labels,
 			requirements,
-			prefixMode: example.testExecution.prefixMode ?? false,
+			prefixMode,
 		});
 		assert.equal(result.status, expectedOutcome.status);
 		assert.equal(result.stdout, expectedStdout);
@@ -186,24 +132,25 @@ async function verifySupportedExample(
 	}
 }
 
-function interpretSuccessFailureOutcome(outcome: string):
+function interpretOutcome(outcome: string):
 	| { status: 0; output: "label_check=success" }
 	| {
 			status: 1;
 			output: "label_check=failure";
 	  } {
-	assert(outcome === "Success" || outcome === "Failure");
+	assert(outcome === "Success" || outcome === "Failure" || outcome === "Error");
 	return outcome === "Success"
 		? { status: 0, output: "label_check=success" }
 		: { status: 1, output: "label_check=failure" };
 }
 
-function parseLabels(labelsText: string): string[] {
-	return labelsText === "(none)" ? [] : labelsText.split(", ");
+function parseBoolean(value: string): boolean {
+	assert(value === "true" || value === "false", "Expected a boolean value");
+	return value === "true";
 }
 
-function executableCriterionAt(row: Row, heading: string): ExecutableCriterion {
-	return executableCriterion(rawCellAt(row, heading), heading);
+function parseLabels(labelsText: string): string[] {
+	return labelsText === "(none)" ? [] : labelsText.split(", ");
 }
 
 function executableCriterionFromCell(cell: Cell): ExecutableCriterion {
