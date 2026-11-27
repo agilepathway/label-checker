@@ -16,7 +16,7 @@ export type Heading = {
 
 const unpublishedHeadingInput: unique symbol = Symbol("unpublished heading");
 
-export type UnpublishedHeadingInput = {
+type UnpublishedHeadingInput = {
 	readonly [unpublishedHeadingInput]: Text;
 };
 
