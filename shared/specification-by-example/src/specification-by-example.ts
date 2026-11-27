@@ -104,7 +104,10 @@ export function table({ caption, headings, rows }: TableFactoryInput): Table {
 	const expandedHeadings = normalisedHeadings.map((heading) =>
 		expandText(heading.name),
 	);
-	if (new Set(expandedHeadings).size !== expandedHeadings.length) {
+	const uniqueHeadingKeys = expandedHeadings.map((heading) =>
+		heading.toLowerCase(),
+	);
+	if (new Set(uniqueHeadingKeys).size !== uniqueHeadingKeys.length) {
 		throw new Error("Table headings must be unique.");
 	}
 
