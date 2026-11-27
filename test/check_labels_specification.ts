@@ -13,6 +13,16 @@ import {
 	unpublished,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 
+export type CriterionOperator =
+	| "None of"
+	| "No"
+	| "Exactly one of"
+	| "Exactly one"
+	| "At least one of"
+	| "At least one"
+	| "All of"
+	| "All";
+
 type ExampleInputRow = {
 	readonly pullRequestNumber?: number;
 	readonly values: readonly Text[];
@@ -72,7 +82,7 @@ function executableExample({
 function criterion(
 	template: string,
 	inputValues: Record<string, string>,
-	operator: string,
+	operator: CriterionOperator,
 ): ParameterisedText {
 	return {
 		template,

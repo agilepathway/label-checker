@@ -11,7 +11,10 @@ import {
 	type Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
-import { labelCheckerSpecification } from "./check_labels_specification.ts";
+import {
+	type CriterionOperator,
+	labelCheckerSpecification,
+} from "./check_labels_specification.ts";
 import {
 	type Requirement,
 	type Requirements,
@@ -23,7 +26,7 @@ test("criterion interpreter rejects missing or unsupported operators", () => {
 		template: "{operator} {labels}",
 		parameters: { labels: "bug" },
 	};
-	assert.throws(() => executableCriterion(criterion, "Criterion"), {
+	assert.throws(() => interpretCriterion(criterion, "Criterion"), {
 		message: "Expected a supported operator for Criterion",
 	});
 
@@ -31,8 +34,24 @@ test("criterion interpreter rejects missing or unsupported operators", () => {
 		template: "{operator} {labels}",
 		parameters: { operator: "Sometimes", labels: "bug" },
 	};
-	assert.throws(() => executableCriterion(unsupportedOperator, "Criterion"), {
+	assert.throws(() => interpretCriterion(unsupportedOperator, "Criterion"), {
 		message: "Expected a supported operator for Criterion",
+	});
+});
+
+test("criterion interpreter preserves parameter order", () => {
+	const criterion: Text = {
+		template: "{operator} {first} {second}",
+		parameters: {
+			first: "type:",
+			second: "visibility/",
+			operator: "No",
+		},
+	};
+
+	assert.deepEqual(interpretCriterion(criterion, "Criterion"), {
+		requirement: "none",
+		input: "type:,visibility/",
 	});
 });
 
@@ -119,7 +138,7 @@ function parseLabels(labelsText: string): string[] {
 	return labelsText === "(none)" ? [] : labelsText.split(", ");
 }
 
-const requirementByOperator: Record<string, Requirement> = {
+const requirementByOperator: Record<CriterionOperator, Requirement> = {
 	"None of": "none",
 	No: "none",
 	"Exactly one of": "one",
@@ -135,21 +154,25 @@ function criterionFromCell(cell: Cell): {
 	input: string;
 } {
 	const heading = expandText(cell.heading.name);
-	return executableCriterion(cell.value, heading);
+	return interpretCriterion(cell.value, heading);
 }
 
-function executableCriterion(
+function interpretCriterion(
 	criterion: Text,
 	heading: string,
 ): { requirement: Requirement; input: string } {
 	assert(typeof criterion !== "string", `Expected parameterised ${heading}`);
 	const { operator, ...inputParameters } = criterion.parameters;
 	assert(
-		Object.hasOwn(requirementByOperator, operator),
+		isCriterionOperator(operator),
 		`Expected a supported operator for ${heading}`,
 	);
 	return {
 		requirement: requirementByOperator[operator],
 		input: Object.values(inputParameters).join(",").replaceAll(", ", ","),
 	};
+}
+
+function isCriterionOperator(value: string): value is CriterionOperator {
+	return Object.hasOwn(requirementByOperator, value);
 }
