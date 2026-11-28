@@ -202,6 +202,25 @@ export function textAt(example: Example, index: number): Text {
 	return item.text;
 }
 
+export function soleText(example: Example): Text {
+	const texts = example.content.filter((item) => item.type === "text");
+	const [soleTextItem] = texts;
+
+	if (soleTextItem === undefined) {
+		throw new Error(
+			`Example "${example.id}" contains no text items; soleText() requires exactly one.`,
+		);
+	}
+
+	if (texts.length > 1) {
+		throw new Error(
+			`Example "${example.id}" contains multiple text items; soleText() requires exactly one. Use textAt() to select a text item by position.`,
+		);
+	}
+
+	return soleTextItem.text;
+}
+
 export function tableAt(example: Example, index: number): Table {
 	const tables = example.content.filter((item) => item.type === "table");
 	const item = tables[index];
