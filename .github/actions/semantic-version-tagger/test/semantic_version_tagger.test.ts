@@ -15,7 +15,7 @@ import {
 	expandText,
 	hasColumn,
 	soleTable,
-	textAt,
+	soleText,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
 import { FakeGitHubApi } from "../../test-support/fake-github-api.ts";
@@ -114,7 +114,7 @@ test("prints updated tags with short commit SHAs", async () => {
 
 async function runTaggingExample(example: Example): Promise<void> {
 	const table = soleTable(example);
-	const inputText = textAt(example, 0);
+	const inputText = soleText(example);
 	assert(typeof inputText !== "string", "Expected parameterised input text");
 	const fakeGitHubApi = new FakeGitHubApi(tagState(table, "Before"));
 	const apiUrl = await fakeGitHubApi.start();

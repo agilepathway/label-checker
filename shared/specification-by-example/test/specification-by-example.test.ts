@@ -15,6 +15,7 @@ import {
 	rawCellAtAnyOf,
 	type Specification,
 	soleTable,
+	soleText,
 	type Table,
 	table,
 	tableAt,
@@ -644,5 +645,62 @@ test("soleTable reports when an example contains multiple tables", () => {
 	assert.throws(() => soleTable(multipleTablesExample), {
 		message:
 			'Example "multiple-tables" contains multiple tables; soleTable() requires exactly one. Use tableAt() to select a table by position.',
+	});
+});
+
+test("soleText returns the only text regardless of its position among tables", () => {
+	const firstTable = table({ headings: ["First"], rows: [["one"]] });
+	const secondTable = table({ headings: ["Second"], rows: [["two"]] });
+	const beforeTables: Example = {
+		id: "text-before-tables",
+		content: [
+			{ type: "text", text: "Before" },
+			{ type: "table", table: firstTable },
+		],
+	};
+	const betweenTables: Example = {
+		id: "text-between-tables",
+		content: [
+			{ type: "table", table: firstTable },
+			{ type: "text", text: "Between" },
+			{ type: "table", table: secondTable },
+		],
+	};
+	const afterTables: Example = {
+		id: "text-after-tables",
+		content: [
+			{ type: "table", table: secondTable },
+			{ type: "text", text: "After" },
+		],
+	};
+
+	assert.equal(soleText(beforeTables), "Before");
+	assert.equal(soleText(betweenTables), "Between");
+	assert.equal(soleText(afterTables), "After");
+});
+
+test("soleText reports when an example contains no text items", () => {
+	assert.throws(() => soleText(tableFirstExample), {
+		message:
+			'Example "table-first" contains no text items; soleText() requires exactly one.',
+	});
+});
+
+test("soleText reports when an example contains multiple text items", () => {
+	const multipleTextsExample: Example = {
+		id: "multiple-texts",
+		content: [
+			{ type: "text", text: "First" },
+			{
+				type: "table",
+				table: table({ headings: ["Heading"], rows: [["value"]] }),
+			},
+			{ type: "text", text: "Second" },
+		],
+	};
+
+	assert.throws(() => soleText(multipleTextsExample), {
+		message:
+			'Example "multiple-texts" contains multiple text items; soleText() requires exactly one. Use textAt() to select a text item by position.',
 	});
 });
