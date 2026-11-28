@@ -214,6 +214,25 @@ export function tableAt(example: Example, index: number): Table {
 	return item.table;
 }
 
+export function soleTable(example: Example): Table {
+	const tables = example.content.filter((item) => item.type === "table");
+	const [soleTableItem] = tables;
+
+	if (soleTableItem === undefined) {
+		throw new Error(
+			`Example "${example.id}" contains no tables; soleTable() requires exactly one.`,
+		);
+	}
+
+	if (tables.length > 1) {
+		throw new Error(
+			`Example "${example.id}" contains multiple tables; soleTable() requires exactly one. Use tableAt() to select a table by position.`,
+		);
+	}
+
+	return soleTableItem.table;
+}
+
 export function assertUniqueExampleIds(specification: Specification): void {
 	const ids = new Set<string>();
 
