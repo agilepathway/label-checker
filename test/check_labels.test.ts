@@ -8,6 +8,7 @@ import {
 	cellAtAnyOf,
 	type Example,
 	expandText,
+	soleTable,
 	type Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../shared/specification-by-example/src/specification-test-registration.ts";
@@ -75,11 +76,10 @@ registerSpecificationTests(labelCheckerSpecification, (example) =>
 );
 
 async function verifySpecificationExample(example: Example): Promise<void> {
-	const tableContent = example.content.find((item) => item.type === "table");
-	assert(tableContent);
+	const exampleTable = soleTable(example);
 	const prefixMode = example.associatedData?.prefixMode;
 	assert(typeof prefixMode === "boolean", "Expected a boolean prefix mode");
-	for (const row of tableContent.table.rows) {
+	for (const row of exampleTable.rows) {
 		const pullRequestNumber = parsePullRequestNumber(
 			cellAt(row, "Pull request number"),
 		);

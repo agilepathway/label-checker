@@ -14,7 +14,7 @@ import {
 	cellAt,
 	expandText,
 	hasColumn,
-	tableAt,
+	soleTable,
 	textAt,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
@@ -113,7 +113,7 @@ test("prints updated tags with short commit SHAs", async () => {
 });
 
 async function runTaggingExample(example: Example): Promise<void> {
-	const table = tableAt(example, 1);
+	const table = soleTable(example);
 	const inputText = textAt(example, 0);
 	assert(typeof inputText !== "string", "Expected parameterised input text");
 	const fakeGitHubApi = new FakeGitHubApi(tagState(table, "Before"));

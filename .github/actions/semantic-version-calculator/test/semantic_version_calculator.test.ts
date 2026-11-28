@@ -14,7 +14,7 @@ import type {
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import {
 	cellAt,
-	tableAt,
+	soleTable,
 } from "../../../../shared/specification-by-example/src/specification-by-example.ts";
 import { registerSpecificationTests } from "../../../../shared/specification-by-example/src/specification-test-registration.ts";
 import { FakeGitHubApi } from "../../test-support/fake-github-api.ts";
@@ -62,23 +62,23 @@ test("retrieves tags across GitHub API pages", async () => {
 async function runCalculatorExample(example: Example): Promise<void> {
 	switch (example.id) {
 		case "requested-increment-values":
-			await testRequestedIncrements(tableAt(example, 0));
+			await testRequestedIncrements(soleTable(example));
 			return;
 		case "version-tag-format": {
-			const tagFormats = tableAt(example, 0);
+			const tagFormats = soleTable(example);
 			await testTagFormats(tagFormats);
 			await testRejectedTagFormats(tagFormats);
 			await testAllInvalidTags(tagFormats);
 			return;
 		}
 		case "highest-existing-semantic-version-tag":
-			await testHighestTags(tableAt(example, 0));
+			await testHighestTags(soleTable(example));
 			return;
 		case "no-existing-semantic-version-tags":
-			await testNoExistingTags(tableAt(example, 0));
+			await testNoExistingTags(soleTable(example));
 			return;
 		case "calculating-next-version":
-			await testNextVersions(tableAt(example, 0));
+			await testNextVersions(soleTable(example));
 			return;
 		default:
 			throw new Error(`Unexpected semantic-version example: ${example.id}`);

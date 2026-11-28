@@ -14,6 +14,7 @@ import {
 	rawCellAt,
 	rawCellAtAnyOf,
 	type Specification,
+	soleTable,
 	type Table,
 	table,
 	tableAt,
@@ -513,5 +514,45 @@ test("tableAt reports an out-of-range index", () => {
 test("tableAt reports a content-type mismatch", () => {
 	assert.throws(() => tableAt(example, 0), {
 		message: 'Expected table content at index 0, but found "text" content.',
+	});
+});
+
+test("soleTable returns the only table regardless of its position", () => {
+	const expectedTable = table({ headings: ["Heading"], rows: [["value"]] });
+	const surroundedExample: Example = {
+		id: "surrounded",
+		content: [
+			{ type: "text", text: "Before" },
+			{ type: "table", table: expectedTable },
+			{ type: "text", text: "After" },
+		],
+	};
+
+	assert.equal(soleTable(surroundedExample), expectedTable);
+});
+
+test("soleTable reports when an example contains no tables", () => {
+	assert.throws(() => soleTable(literalExample), {
+		message:
+			'Example "literal" contains no tables; soleTable() requires exactly one.',
+	});
+});
+
+test("soleTable reports when an example contains multiple tables", () => {
+	const multipleTablesExample: Example = {
+		id: "multiple-tables",
+		content: [
+			{ type: "table", table: table({ headings: ["First"], rows: [["one"]] }) },
+			{ type: "text", text: "Between" },
+			{
+				type: "table",
+				table: table({ headings: ["Second"], rows: [["two"]] }),
+			},
+		],
+	};
+
+	assert.throws(() => soleTable(multipleTablesExample), {
+		message:
+			'Example "multiple-tables" contains multiple tables; soleTable() requires exactly one. Use tableAt() to select a table by position.',
 	});
 });
