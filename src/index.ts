@@ -38,14 +38,19 @@ export async function main(): Promise<void> {
 		["all", readRequirements("INPUT_ALL_OF")],
 		["any", readRequirements("INPUT_ANY_OF")],
 	] as const;
+	const matchedLabels = findMatchedLabels(checks, labels, prefixMode);
 	const { success, failure } = runChecks(checks, labels, prefixMode);
 
-	reportResults(success, failure);
+	reportResults(success, failure, matchedLabels);
 }
 
-function reportResults(success: string, failure: string): void {
+function reportResults(
+	success: string,
+	failure: string,
+	matchedLabels: string[],
+): void {
 	if (success) process.stdout.write(`${success.trimEnd()}\n`);
-	writeOutput(failure ? "failure" : "success");
+	writeOutput(failure ? "failure" : "success", matchedLabels);
 	if (failure) {
 		process.stderr.write(`::error:: ${failure.trimEnd()}\n`);
 		if (process.env.INPUT_ALLOW_FAILURE !== "true") process.exitCode = 1;
@@ -61,6 +66,20 @@ function requiredEnvironment(name: string): string {
 function readRequirements(name: string): string[] {
 	const value = process.env[name];
 	return value?.trim() ? value.split(",") : [];
+}
+
+function findMatchedLabels(
+	checks: readonly (readonly [Requirement, string[]])[],
+	labels: string[],
+	prefixMode: boolean,
+): string[] {
+	return [...new Set(labels)].filter((label) =>
+		checks.some(([, specified]) =>
+			specified.some((criterion) =>
+				prefixMode ? label.startsWith(criterion) : label === criterion,
+			),
+		),
+	);
 }
 
 function runChecks(
@@ -201,8 +220,14 @@ function getGraphQLEndpoint(): string {
 	return apiURL.endsWith("/graphql") ? apiURL : `${apiURL}/graphql`;
 }
 
-function writeOutput(result: "success" | "failure"): void {
-	appendFileSync(requiredEnvironment("GITHUB_OUTPUT"), `label_check=${result}`);
+function writeOutput(
+	result: "success" | "failure",
+	matchedLabels: string[],
+): void {
+	appendFileSync(
+		requiredEnvironment("GITHUB_OUTPUT"),
+		`label_check=${result}\nmatched_labels=${JSON.stringify(matchedLabels)}\n`,
+	);
 }
 
 main().catch((error: unknown) => {

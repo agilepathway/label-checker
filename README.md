@@ -195,6 +195,26 @@ regardless of whether `allow_failure` is set or not.
 The variable has a value of either `success` or `failure` which can then be queried in subsequent steps,
 as in the above example.
 
+## Action outputs
+
+The `matched_labels` output is a JSON array containing the pull-request labels that match any configured
+criterion. Labels appear once, in the order they appear on the pull request. Matching uses the configured
+exact-label or prefix mode, and the output is available whether the checks pass or fail.
+
+Use GitHub Actions' `fromJSON(...)` function to consume the array:
+
+  ```
+  steps:
+    - id: label_check
+      uses: agilepathway/label-checker@v2  # Change v2 to a SHA for stronger security
+      with:
+        one_of: release:major,release:minor,release:patch
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        allow_failure: true
+    - if: contains(fromJSON(steps.label_check.outputs.matched_labels), 'release:major')
+      run: echo This pull request has the major-release label
+  ```
+
 ## GitHub Enterprise
 
 To use this label checker with [GitHub Enterprise](https://github.com/enterprise),

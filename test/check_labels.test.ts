@@ -8,6 +8,7 @@ import {
 	cellAtAnyOf,
 	type Example,
 	expandText,
+	hasColumn,
 	soleTable,
 	type Text,
 } from "../shared/specification-by-example/src/specification-by-example.ts";
@@ -15,6 +16,7 @@ import { registerSpecificationTests } from "../shared/specification-by-example/s
 import {
 	type CriterionOperator,
 	labelCheckerSpecification,
+	matchedLabelsSpecification,
 } from "./check_labels_specification.ts";
 import {
 	type Requirement,
@@ -75,8 +77,13 @@ registerSpecificationTests(labelCheckerSpecification, (example) =>
 	verifySpecificationExample(example),
 );
 
+registerSpecificationTests(matchedLabelsSpecification, (example) =>
+	verifySpecificationExample(example),
+);
+
 async function verifySpecificationExample(example: Example): Promise<void> {
 	const exampleTable = soleTable(example);
+	const verifiesMatchedLabels = hasColumn(exampleTable, "Matched labels");
 	const prefixMode = example.associatedData?.prefixMode;
 	assert(typeof prefixMode === "boolean", "Expected a boolean prefix mode");
 	for (const row of exampleTable.rows) {
@@ -105,7 +112,26 @@ async function verifySpecificationExample(example: Example): Promise<void> {
 		assert.equal(result.status, expectedOutcome.status);
 		assert.equal(result.stdout, expectedStdout);
 		assert.equal(result.stderr, expectedStderr);
-		assert.equal(result.output, expectedOutcome.output);
+		assertOutput(
+			result.output,
+			expectedOutcome.output,
+			verifiesMatchedLabels ? cellAt(row, "Matched labels") : undefined,
+		);
+	}
+}
+
+function assertOutput(
+	output: string,
+	expectedLabelCheck: string,
+	expectedMatchedLabels?: string,
+): void {
+	const outputLines = output.split(/\r?\n/);
+	assert.equal(outputLines[0], expectedLabelCheck);
+	if (expectedMatchedLabels !== undefined) {
+		assert.equal(
+			outputLines.find((line) => line.startsWith("matched_labels=")),
+			`matched_labels=${expectedMatchedLabels}`,
+		);
 	}
 }
 
