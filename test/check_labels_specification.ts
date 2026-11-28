@@ -34,7 +34,6 @@ type ExampleInputRow = {
 
 const supplementaryHeadings = [
 	unpublished("Pull request number"),
-	unpublished("Prefix mode"),
 	unpublished("Expected stdout"),
 	unpublished("Expected stderr"),
 ];
@@ -49,7 +48,7 @@ function executableExample({
 	caption?: Text;
 	headings: HeadingInput[];
 	rows: NonEmptyArray<ExampleInputRow>;
-}): Pick<Example, "content"> {
+}): Pick<Example, "content" | "associatedData"> {
 	const [firstRow, ...remainingRows] = rows;
 	const toTableRow = (
 		{ values, expected, pullRequestNumber }: ExampleInputRow,
@@ -57,12 +56,12 @@ function executableExample({
 	): Text[] => [
 		...values,
 		String(pullRequestNumber ?? index + 1),
-		String(prefixMode),
 		expected.stdout,
 		expected.stderr,
 	];
 
 	return {
+		associatedData: { prefixMode },
 		content: [
 			{
 				type: "table",

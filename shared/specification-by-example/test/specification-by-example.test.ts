@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { renderSpecification } from "../src/markdown-renderer.ts";
 import {
 	assertUniqueExampleIds,
 	cellAt,
@@ -37,6 +38,13 @@ const example: Example = {
 const literalExample: Example = {
 	id: "literal",
 	content: [{ type: "text", text: "A literal value" }],
+	associatedData: {
+		tags: ["wip", "slow", "unstable"],
+		details: {
+			source: "test",
+			values: [1, { enabled: true }],
+		},
+	},
 };
 
 const tableFirstExample: Example = {
@@ -93,6 +101,23 @@ test("assertUniqueExampleIds rejects duplicate IDs", () => {
 				],
 			}),
 		{ message: "Duplicate example ID: sample" },
+	);
+});
+
+test("renderSpecification excludes example associated data", () => {
+	const rendered = renderSpecification({
+		title: "Specification",
+		rules: [
+			{
+				definition: "Rule",
+				examples: [literalExample],
+			},
+		],
+	});
+
+	assert.equal(
+		rendered,
+		"# Specification\n\n---\n\n## Rule\n\nRule\n\n### Example\n\nA literal value\n\n---",
 	);
 });
 

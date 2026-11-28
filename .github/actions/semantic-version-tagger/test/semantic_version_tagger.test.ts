@@ -114,8 +114,12 @@ async function runTaggingExample(example: Example): Promise<void> {
 				: 0;
 
 		assert.equal(result.status, expectedStatus, result.stderr);
-		if (example.id === "rejects-existing-version-tag") {
-			assert.match(result.stderr, /The version tag v2\.0\.1 already exists\./);
+		const expectedDiagnostic = example.associatedData?.expectedDiagnostic;
+		if (typeof expectedDiagnostic === "string") {
+			assert.ok(
+				result.stderr.includes(expectedDiagnostic),
+				`Expected stderr to include "${expectedDiagnostic}"`,
+			);
 		}
 
 		assert.deepEqual(
