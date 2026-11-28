@@ -495,6 +495,32 @@ test("textAt reports the number of available text items", () => {
 	});
 });
 
+test("textAt reports when there are no text items", () => {
+	assert.throws(() => textAt(tableFirstExample, 0), {
+		message:
+			'Example "table-first" has 0 text items; textAt() index 0 is out of range.',
+	});
+});
+
+test("textAt reports the plural count when an index exceeds multiple text items", () => {
+	const multipleTextsExample: Example = {
+		id: "multiple-texts",
+		content: [
+			{ type: "text", text: "First" },
+			{
+				type: "table",
+				table: table({ headings: ["Heading"], rows: [["value"]] }),
+			},
+			{ type: "text", text: "Second" },
+		],
+	};
+
+	assert.throws(() => textAt(multipleTextsExample, 2), {
+		message:
+			'Example "multiple-texts" has 2 text items; textAt() index 2 is out of range.',
+	});
+});
+
 test("tableAt returns the table payload at the requested index", () => {
 	assert.deepEqual(tableAt(example, 0), {
 		rows: [[{ heading: { name: "Heading" }, value: "value" }]],
@@ -552,6 +578,32 @@ test("tableAt reports an out-of-range index", () => {
 test("tableAt reports the number of available tables", () => {
 	assert.throws(() => tableAt(example, 1), {
 		message: 'Example "sample" has 1 table; tableAt() index 1 is out of range.',
+	});
+});
+
+test("tableAt reports when there are no tables", () => {
+	assert.throws(() => tableAt(literalExample, 0), {
+		message:
+			'Example "literal" has 0 tables; tableAt() index 0 is out of range.',
+	});
+});
+
+test("tableAt reports the plural count when an index exceeds multiple tables", () => {
+	const multipleTablesExample: Example = {
+		id: "multiple-tables",
+		content: [
+			{ type: "table", table: table({ headings: ["First"], rows: [["one"]] }) },
+			{ type: "text", text: "Between" },
+			{
+				type: "table",
+				table: table({ headings: ["Second"], rows: [["two"]] }),
+			},
+		],
+	};
+
+	assert.throws(() => tableAt(multipleTablesExample, 2), {
+		message:
+			'Example "multiple-tables" has 2 tables; tableAt() index 2 is out of range.',
 	});
 });
 
