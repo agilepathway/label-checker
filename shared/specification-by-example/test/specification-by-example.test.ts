@@ -465,20 +465,58 @@ test("textAt returns literal text", () => {
 
 test("textAt reports an out-of-range index", () => {
 	assert.throws(() => textAt(example, 2), {
-		message: "Expected text content at index 2, but found no content.",
+		message:
+			'Example "sample" has 1 text item; textAt() index 2 is out of range.',
 	});
 });
 
-test("textAt reports a content-type mismatch", () => {
+test("textAt indexes text items regardless of intervening tables", () => {
+	const interleavedExample: Example = {
+		id: "interleaved",
+		content: [
+			{ type: "table", table: table({ headings: ["First"], rows: [["one"]] }) },
+			{ type: "text", text: "First text" },
+			{
+				type: "table",
+				table: table({ headings: ["Second"], rows: [["two"]] }),
+			},
+			{ type: "text", text: "Second text" },
+		],
+	};
+
+	assert.equal(textAt(interleavedExample, 0), "First text");
+	assert.equal(textAt(interleavedExample, 1), "Second text");
+});
+
+test("textAt reports the number of available text items", () => {
 	assert.throws(() => textAt(example, 1), {
-		message: 'Expected text content at index 1, but found "table" content.',
+		message:
+			'Example "sample" has 1 text item; textAt() index 1 is out of range.',
 	});
 });
 
 test("tableAt returns the table payload at the requested index", () => {
-	assert.deepEqual(tableAt(example, 1), {
+	assert.deepEqual(tableAt(example, 0), {
 		rows: [[{ heading: { name: "Heading" }, value: "value" }]],
 	});
+});
+
+test("tableAt indexes tables regardless of intervening text", () => {
+	const interleavedExample: Example = {
+		id: "interleaved",
+		content: [
+			{ type: "text", text: "Before" },
+			{ type: "table", table: table({ headings: ["First"], rows: [["one"]] }) },
+			{ type: "text", text: "Between" },
+			{
+				type: "table",
+				table: table({ headings: ["Second"], rows: [["two"]] }),
+			},
+		],
+	};
+
+	assert.equal(tableAt(interleavedExample, 0).rows[0][0].value, "one");
+	assert.equal(tableAt(interleavedExample, 1).rows[0][0].value, "two");
 });
 
 test("tableAt returns a table at the start of an example", () => {
@@ -507,13 +545,13 @@ test("tableAt returns parameterised headers and cells", () => {
 
 test("tableAt reports an out-of-range index", () => {
 	assert.throws(() => tableAt(example, 2), {
-		message: "Expected table content at index 2, but found no content.",
+		message: 'Example "sample" has 1 table; tableAt() index 2 is out of range.',
 	});
 });
 
-test("tableAt reports a content-type mismatch", () => {
-	assert.throws(() => tableAt(example, 0), {
-		message: 'Expected table content at index 0, but found "text" content.',
+test("tableAt reports the number of available tables", () => {
+	assert.throws(() => tableAt(example, 1), {
+		message: 'Example "sample" has 1 table; tableAt() index 1 is out of range.',
 	});
 });
 

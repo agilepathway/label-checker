@@ -191,11 +191,11 @@ export function cellAtAnyOf(row: Row, ...headings: string[]): string {
 }
 
 export function textAt(example: Example, index: number): Text {
-	const item = example.content[index];
-	if (item?.type !== "text") {
-		const found = item ? `"${item.type}" content` : "no content";
+	const texts = example.content.filter((item) => item.type === "text");
+	const item = texts[index];
+	if (item === undefined) {
 		throw new Error(
-			`Expected text content at index ${index}, but found ${found}.`,
+			`Example "${example.id}" has ${texts.length} text item${texts.length === 1 ? "" : "s"}; textAt() index ${index} is out of range.`,
 		);
 	}
 
@@ -203,11 +203,11 @@ export function textAt(example: Example, index: number): Text {
 }
 
 export function tableAt(example: Example, index: number): Table {
-	const item = example.content[index];
-	if (item?.type !== "table") {
-		const found = item ? `"${item.type}" content` : "no content";
+	const tables = example.content.filter((item) => item.type === "table");
+	const item = tables[index];
+	if (item === undefined) {
 		throw new Error(
-			`Expected table content at index ${index}, but found ${found}.`,
+			`Example "${example.id}" has ${tables.length} table${tables.length === 1 ? "" : "s"}; tableAt() index ${index} is out of range.`,
 		);
 	}
 
