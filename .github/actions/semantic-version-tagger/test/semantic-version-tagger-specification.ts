@@ -303,6 +303,9 @@ export const existingSemanticVersionTagRule: Rule = {
 	examples: [
 		{
 			id: "rejects-existing-version-tag",
+			associatedData: {
+				expectedDiagnostic: "The version tag v2.0.1 already exists.",
+			},
 			content: [
 				{
 					type: "text",

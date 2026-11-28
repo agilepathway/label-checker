@@ -50,6 +50,7 @@ export type TableFactoryInput = {
 export type Example = {
 	id: string;
 	content: NonEmptyArray<ContentItem>;
+	associatedData?: Record<string, unknown>;
 };
 
 export type Rule = {
