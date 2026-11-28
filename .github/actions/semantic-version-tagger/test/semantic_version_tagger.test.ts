@@ -62,6 +62,25 @@ test("uses plain text in specification table cells", () => {
 	}
 });
 
+test("expected diagnostic associated data must be non-empty text when supplied", () => {
+	const example: Example = {
+		id: "example",
+		content: [{ type: "text", text: "Example" }],
+	};
+
+	assert.equal(expectedDiagnosticFor(example), undefined);
+	for (const expectedDiagnostic of ["", false, 1, null]) {
+		assert.throws(
+			() =>
+				expectedDiagnosticFor({
+					...example,
+					associatedData: { expectedDiagnostic },
+				}),
+			{ message: "Expected diagnostic to be a non-empty string" },
+		);
+	}
+});
+
 test("prints updated tags with short commit SHAs", async () => {
 	const commit = "a1b2c3d4e5f67890abcdef1234567890abcdef12";
 	const fakeGitHubApi = new FakeGitHubApi(
@@ -114,8 +133,8 @@ async function runTaggingExample(example: Example): Promise<void> {
 				: 0;
 
 		assert.equal(result.status, expectedStatus, result.stderr);
-		const expectedDiagnostic = example.associatedData?.expectedDiagnostic;
-		if (typeof expectedDiagnostic === "string") {
+		const expectedDiagnostic = expectedDiagnosticFor(example);
+		if (expectedDiagnostic !== undefined) {
 			assert.ok(
 				result.stderr.includes(expectedDiagnostic),
 				`Expected stderr to include "${expectedDiagnostic}"`,
@@ -129,6 +148,19 @@ async function runTaggingExample(example: Example): Promise<void> {
 	} finally {
 		await fakeGitHubApi.stop();
 	}
+}
+
+function expectedDiagnosticFor(example: Example): string | undefined {
+	const expectedDiagnostic = example.associatedData?.expectedDiagnostic;
+	if (expectedDiagnostic === undefined) {
+		return undefined;
+	}
+
+	assert(
+		typeof expectedDiagnostic === "string" && expectedDiagnostic.length > 0,
+		"Expected diagnostic to be a non-empty string",
+	);
+	return expectedDiagnostic;
 }
 
 function tagState(
