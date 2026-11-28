@@ -77,12 +77,12 @@ registerSpecificationTests(labelCheckerSpecification, (example) =>
 async function verifySpecificationExample(example: Example): Promise<void> {
 	const tableContent = example.content.find((item) => item.type === "table");
 	assert(tableContent);
+	const prefixMode = example.associatedData?.prefixMode;
+	assert(typeof prefixMode === "boolean", "Expected a boolean prefix mode");
 	for (const row of tableContent.table.rows) {
 		const pullRequestNumber = parsePullRequestNumber(
 			cellAt(row, "Pull request number"),
 		);
-		const prefixMode = example.associatedData?.prefixMode;
-		assert(typeof prefixMode === "boolean", "Expected a boolean prefix mode");
 		const expectedStdout = cellAt(row, "Expected stdout");
 		const expectedStderr = cellAt(row, "Expected stderr");
 		const labels = parseLabels(cellAt(row, "Labels on the pull request"));
