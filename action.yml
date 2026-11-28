@@ -63,6 +63,12 @@ outputs:
       The label-check result: `success` when all configured checks pass, or `failure` when
       one or more checks fail. This reports the check result independently of `allow_failure`,
       which can allow the action step to complete successfully when the output is `failure`.
+  matched_labels:
+    description: >
+      Upon completion of a label check run on a pull request, the label checker provides
+      consumers with the names of the labels on the pull request that matched any of the
+      labels or prefixes specified in its criteria (regardless of whether each criterion
+      was met successfully or not).
 runs:
   using: 'node24'
   main: 'src/index.ts'
